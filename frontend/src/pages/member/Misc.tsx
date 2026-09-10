@@ -1,0 +1,199 @@
+import { useState } from 'react';
+import { Avatar, Button, Card, Col, Form, Input, List, Modal, Rate, Row, Space, Statistic, Table, Tabs, Tag, Typography, message } from 'antd';
+import { MessageOutlined, PrinterOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import Page from '../../components/Page';
+import StatusTag from '../../components/StatusTag';
+import WeekTimetable from '../../components/WeekTimetable';
+import BodyMetricsChart from '../../components/BodyMetricsChart';
+import SupportThread from '../../components/SupportThread';
+import { fmtMoney, useApp } from '../../store/AppContext';
+
+export function MySchedule() {
+  const { data, currentUser } = useApp();
+  const navigate = useNavigate();
+  const ids = data.enrollments.filter((e) => e.memberId === currentUser!.id && e.status === 'ACTIVE').map((e) => e.classId);
+  const schedules = data.schedules.filter((s) => ids.includes(s.classId));
+  return (
+    <Page title="Lịch tập của tôi" subtitle="Thời khóa biểu tuần theo các lớp đã đăng ký">
+      <WeekTimetable schedules={schedules} onClick={(id) => navigate(`/member/classes/${id}`)} />
+    </Page>
+  );
+}
+
+export function Coaches() {
+  const { data } = useApp();
+  const coaches = data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE');
+  return (
+    <Page title="Huấn luyện viên" noCard>
+      <Row gutter={[16, 16]}>
+        {coaches.map((c, i) => (
+          <Col xs={24} md={12} xl={8} key={c.id}>
+            <div className="sc-coach">
+              <div className="sc-coach-cover" style={{ background: `linear-gradient(135deg, ${['#2563eb', '#16a34a', '#f97316', '#9333ea'][i % 4]}, #0b1220)` }} />
+              <div style={{ padding: '0 20px 20px', marginTop: -32 }}>
+                <Avatar size={64} style={{ background: '#fff', color: '#0f172a', fontSize: 22, fontWeight: 700, border: '3px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)' }}>{c.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</Avatar>
+                <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <b style={{ fontSize: 16 }}>{c.fullName}</b>
+                  <Tag color="blue">{c.specialty}</Tag>
+                </div>
+                <Typography.Paragraph type="secondary" style={{ margin: '8px 0 12px', minHeight: 44 }}>{c.bio}</Typography.Paragraph>
+                <div style={{ fontSize: 12, color: '#64748b' }}>Lớp đang dạy</div>
+                <Space wrap size={4} style={{ marginTop: 4 }}>{data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN').map((x) => <Tag key={x.id} style={{ background: '#f1f5f9', color: '#334155' }}>{x.name}</Tag>)}</Space>
+              </div>
+            </div>
+          </Col>
+        ))}
+      </Row>
+    </Page>
+  );
+}
+
+export function PaymentHistory() {
+  const { data, currentUser } = useApp();
+  const navigate = useNavigate();
+  const rows = data.payments.filter((p) => p.memberId === currentUser!.id).sort((a, b) => b.paidAt.localeCompare(a.paidAt));
+  return (
+    <Page title="Lịch sử thanh toán" subtitle={`Tổng đã thanh toán: ${fmtMoney(rows.reduce((s, p) => s + p.amount, 0))}`}>
+      <Table rowKey="id" dataSource={rows} columns={[
+        { title: 'Số HĐ', dataIndex: 'invoiceNo', render: (v) => <span className="sc-nowrap" style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 600 }}>{v}</span> }, { title: 'Ngày', dataIndex: 'paidAt', render: (v) => <span className="sc-nowrap">{v}</span> },
+        { title: 'Loại', dataIndex: 'type', render: (v) => <StatusTag value={v} /> }, { title: 'Nội dung', dataIndex: 'refName' },
+        { title: 'Số tiền', dataIndex: 'amount', render: fmtMoney }, { title: 'PT', dataIndex: 'method', render: (v) => <StatusTag value={v} /> },
+        { title: '', render: (_, r) => <Button size="small" icon={<PrinterOutlined />} onClick={() => navigate(`/member/payments/${r.id}`)}>Hóa đơn</Button> },
+      ]} />
+    </Page>
+  );
+}
+
+export function MyAttendance() {
+  const { data, currentUser } = useApp();
+  const me = currentUser!.id;
+  const att = data.attendances.filter((a) => a.memberId === me).map((a) => ({ ...a, session: data.sessions.find((s) => s.id === a.sessionId)! })).sort((a, b) => b.session.date.localeCompare(a.session.date));
+  const present = att.filter((a) => a.status !== 'ABSENT').length;
+  const checkIns = data.checkIns.filter((c) => c.memberId === me).sort((a, b) => b.time.localeCompare(a.time));
+  return (
+    <Page title="Lịch sử điểm danh" noCard>
+      <Row gutter={[16, 16]}>
+        <Col xs={12} md={6}><Card><Statistic title="Buổi học đã điểm danh" value={att.length} /></Card></Col>
+        <Col xs={12} md={6}><Card><Statistic title="Tỷ lệ chuyên cần" value={att.length ? Math.round((present / att.length) * 100) : 0} suffix="%" /></Card></Col>
+        <Col xs={12} md={6}><Card><Statistic title="Lần check-in trung tâm" value={checkIns.length} /></Card></Col>
+      </Row>
+      <Card>
+        <Tabs items={[
+          { key: 'class', label: 'Điểm danh lớp học', children: <Table size="small" rowKey="id" dataSource={att} columns={[{ title: 'Ngày', render: (_, r) => r.session.date }, { title: 'Lớp', render: (_, r) => data.classes.find((c) => c.id === r.session.classId)?.name }, { title: 'Trạng thái', dataIndex: 'status', render: (v) => <StatusTag value={v} /> }]} /> },
+          { key: 'checkin', label: 'Check-in trung tâm', children: <Table size="small" rowKey="id" dataSource={checkIns} columns={[{ title: 'Thời gian', dataIndex: 'time' }]} /> },
+        ]} />
+      </Card>
+    </Page>
+  );
+}
+
+export function MyResults() {
+  const { data, currentUser, nameOf } = useApp();
+  const me = currentUser!.id;
+  const results = data.trainingResults.filter((r) => r.memberId === me).map((r) => ({ ...r, session: data.sessions.find((s) => s.id === r.sessionId)! })).sort((a, b) => b.session.date.localeCompare(a.session.date));
+  const reviews = data.progressReviews.filter((r) => r.memberId === me).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return (
+    <Page title="Kết quả tập luyện & nhận xét" noCard>
+      <Card title="Chỉ số cơ thể theo tuần" extra={<span style={{ fontSize: 12, color: '#94a3b8' }}>Đo InBody / HLV ghi nhận</span>}>
+        <BodyMetricsChart memberId={me} />
+      </Card>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={14}>
+          <Card title="Kết quả từng buổi">
+            <Table size="small" rowKey="id" dataSource={results} columns={[
+              { title: 'Ngày', render: (_, r) => r.session.date }, { title: 'Lớp', render: (_, r) => data.classes.find((c) => c.id === r.session.classId)?.name },
+              { title: 'Chỉ số', dataIndex: 'metrics' }, { title: 'Nhận xét HLV', dataIndex: 'note' },
+            ]} />
+          </Card>
+        </Col>
+        <Col xs={24} lg={10}>
+          <Card title="Đánh giá tiến độ">
+            <List dataSource={reviews} renderItem={(r) => (
+              <List.Item>
+                <List.Item.Meta title={<Space><Rate disabled value={r.rating} /><span style={{ fontSize: 12, color: '#999' }}>{r.createdAt}</span></Space>} description={<><div>{r.comment}</div><div style={{ fontSize: 12 }}>— HLV {nameOf(r.coachId)}</div></>} />
+              </List.Item>
+            )} />
+          </Card>
+        </Col>
+      </Row>
+    </Page>
+  );
+}
+
+export function MyTrainingPlan() {
+  const { data, currentUser, nameOf } = useApp();
+  const me = currentUser!.id;
+  const myClassIds = data.enrollments.filter((e) => e.memberId === me && e.status === 'ACTIVE').map((e) => e.classId);
+  const plans = data.trainingPlans.filter((p) => p.memberId === me || (p.classId && myClassIds.includes(p.classId)));
+  const hws = data.homeworks.filter((h) => myClassIds.includes(h.classId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  return (
+    <Page title="Kế hoạch tập luyện & bài tập về nhà" noCard>
+      <Row gutter={[16, 16]}>
+        <Col xs={24} lg={14}>
+          <Card title="Kế hoạch tập luyện">
+            <List dataSource={plans} renderItem={(p) => (
+              <List.Item>
+                <List.Item.Meta title={<Space>{p.title}<Tag color={p.memberId ? 'purple' : 'blue'}>{p.memberId ? 'Cá nhân' : data.classes.find((c) => c.id === p.classId)?.name}</Tag><StatusTag value={p.source} /></Space>} description={<><div style={{ whiteSpace: 'pre-line' }}>{p.content}</div><div style={{ fontSize: 12 }}>HLV {nameOf(p.coachId)} · {p.createdAt}</div></>} />
+              </List.Item>
+            )} />
+          </Card>
+        </Col>
+        <Col xs={24} lg={10}>
+          <Card title="Bài tập về nhà">
+            <List dataSource={hws} renderItem={(h) => (
+              <List.Item><List.Item.Meta title={h.title} description={<><div>{h.content}</div><div style={{ fontSize: 12 }}>{data.classes.find((c) => c.id === h.classId)?.name} · HLV {nameOf(h.coachId)} · {h.createdAt}</div></>} /></List.Item>
+            )} />
+          </Card>
+        </Col>
+      </Row>
+    </Page>
+  );
+}
+
+export function MySupport() {
+  const { data, currentUser, add, notify, nameOf } = useApp();
+  const [open, setOpen] = useState(false);
+  const [active, setActive] = useState<string | null>(null);
+  const [form] = Form.useForm();
+  const rows = data.supportRequests.filter((r) => r.memberId === currentUser!.id).map((r) => {
+    const msgs = data.supportMessages.filter((m) => m.requestId === r.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
+    const last = msgs[msgs.length - 1];
+    return { ...r, msgs, last, lastAt: last?.createdAt ?? r.createdAt, hasReply: !!last && last.senderId !== currentUser!.id };
+  }).sort((a, b) => b.lastAt.localeCompare(a.lastAt));
+
+  const send = (v: { title: string; content: string }) => {
+    const r = add('supportRequests', { ...v, memberId: currentUser!.id, status: 'OPEN', createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
+    data.users.filter((u) => u.role === 'RECEPTIONIST' && u.status === 'ACTIVE').forEach((u) => notify(u.id, `Yêu cầu hỗ trợ mới: ${v.title}`, `${currentUser!.fullName}: ${v.content}`));
+    message.success('Đã gửi yêu cầu, lễ tân sẽ phản hồi sớm'); setOpen(false); form.resetFields();
+    setActive(r.id);
+  };
+
+  return (
+    <Page title="Yêu cầu hỗ trợ" subtitle="Gửi yêu cầu và trao đổi trực tiếp với lễ tân" extra={<Button type="primary" onClick={() => setOpen(true)}>Gửi yêu cầu mới</Button>}>
+      <List dataSource={rows} locale={{ emptyText: 'Bạn chưa gửi yêu cầu nào' }} renderItem={(r) => (
+        <List.Item onClick={() => setActive(r.id)} style={{ cursor: 'pointer', padding: '14px 8px', borderRadius: 10 }} className="sc-hover-row"
+          actions={[<Button size="small" onClick={(e) => { e.stopPropagation(); setActive(r.id); }}>{r.hasReply ? 'Xem phản hồi' : 'Mở'}</Button>]}>
+          <List.Item.Meta
+            avatar={<div style={{ width: 40, height: 40, borderRadius: 12, background: r.status === 'RESOLVED' ? '#dcfce7' : r.hasReply ? '#eff6ff' : '#fff7ed', color: r.status === 'RESOLVED' ? '#16a34a' : r.hasReply ? '#2563eb' : '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}><MessageOutlined /></div>}
+            title={<Space><b>{r.title}</b><StatusTag value={r.status} />{r.hasReply && r.status !== 'RESOLVED' && <Tag color="blue">Có phản hồi</Tag>}</Space>}
+            description={<>
+              <div style={{ color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 560 }}>
+                {r.last ? <><b>{r.last.senderId === currentUser!.id ? 'Bạn' : nameOf(r.last.senderId)}:</b> {r.last.content}</> : r.content}
+              </div>
+              <div style={{ fontSize: 12, color: '#94a3b8' }}>{r.msgs.length} trao đổi · cập nhật {dayjs(r.lastAt).fromNow()}{r.handledBy ? ` · xử lý bởi ${nameOf(r.handledBy)}` : ''}</div>
+            </>} />
+        </List.Item>
+      )} />
+      <SupportThread requestId={active} onClose={() => setActive(null)} />
+      <Modal title="Gửi yêu cầu hỗ trợ" open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} okText="Gửi">
+        <Form form={form} layout="vertical" onFinish={send}>
+          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true }]}><Input placeholder="VD: Đổi lịch lớp Yoga" /></Form.Item>
+          <Form.Item name="content" label="Nội dung" rules={[{ required: true }]}><Input.TextArea rows={4} placeholder="Mô tả chi tiết yêu cầu của bạn…" /></Form.Item>
+        </Form>
+        <div style={{ fontSize: 12, color: '#94a3b8' }}>Lễ tân sẽ phản hồi trong vòng 24h. Bạn sẽ nhận thông báo khi có trả lời.</div>
+      </Modal>
+    </Page>
+  );
+}
