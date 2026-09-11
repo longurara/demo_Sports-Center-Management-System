@@ -46,7 +46,7 @@ export default function MySchedule() {
       for (const b of data.courtBookings.filter((x) => x.memberId === me && x.date === ds && x.status !== 'CANCELLED')) {
         const court = data.rooms.find((r) => r.id === b.courtId);
         const sport = data.sports.find((s) => s.id === court?.sportId);
-        out.push({ key: b.id, date: ds, start: b.startTime, end: b.endTime, kind: 'COURT', title: `Đặt ${court?.name ?? 'sân'}`, sportId: court?.sportId, room: court?.location, status: b.status, color: sport?.color ?? '#0891b2', icon: sport?.icon });
+        out.push({ key: b.id, date: ds, start: b.startTime, end: b.endTime, kind: 'COURT', title: court?.name ?? 'Sân', sportId: court?.sportId, room: court?.location, status: b.status, color: sport?.color ?? '#0891b2', icon: sport?.icon });
       }
     }
     return out.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
@@ -67,7 +67,7 @@ export default function MySchedule() {
       const d = now.add(i, 'day'); const ds = d.format('YYYY-MM-DD'); const dow = ((d.day() + 6) % 7) + 1;
       const cands: { start: string; end: string; title: string; classId?: string; room?: string; coachId?: string; sportId?: string; kind: 'CLASS' | 'COURT' }[] = [];
       for (const c of enrolled) if (ds >= c.startDate && ds <= c.endDate) for (const sc of data.schedules.filter((s) => s.classId === c.id && s.dayOfWeek === dow)) cands.push({ start: sc.startTime, end: sc.endTime, title: c.name, classId: c.id, room: data.rooms.find((r) => r.id === c.roomId)?.name, coachId: c.coachId, sportId: c.sportId, kind: 'CLASS' });
-      for (const b of data.courtBookings.filter((x) => x.memberId === me && x.date === ds && x.status === 'BOOKED')) { const court = data.rooms.find((r) => r.id === b.courtId); cands.push({ start: b.startTime, end: b.endTime, title: `Đặt ${court?.name}`, room: court?.location, sportId: court?.sportId, kind: 'COURT' }); }
+      for (const b of data.courtBookings.filter((x) => x.memberId === me && x.date === ds && x.status === 'BOOKED')) { const court = data.rooms.find((r) => r.id === b.courtId); cands.push({ start: b.startTime, end: b.endTime, title: court?.name ?? 'Sân', room: court?.location, sportId: court?.sportId, kind: 'COURT' }); }
       const hit = cands.filter((x) => dayjs(`${ds} ${x.end}`).isAfter(now)).sort((a, b) => a.start.localeCompare(b.start))[0];
       if (hit) return { ...hit, date: ds, at: dayjs(`${ds} ${hit.start}`) };
     }
@@ -99,7 +99,7 @@ export default function MySchedule() {
             {items.length === 0 && enrolled.length === 0 ? (
               <Empty description="Bạn chưa đăng ký lớp nào" style={{ padding: 40 }}><Button type="primary" onClick={() => navigate('/member/classes')}>Xem lớp học</Button></Empty>
             ) : effView === 'week' ? (
-              <WeekCalendar weekStart={weekStart} events={events} hourFrom={6} hourTo={22} hourHeight={44} />
+              <WeekCalendar weekStart={weekStart} events={events} hourFrom={6} hourTo={22} hourHeight={56} />
             ) : effView === 'day' ? (
               <div>
                 {/* Dải chọn ngày trong tuần */}
@@ -107,7 +107,7 @@ export default function MySchedule() {
                   {dayGroups.map(({ d, ds, list }, i) => {
                     const on = i === dayIdx;
                     return (
-                      <div key={ds} onClick={() => setDayIdx(i)} style={{ textAlign: 'center', padding: '6px 0', borderRadius: 10, cursor: 'pointer', background: on ? '#0f4d34' : ds === today ? '#eaf1ff' : '#f4f6fb', color: on ? '#fff' : '#14130f' }}>
+                      <div key={ds} onClick={() => setDayIdx(i)} style={{ textAlign: 'center', padding: '6px 0', borderRadius: 10, cursor: 'pointer', background: on ? '#0f4d34' : ds === today ? '#e3efe8' : '#f3f1ec', color: on ? '#fff' : '#14130f' }}>
                         <div style={{ fontSize: 10, opacity: .75 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()].replace('Thứ ', 'T').replace('Chủ nhật', 'CN')}</div>
                         <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2 }}>{d.format('DD')}</div>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2, height: 5 }}>{list.slice(0, 3).map((x) => <span key={x.key} style={{ width: 5, height: 5, borderRadius: 999, background: on ? '#fff' : x.color }} />)}</div>
@@ -115,7 +115,7 @@ export default function MySchedule() {
                     );
                   })}
                 </div>
-                <WeekCalendar weekStart={weekStart.add(dayIdx, 'day')} dayCount={1} events={events} hourFrom={6} hourTo={22} hourHeight={52} />
+                <WeekCalendar weekStart={weekStart.add(dayIdx, 'day')} dayCount={1} events={events} hourFrom={6} hourTo={22} hourHeight={56} minHours={10} />
               </div>
             ) : (
               <div>

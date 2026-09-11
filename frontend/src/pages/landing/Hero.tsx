@@ -80,37 +80,40 @@ export function Showcase() {
   );
 }
 
-/** Mockup trang chủ thành viên, dựng bằng HTML/CSS thuần (không dùng ảnh). */
+/** Mockup trang chủ thành viên — dựng theo đúng bố cục/màu của app (sidebar mực, logo vàng chanh, nền giấy). */
 function Mockup() {
   const week = [
-    { d: 'T2', items: [['06:30', 'Gym cơ bản', '#0f4d34']] },
+    { d: 'T2', items: [['06:30', 'Gym cơ bản K12', '#0f4d34']] },
     { d: 'T3', items: [] },
-    { d: 'T4', items: [['06:30', 'Gym cơ bản', '#0f4d34'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
+    { d: 'T4', items: [['06:30', 'Gym cơ bản K12', '#0f4d34'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
     { d: 'T5', items: [['19:00', 'Yoga tối', '#7c5cbf']] },
-    { d: 'T6', items: [['06:30', 'Gym cơ bản', '#0f4d34'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
+    { d: 'T6', items: [['06:30', 'Gym cơ bản K12', '#0f4d34'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
     { d: 'T7', items: [['09:00', 'Bơi tự do', '#0891b2']] },
     { d: 'CN', items: [] },
   ];
+  const nav = [['Trang chủ', true], ['Gói thành viên', false], ['Lớp học', false], ['Đặt sân', false], ['Lịch tập của tôi', false], ['Kết quả & tiến độ', false]] as const;
   const hours = Array.from({ length: 16 }, (_, i) => String(6 + i).padStart(2, '0'));
   const today = (dayjs().day() + 6) % 7; // 0 = Thứ Hai
   return (
     <div className="lp-mock">
-      <div className="lp-mock-bar"><i /><i /><i /><span>sportscenter.vn / member</span></div>
       <div className="lp-mock-body">
         <aside className="lp-mock-side">
-          <div className="lp-mock-logo" />
-          {[1, 2, 3, 4, 5, 6].map((i) => <div key={i} className={`lp-mock-nav ${i === 1 ? 'on' : ''}`} />)}
+          <div className="lp-mock-brand"><i /><div><b>Sports Center</b><small>Management System</small></div></div>
+          <div className="lp-mock-role"><i />Thành viên<span>{dayjs().format('dd, DD/MM')}</span></div>
+          {nav.map(([label, on]) => <div key={label} className={`lp-mock-nav ${on ? 'on' : ''}`}><i /><span>{label}</span></div>)}
+          <div className="lp-mock-user"><i>HD</i><div><b>Hoàng Thị Dung</b><small>member.dung@gmail.com</small></div></div>
         </aside>
         <div className="lp-mock-main">
-          <div className="lp-mock-head"><b>Xin chào, Dũng</b><span style={{ textTransform: 'capitalize' }}>{dayjs().format('dddd, DD/MM/YYYY')}</span></div>
+          <div className="lp-mock-top"><span className="lp-mock-search">Tìm thành viên, lớp học, hóa đơn…<kbd>Ctrl K</kbd></span><span className="lp-mock-bell" /><span className="lp-mock-me"><i>HD</i>Hoàng Thị Dung</span></div>
+          <div className="lp-mock-head"><b>Xin chào, Dung 👋</b><span style={{ textTransform: 'capitalize' }}>{dayjs().format('dddd, DD/MM/YYYY')}</span></div>
           <div className="lp-mock-stats">
             {[['Gói của bạn', 'All-access 3 tháng', '#0f4d34', 'Còn 47 ngày · giảm 25% sân'], ['Buổi tập tháng này', '12', '#16a34a', '+3 so với tháng trước'], ['Kỷ lục mới', 'Squat 40 kg', '#7c5cbf', 'Tuần trước: 37,5 kg'], ['Sân đã đặt', 'Tối nay 18:00', '#c94a1e', 'Sân cầu lông 2 · 2 giờ']].map(([t, v, c, h]) => (
-              <div key={t} className="lp-mock-stat"><i style={{ background: c }} /><div><small>{t}</small><b>{v}</b><em>{h}</em></div></div>
+              <div key={t} className="lp-mock-stat"><i style={{ background: `color-mix(in srgb, ${c} 12%, #fff)`, color: c }} /><div><small>{t}</small><b>{v}</b><em>{h}</em></div></div>
             ))}
           </div>
           <div className="lp-mock-row">
             <div className="lp-mock-card">
-              <small>Lịch tuần của bạn</small>
+              <div className="lp-mock-card-h">Lịch tập tuần này<span>Xem lịch đầy đủ →</span></div>
               <div className="lp-mock-week">
                 {week.map((w, i) => (
                   <motion.div key={w.d} className={`lp-mock-day ${i === today ? 'today' : ''}`} initial={{ opacity: 0, y: 10 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 + i * 0.06, ease: EASE }}>
@@ -121,7 +124,7 @@ function Mockup() {
               </div>
             </div>
             <div className="lp-mock-card">
-              <small>Đặt sân nhanh — Sân cầu lông 1 · hôm nay</small>
+              <div className="lp-mock-card-h">Đặt sân nhanh<span>Sân cầu lông 1 · hôm nay</span></div>
               <div className="lp-mock-slots">
                 {hours.map((h, i) => (
                   <motion.b key={h} className={[2, 3, 7, 12, 13].includes(i) ? 'bk' : [8, 9].includes(i) ? 'cl' : ''} initial={{ opacity: 0, scale: 0.6 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ delay: 0.5 + i * 0.03 }}>{h}</motion.b>

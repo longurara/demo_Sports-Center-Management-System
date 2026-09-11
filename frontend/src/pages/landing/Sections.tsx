@@ -33,7 +33,7 @@ export function Stats() {
 }
 
 /* ===== Đoạn văn "sáng dần" theo cuộn ===== */
-const MANIFESTO = 'Bốn sân cầu lông, hai sân tennis, hai sân pickleball, sân bóng rổ, sân bóng đá mini, hồ bơi và bốn phòng tập — tất cả đặt được online. Lịch sân cập nhật theo thời gian thực, nên không có chuyện đến nơi mới biết sân đã có người.';
+const MANIFESTO = 'Không chỉ là một phòng gym. Là nơi bạn ghé sau giờ làm để đánh một trận cầu lông, sáng cuối tuần để bơi vài vòng, và tối thứ Ba để kịp lớp yoga. Mọi môn bạn thích — dưới một mái nhà.';
 
 export function Manifesto() {
   const ref = useRef<HTMLDivElement>(null);
