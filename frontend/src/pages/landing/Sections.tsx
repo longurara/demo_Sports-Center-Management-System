@@ -70,8 +70,8 @@ export function Sports() {
     <section className="lp-section" id="sports">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Bộ môn</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Có gì ở đây</h2></Reveal>
-        <Reveal delay={0.1}><p className="lp-sub">Phòng tập học theo lớp với HLV; sân thì thuê theo giờ, tự đặt online. Rê chuột vào từng môn để xem số sân, lớp và HLV.</p></Reveal>
+        <Reveal delay={0.05}><h2 className="lp-h2">Chọn môn của bạn. <span className="lp-em">Hoặc thử hết.</span></h2></Reveal>
+        <Reveal delay={0.1}><p className="lp-sub">Từ gym đến bơi, từ cầu lông đến pickleball — 10 bộ môn, mỗi môn có sân riêng, HLV riêng và lịch riêng. Một thẻ thành viên là chơi được tất cả.</p></Reveal>
         <Stagger className="lp-bento" amount={0.1}>
           {initialData.sports.map((s, i) => <Item key={s.id} className={`lp-bento-cell ${SPAN[s.id] ?? ''}`}><SportCard sport={s} index={i} /></Item>)}
         </Stagger>
