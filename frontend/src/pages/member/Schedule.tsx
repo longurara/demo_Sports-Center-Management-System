@@ -1,5 +1,5 @@
 import { useMemo, useState, type ReactNode } from 'react';
-import { Button, Card, Col, Empty, Row, Segmented, Space, Tag } from 'antd';
+import { Button, Card, Col, Empty, Grid, Row, Segmented, Space, Tag } from 'antd';
 import { CalendarOutlined, CheckCircleFilled, ClockCircleOutlined, CloseCircleFilled, EnvironmentOutlined, FieldTimeOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -18,8 +18,12 @@ export default function MySchedule() {
   const navigate = useNavigate();
   const me = currentUser!.id;
   const [weekStart, setWeekStart] = useState(monday());
-  const [view, setView] = useState<'week' | 'list'>('week');
+  const screens = Grid.useBreakpoint();
+  const isMobile = screens.md === false;
+  const [view, setView] = useState<'week' | 'day' | 'list'>('week');
+  const [dayIdx, setDayIdx] = useState((dayjs().day() + 6) % 7); // ngày đang chọn ở chế độ 1 ngày (mobile)
   const today = dayjs().format('YYYY-MM-DD');
+  const effView = isMobile && view === 'week' ? 'day' : view; // mobile không dùng lưới 7 cột
 
   const enrolled = data.enrollments.filter((e) => e.memberId === me && e.status === 'ACTIVE').map((e) => data.classes.find((c) => c.id === e.classId)!).filter((c) => c && c.status === 'OPEN');
 
@@ -82,39 +86,61 @@ export default function MySchedule() {
   return (
     <Page title="Lịch tập của tôi" subtitle={`${enrolled.length} lớp đang theo · tuần ${weekStart.format('DD/MM')} – ${weekStart.add(6, 'day').format('DD/MM/YYYY')}`} noCard
       extra={<Space>
-        <Segmented value={view} onChange={(v) => setView(v as typeof view)} options={[{ value: 'week', label: 'Lịch tuần' }, { value: 'list', label: 'Danh sách' }]} />
-        <Button icon={<LeftOutlined />} onClick={() => setWeekStart(weekStart.subtract(7, 'day'))} />
-        <Button type={isThisWeek ? 'primary' : 'default'} onClick={() => setWeekStart(monday())}>Tuần này</Button>
-        <Button icon={<RightOutlined />} onClick={() => setWeekStart(weekStart.add(7, 'day'))} />
+        <Segmented value={effView} onChange={(v) => setView(v as typeof view)} options={isMobile ? [{ value: 'day', label: 'Theo ngày' }, { value: 'list', label: 'Danh sách' }] : [{ value: 'week', label: 'Lịch tuần' }, { value: 'list', label: 'Danh sách' }]} />
+        <Space.Compact>
+          <Button icon={<LeftOutlined />} onClick={() => setWeekStart(weekStart.subtract(7, 'day'))} />
+          <Button type={isThisWeek ? 'primary' : 'default'} onClick={() => setWeekStart(monday())}>Tuần này</Button>
+          <Button icon={<RightOutlined />} onClick={() => setWeekStart(weekStart.add(7, 'day'))} />
+        </Space.Compact>
       </Space>}>
       <Row gutter={[16, 16]}>
         <Col xs={24} xxl={17}>
-          <Card size="small" styles={{ body: { padding: view === 'week' ? '4px 8px 8px' : 16 } }}>
+          <Card size="small" styles={{ body: { padding: effView !== 'list' ? '4px 8px 8px' : 16 } }}>
             {items.length === 0 && enrolled.length === 0 ? (
               <Empty description="Bạn chưa đăng ký lớp nào" style={{ padding: 40 }}><Button type="primary" onClick={() => navigate('/member/classes')}>Xem lớp học</Button></Empty>
-            ) : view === 'week' ? (
+            ) : effView === 'week' ? (
               <WeekCalendar weekStart={weekStart} events={events} hourFrom={6} hourTo={22} hourHeight={44} />
+            ) : effView === 'day' ? (
+              <div>
+                {/* Dải chọn ngày trong tuần */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4, padding: '8px 0 4px' }}>
+                  {dayGroups.map(({ d, ds, list }, i) => {
+                    const on = i === dayIdx;
+                    return (
+                      <div key={ds} onClick={() => setDayIdx(i)} style={{ textAlign: 'center', padding: '6px 0', borderRadius: 10, cursor: 'pointer', background: on ? '#2563eb' : ds === today ? '#eaf1ff' : '#f4f6fb', color: on ? '#fff' : '#0f172a' }}>
+                        <div style={{ fontSize: 10, opacity: .75 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()].replace('Thứ ', 'T').replace('Chủ nhật', 'CN')}</div>
+                        <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2 }}>{d.format('DD')}</div>
+                        <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2, height: 5 }}>{list.slice(0, 3).map((x) => <span key={x.key} style={{ width: 5, height: 5, borderRadius: 999, background: on ? '#fff' : x.color }} />)}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <WeekCalendar weekStart={weekStart.add(dayIdx, 'day')} dayCount={1} events={events} hourFrom={6} hourTo={22} hourHeight={52} />
+              </div>
             ) : (
               <div>
                 {dayGroups.map(({ d, ds, list }) => (
-                  <div key={ds} style={{ display: 'grid', gridTemplateColumns: '90px 1fr', gap: 12, padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                  <div key={ds} style={{ display: 'grid', gridTemplateColumns: isMobile ? '52px 1fr' : '90px 1fr', gap: isMobile ? 8 : 12, padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
                     <div style={{ textAlign: 'center', paddingTop: 4 }}>
-                      <div style={{ fontSize: 11, color: ds === today ? '#2563eb' : '#94a3b8', fontWeight: 600 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()]}</div>
+                      <div style={{ fontSize: 11, color: ds === today ? '#2563eb' : '#94a3b8', fontWeight: 600 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()].replace('Chủ nhật', 'CN')}</div>
                       <div style={{ fontSize: 22, fontWeight: 700, color: ds === today ? '#2563eb' : '#0f172a', lineHeight: 1.1 }}>{d.format('DD')}</div>
-                      <div style={{ fontSize: 11, color: '#94a3b8' }}>{d.format('MM/YYYY')}</div>
+                      <div style={{ fontSize: 11, color: '#94a3b8' }}>{d.format(isMobile ? 'MM' : 'MM/YYYY')}</div>
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
                       {list.length === 0 && <div style={{ color: '#cbd5e1', fontSize: 13, paddingTop: 10 }}>Nghỉ</div>}
                       {list.map((it) => (
-                        <div key={it.key} className="sc-hover-row" onClick={() => navigate(it.kind === 'CLASS' ? `/member/classes/${it.classId}` : '/member/courts')} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, border: '1px solid #eef1f6', borderLeft: `4px solid ${it.color}`, cursor: 'pointer', background: '#fff' }}>
-                          <div style={{ minWidth: 92, fontWeight: 700, color: it.color, fontSize: 13 }}><ClockCircleOutlined /> {it.start}–{it.end}</div>
-                          <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 600 }}>{it.icon} {it.title} {it.kind === 'COURT' && <Tag color="cyan" style={{ marginLeft: 6 }}>Đặt sân</Tag>}</div>
-                            <div style={{ fontSize: 12, color: '#64748b' }}><EnvironmentOutlined /> {it.room}{it.coachId && <> · <UserOutlined /> HLV {userById(it.coachId)?.fullName}</>}</div>
+                        <div key={it.key} className="sc-hover-row" onClick={() => navigate(it.kind === 'CLASS' ? `/member/classes/${it.classId}` : '/member/courts')}
+                          style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #eef1f6', borderLeft: `4px solid ${it.color}`, cursor: 'pointer', background: '#fff', minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+                            <span style={{ fontWeight: 700, color: it.color, fontSize: 13, whiteSpace: 'nowrap' }}><ClockCircleOutlined /> {it.start}–{it.end}</span>
+                            <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
+                              <SportTag id={it.sportId} size="small" />
+                              {it.att && <StatusTag value={it.att} />}
+                              {it.status && it.kind === 'COURT' && <StatusTag value={it.status} />}
+                            </span>
                           </div>
-                          <SportTag id={it.sportId} size="small" />
-                          {it.att && <StatusTag value={it.att} />}
-                          {it.status && it.kind === 'COURT' && <StatusTag value={it.status} />}
+                          <div style={{ fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.icon} {it.title} {it.kind === 'COURT' && <Tag color="cyan" style={{ marginLeft: 6 }}>Đặt sân</Tag>}</div>
+                          <div style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><EnvironmentOutlined /> {it.room}{it.coachId && <> · <UserOutlined /> HLV {userById(it.coachId)?.fullName}</>}</div>
                         </div>
                       ))}
                     </div>

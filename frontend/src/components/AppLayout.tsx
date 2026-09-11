@@ -67,7 +67,12 @@ export default function AppLayout() {
           <Space size={isMobile ? 0 : 4}>
             {isMobile && <Button type="text" icon={<SearchOutlined style={{ fontSize: 17 }} />} onClick={() => setSearchOpen(true)} />}
             {!isMobile && <Tooltip title="Reset dữ liệu demo"><Button type="text" icon={<ReloadOutlined />} onClick={resetData} /></Tooltip>}
-            <Popover placement="bottomRight" trigger="click" arrow={false} styles={{ container: { width: isMobile ? 'calc(100vw - 16px)' : 360, padding: 0 } }} content={
+            {isMobile ? (
+              <Badge count={unread} size="small" offset={[-4, 4]}>
+                <Button type="text" icon={<BellOutlined style={{ fontSize: 17 }} />} onClick={() => navigate(`${base}/notifications`)} />
+              </Badge>
+            ) : (
+            <Popover placement="bottomRight" trigger="click" arrow={false} styles={{ container: { width: 360, padding: 0 } }} content={
               <div>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid #eef1f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <b>Thông báo</b>
@@ -93,6 +98,7 @@ export default function AppLayout() {
                 <Button type="text" icon={<BellOutlined style={{ fontSize: 17 }} />} />
               </Badge>
             </Popover>
+            )}
             <Dropdown
               menu={{
                 items: [
