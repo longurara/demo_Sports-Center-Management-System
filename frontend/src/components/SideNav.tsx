@@ -1,5 +1,5 @@
 import { Avatar, Tooltip } from 'antd';
-import { CloseOutlined, LeftOutlined, LogoutOutlined, RightOutlined, ThunderboltFilled } from '@ant-design/icons';
+import { CloseOutlined, LogoutOutlined, ThunderboltFilled } from '@ant-design/icons';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import { navByRole, type Badge } from '../routes';
@@ -36,9 +36,7 @@ export default function SideNav({ collapsed, onToggle, mobile, onNavigate }: { c
       <div className="sc-nav-brand">
         <div className="sc-nav-logo"><ThunderboltFilled /></div>
         {!collapsed && <div className="sc-nav-brand-text"><div className="t">Sports Center</div><div className="s">Management System</div></div>}
-        {mobile
-          ? <button className="sc-nav-close" onClick={onToggle}><CloseOutlined /></button>
-          : <Tooltip title={collapsed ? 'Mở rộng' : 'Thu gọn'} placement="right"><button className="sc-nav-toggle" onClick={onToggle}>{collapsed ? <RightOutlined /> : <LeftOutlined />}</button></Tooltip>}
+        {mobile && <button className="sc-nav-close" onClick={onToggle}><CloseOutlined /></button>}
       </div>
 
       {/* Role chip */}

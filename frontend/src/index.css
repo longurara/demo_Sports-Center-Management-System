@@ -103,8 +103,6 @@ a { cursor: pointer; }
 .sc-nav-logo { width: 36px; height: 36px; border-radius: 11px; background: linear-gradient(135deg,#2563eb,#f97316); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 18px; flex-shrink: 0; box-shadow: 0 8px 20px rgba(37,99,235,.35); }
 .sc-nav-brand-text .t { color: #fff; font-weight: 700; font-size: 15px; letter-spacing: -.2px; line-height: 1.1; }
 .sc-nav-brand-text .s { color: rgba(255,255,255,.4); font-size: 11px; margin-top: 2px; }
-.sc-nav-toggle { position: absolute; right: -12px; top: 22px; width: 22px; height: 22px; border-radius: 999px; border: 1px solid #e2e8f0; background: #fff; color: #64748b; font-size: 9px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(15,23,42,.15); z-index: 2; transition: all .15s; }
-.sc-nav-toggle:hover { color: #2563eb; border-color: #2563eb; }
 .sc-nav-role { margin: 14px 16px 4px; padding: 8px 12px; border-radius: 10px; background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.06); font-size: 12px; font-weight: 600; color: #e2e8f0; display: flex; align-items: center; gap: 8px; }
 .sc-nav-role .dot { width: 8px; height: 8px; border-radius: 999px; }
 .sc-nav-role .date { margin-left: auto; font-weight: 500; color: rgba(255,255,255,.4); text-transform: capitalize; }
@@ -137,6 +135,16 @@ a { cursor: pointer; }
 .sc-nav-logout { border: none; background: transparent; color: rgba(255,255,255,.45); cursor: pointer; width: 28px; height: 28px; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
 .sc-nav-logout:hover { background: rgba(239,68,68,.15); color: #f87171; }
 .sc-nav.collapsed .sc-nav-user { justify-content: center; padding: 8px; }
+
+/* Header: nút thu gọn + ô tìm kiếm */
+.sc-collapse-btn { width: 36px; height: 36px; border-radius: 10px; border: 1px solid #e6eaf2; background: #fff; color: #475569; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: all .15s; flex-shrink: 0; }
+.sc-collapse-btn:hover { color: #2563eb; border-color: #c7d7fe; background: #f5f8ff; }
+.sc-search-trigger { display: flex; align-items: center; gap: 10px; width: 380px; max-width: 100%; height: 38px; padding: 0 6px 0 14px; border-radius: 12px; border: 1px solid #e6eaf2; background: #fff; color: #94a3b8; font: inherit; font-size: 13px; cursor: pointer; text-align: left; transition: all .15s; box-shadow: 0 1px 2px rgba(15,23,42,.03); }
+.sc-search-trigger:hover { border-color: #b9ccfb; box-shadow: 0 0 0 3px rgba(37,99,235,.10); color: #64748b; }
+.sc-search-trigger .ico { font-size: 15px; color: #64748b; }
+.sc-search-trigger .ph { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sc-search-trigger .keys { display: inline-flex; gap: 4px; }
+.sc-search-trigger kbd { font-family: inherit; font-size: 11px; font-weight: 600; color: #64748b; background: #f4f6fb; border: 1px solid #e2e8f0; border-bottom-width: 2px; border-radius: 6px; padding: 1px 6px; line-height: 16px; }
 
 /* ===== Mobile ===== */
 .sc-nav.mobile { width: 100%; height: 100%; position: relative; }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Avatar, Badge, Button, Drawer, Dropdown, Grid, Layout, Popover, Space, Tooltip } from 'antd';
-import { AppstoreOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ReloadOutlined, SearchOutlined, ThunderboltFilled, UserOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, ReloadOutlined, SearchOutlined, ThunderboltFilled, UserOutlined } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { flatNav, mobileTabs } from '../routes';
 import dayjs from 'dayjs';
@@ -59,9 +59,15 @@ export default function AppLayout() {
               </Link>
             </div>
           ) : (
-            <div onClick={() => setSearchOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f4f6fb', borderRadius: 10, padding: '7px 12px', width: 320, color: '#94a3b8', fontSize: 13, cursor: 'pointer', border: '1px solid transparent' }}
-              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#dbe6ff')} onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}>
-              <SearchOutlined /> Tìm thành viên, lớp, hóa đơn… <span style={{ marginLeft: 'auto', fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 6, padding: '0 6px', background: '#fff' }}>Ctrl K</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+              <Tooltip title={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'} placement="bottom">
+                <button className="sc-collapse-btn" onClick={() => setCollapsed((c) => !c)}>{collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}</button>
+              </Tooltip>
+              <button className="sc-search-trigger" onClick={() => setSearchOpen(true)}>
+                <SearchOutlined className="ico" />
+                <span className="ph">Tìm thành viên, lớp học, hóa đơn…</span>
+                <span className="keys"><kbd>Ctrl</kbd><kbd>K</kbd></span>
+              </button>
             </div>
           )}
           <Space size={isMobile ? 0 : 4}>
