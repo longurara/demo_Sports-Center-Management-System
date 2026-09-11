@@ -5,7 +5,7 @@ import { ArrowRightOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { initialData } from '../../mock/data';
 import fallbackImg from '../../assets/sports/badminton.jpg';
-import { EASE, Marquee, Reveal, SplitWords } from './ui';
+import { EASE, Magnetic, Marquee, Reveal, SplitWords } from './ui';
 
 // Ảnh hero tùy chọn: thả file `src/assets/hero-gym.jpg|png|webp` vào là tự dùng, không có thì lấy ảnh cầu lông.
 const custom = import.meta.glob<string>('../../assets/hero-gym.{jpg,jpeg,png,webp}', { eager: true, import: 'default' });
@@ -20,12 +20,17 @@ export default function Hero() {
   const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '18%']);
   const textY = useTransform(scrollYProgress, [0, 1], [0, -120]);
   const textOpacity = useTransform(scrollYProgress, [0, 0.6], [1, 0]);
+  // Hero được "ghim" lại, phần sau cuộn đè lên: hero thu nhỏ, bo góc và tối dần như một tấm card lùi ra sau.
+  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
+  const heroRadius = useTransform(scrollYProgress, [0, 1], [0, 32]);
+  const heroDim = useTransform(scrollYProgress, [0, 1], [0, 0.55]);
 
   return (
-    <>
-      <section ref={ref} className="lp-hero">
-        <motion.img className="lp-hero-img" src={heroImg} alt="" style={{ y: imgY }} initial={{ scale: 1.08 }} animate={{ scale: 1 }} transition={{ duration: 1.6, ease: EASE }} />
+    <motion.section ref={ref} className="lp-hero" style={{ scale: heroScale, borderRadius: heroRadius }}>
+        <motion.img className="lp-hero-img" src={heroImg} alt="" style={{ y: imgY }} initial={{ scale: 1.12 }} animate={{ scale: 1 }} transition={{ duration: 2.2, ease: EASE }} />
         <div className="lp-hero-shade" />
+        <div className="lp-grain" />
+        <motion.div className="lp-hero-dim" style={{ opacity: heroDim }} />
         <motion.div className="lp-container lp-hero-content" style={{ y: textY, opacity: textOpacity }}>
           <motion.p className="lp-kicker" initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.7, ease: EASE }}><i /> Trung tâm thể thao đa môn · Mở cửa 06:00 – 22:00, 7 ngày/tuần</motion.p>
           <SplitWords className="lp-h1" text="Chơi hết mình, mỗi ngày." delay={0.15} />
@@ -33,8 +38,8 @@ export default function Hero() {
             Gym, yoga, bơi, boxing, cầu lông, tennis, pickleball, bóng rổ, bóng đá — 10 bộ môn dưới một mái nhà. Buổi đầu tiên miễn phí, đặt sân online chỉ mất 30 giây.
           </motion.p>
           <motion.div className="lp-hero-actions" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.85, ease: EASE }}>
-            <Link to="/register" className="lp-btn lp-btn-primary lg">Đăng ký tập thử miễn phí <ArrowRightOutlined /></Link>
-            <Link to="/login" className="lp-btn lp-btn-ghost light lg">Đặt sân</Link>
+            <Magnetic><Link to="/register" className="lp-btn lp-btn-primary lg">Đăng ký tập thử miễn phí <ArrowRightOutlined /></Link></Magnetic>
+            <Magnetic strength={0.18}><Link to="/login" className="lp-btn lp-btn-ghost light lg">Đặt sân</Link></Magnetic>
           </motion.div>
         </motion.div>
         <motion.div className="lp-hero-facts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1.1 }}>
@@ -44,13 +49,18 @@ export default function Hero() {
             <div className="lp-fact"><b>Ưu đãi tháng {dayjs().format('M')}</b>Mua gói All-access 1 năm tặng thêm 1 tháng và 2 buổi PT</div>
           </div>
         </motion.div>
-      </section>
-      <div className="lp-ticker">
-        <Marquee speed={40}>
-          {SPORTS.map((s) => <span key={s.id} className="lp-marquee-item">{s.name}<i /></span>)}
-        </Marquee>
-      </div>
-    </>
+    </motion.section>
+  );
+}
+
+/** Dải tên bộ môn chạy ngang, nằm ngay dưới hero. */
+export function Ticker() {
+  return (
+    <div className="lp-ticker">
+      <Marquee speed={40}>
+        {SPORTS.map((s) => <span key={s.id} className="lp-marquee-item">{s.name}<i /></span>)}
+      </Marquee>
+    </div>
   );
 }
 
@@ -63,10 +73,11 @@ export function Showcase() {
   const opacity = useTransform(scrollYProgress, [0, 0.4], [0, 1]);
   return (
     <section className="lp-showcase">
+      <div className="lp-grain" />
       <div className="lp-container lp-showcase-head">
         <div>
           <Reveal><span className="lp-eyebrow light">Tài khoản thành viên</span></Reveal>
-          <Reveal delay={0.05}><h2 className="lp-h2 light">Mọi thứ <span className="lp-em">trong điện thoại của bạn.</span></h2></Reveal>
+          <SplitWords as="h2" onView className="lp-h2 light" text="Mọi thứ trong điện thoại của bạn." em="trong điện thoại của bạn." />
         </div>
         <Reveal delay={0.1}>
           <p>Đặt sân lúc 11 giờ đêm cho sáng mai. Xem còn bao nhiêu ngày gói. Biết hôm nay có lớp gì, HLV nào, phòng nào. Không cần gọi điện hỏi.</p>

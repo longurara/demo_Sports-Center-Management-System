@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
-import { Reveal } from './ui';
+import { Reveal, SplitWords } from './ui';
 
 const BENEFITS = [
   { key: 'court', tag: 'Sân', title: 'Đặt sân online, giảm tới 40%',
@@ -26,6 +26,7 @@ export default function Benefits() {
   const [dist, setDist] = useState(0);
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start start', 'end end'] });
   const x = useTransform(scrollYProgress, [0, 1], [0, -dist]);
+  const bgX = useTransform(scrollYProgress, [0, 1], ['10%', '-60%']); // chữ nền khổng lồ trôi chậm hơn track
   const progress = useTransform(scrollYProgress, [0, 1], ['0%', '100%']);
 
   useEffect(() => {
@@ -38,9 +39,11 @@ export default function Benefits() {
   return (
     <section ref={ref} className="lp-roles" id="benefits">
       <div className="lp-roles-sticky">
+        <div className="lp-grain" />
+        <motion.div className="lp-roles-bg" style={{ x: bgX }} aria-hidden>THÀNH VIÊN</motion.div>
         <div className="lp-container lp-roles-head">
           <Reveal><span className="lp-eyebrow light">Quyền lợi thành viên</span></Reveal>
-          <Reveal delay={0.05}><h2 className="lp-h2 light">Bạn nhận được gì <span className="lp-em">khi có gói.</span></h2></Reveal>
+          <SplitWords as="h2" onView className="lp-h2 light" text="Bạn nhận được gì khi có gói." em="khi có gói." />
           <div className="lp-roles-progress"><motion.i style={{ width: progress }} /></div>
         </div>
         <motion.div ref={trackRef} className="lp-roles-track" style={{ x }}>

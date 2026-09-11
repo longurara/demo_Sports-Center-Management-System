@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform, type MotionValue } from 'motion/react';
 import { initialData } from '../../mock/data';
-import { Counter, Item, Reveal, Stagger } from './ui';
+import { Counter, Item, Reveal, SplitWords, Stagger, useHoverParallax } from './ui';
 import { SPORT_IMAGES } from './sportImages';
 import poolImg from '../../assets/sports/swim.jpg';
 
@@ -70,7 +70,7 @@ export function Sports() {
     <section className="lp-section" id="sports">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Bộ môn</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Chọn môn của bạn. <span className="lp-em">Hoặc thử hết.</span></h2></Reveal>
+        <SplitWords as="h2" onView className="lp-h2" text="Chọn môn của bạn. Hoặc thử hết." em="Hoặc thử hết." />
         <Reveal delay={0.1}><p className="lp-sub">Từ gym đến bơi, từ cầu lông đến pickleball — 10 bộ môn, mỗi môn có sân riêng, HLV riêng và lịch riêng. Một thẻ thành viên là chơi được tất cả.</p></Reveal>
         <Stagger className="lp-bento" amount={0.1}>
           {initialData.sports.map((s, i) => <Item key={s.id} className={`lp-bento-cell ${SPAN[s.id] ?? ''}`}><SportCard sport={s} index={i} /></Item>)}
@@ -81,13 +81,14 @@ export function Sports() {
 }
 
 function SportCard({ sport, index }: { sport: (typeof initialData.sports)[number]; index: number }) {
+  const px = useHoverParallax(12);
   const rooms = initialData.rooms.filter((r) => r.sportId === sport.id);
   const classes = initialData.classes.filter((c) => c.sportId === sport.id && c.status === 'OPEN').length;
   const coaches = initialData.users.filter((u) => u.role === 'COACH' && u.sportIds?.includes(sport.id)).length;
   const isCourt = rooms[0]?.type === 'COURT';
   return (
-    <div className="lp-sport">
-      <img className="lp-sport-img" src={SPORT_IMAGES[sport.id]} alt={sport.name} loading="lazy" />
+    <div className="lp-sport" onMouseMove={px.onMouseMove} onMouseLeave={px.onMouseLeave}>
+      <motion.img className="lp-sport-img" src={SPORT_IMAGES[sport.id]} alt={sport.name} loading="lazy" style={{ x: px.x, y: px.y }} />
       <div className="lp-sport-shade" />
       <span className="lp-sport-idx">{String(index + 1).padStart(2, '0')}</span>
       {rooms.length > 0 && <span className="lp-sport-type">{isCourt ? 'Thuê theo giờ' : 'Theo lớp'}</span>}

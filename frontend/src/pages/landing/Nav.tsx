@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from 'motion/react';
 import { CloseOutlined, MenuOutlined, ThunderboltFilled } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
@@ -19,6 +19,17 @@ export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
+  const [current, setCurrent] = useState('');
+
+  // Đánh dấu mục nav theo section đang ở giữa màn hình.
+  useEffect(() => {
+    const els = LINKS.map((l) => document.querySelector(l.href)).filter(Boolean) as Element[];
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => { if (en.isIntersecting) setCurrent('#' + en.target.id); });
+    }, { rootMargin: '-45% 0px -50% 0px' });
+    els.forEach((el) => io.observe(el));
+    return () => io.disconnect();
+  }, []);
 
   // Header trong suốt ở đầu trang → nền tối khi cuộn; ẩn khi cuộn xuống, hiện lại khi cuộn lên.
   useMotionValueEvent(scrollY, 'change', (y) => {
@@ -35,7 +46,7 @@ export default function Nav() {
         <div className="lp-container lp-nav-inner">
           <Link to="/" className="lp-brand"><span className="lp-brand-logo"><ThunderboltFilled /></span>Sports Center</Link>
           <nav className="lp-nav-links">
-            {LINKS.map((l) => <a key={l.href} href={l.href}>{l.label}</a>)}
+            {LINKS.map((l) => <a key={l.href} href={l.href} className={current === l.href ? 'on' : ''}>{l.label}</a>)}
           </nav>
           <div className="lp-nav-cta">
             {dashboard

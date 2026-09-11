@@ -4,7 +4,7 @@ import { ArrowRightOutlined, CheckOutlined, ThunderboltFilled } from '@ant-desig
 import { Link } from 'react-router-dom';
 import { initialData } from '../../mock/data';
 import ctaImg from '../../assets/sports/tennis.jpg';
-import { Item, Reveal, Stagger } from './ui';
+import { Item, Magnetic, Reveal, SplitWords, Stagger } from './ui';
 
 /* ===== Bảng giá ===== */
 const FEATURED = ['p1', 'p3', 'p5'];
@@ -24,7 +24,7 @@ export function Pricing() {
     <section className="lp-section" id="pricing">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Bảng giá</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Gói theo môn hoặc <span className="lp-em">All-access</span></h2></Reveal>
+        <SplitWords as="h2" onView className="lp-h2" text="Gói theo môn hoặc All-access" em="All-access" />
         <Reveal delay={0.1}><p className="lp-sub">Không có gói vẫn thuê sân được — từ {money(minRate)}/giờ. Có gói thì được giảm giá sân, mức giảm tăng theo thời hạn gói.</p></Reveal>
         <Stagger className="lp-pricing">
           {plans.map((p) => (
@@ -64,7 +64,7 @@ export function Info() {
     <section className="lp-section lp-info" id="info">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Giờ mở cửa & liên hệ</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Mở cửa từ 6 giờ sáng</h2></Reveal>
+        <SplitWords as="h2" onView className="lp-h2" text="Mở cửa từ 6 giờ sáng" />
         <div className="lp-info-grid">
           <Stagger className="lp-hours">
             {HOURS.map((h) => <Item key={h.n} className="lp-hours-row"><b>{h.n}</b><span>{h.t}</span><em>{h.d}</em></Item>)}
@@ -95,13 +95,14 @@ export function Cta() {
     <section ref={ref} className="lp-cta-wrap">
       <motion.div className="lp-cta" style={{ scale, borderRadius: radius }}>
         <motion.img className="lp-cta-img" src={ctaImg} alt="" style={{ y: imgY }} />
+        <div className="lp-grain" />
         <div className="lp-container">
-          <Reveal><h2 className="lp-cta-title">Tối nay <span className="lp-em">sân còn trống?</span></h2></Reveal>
+          <SplitWords as="h2" onView className="lp-cta-title" text="Tối nay sân còn trống?" em="sân còn trống?" />
           <Reveal delay={0.1}><p className="lp-lead">Đăng nhập, chọn sân, chọn giờ. Hệ thống báo ngay nếu trùng lớp hoặc đã có người đặt.</p></Reveal>
           <Reveal delay={0.2}>
             <div className="lp-hero-actions">
-              <Link to="/login" className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link>
-              <Link to="/register" className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link>
+              <Magnetic><Link to="/login" className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link></Magnetic>
+              <Magnetic strength={0.18}><Link to="/register" className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link></Magnetic>
             </div>
           </Reveal>
         </div>
@@ -129,6 +130,7 @@ export function Footer() {
         ))}
       </div>
       <div className="lp-container lp-footer-bottom"><span>© 2026 Sports Center Management System</span><span>SWP391 · FA26</span></div>
+      <div className="lp-footer-mark" aria-hidden>Sports Center</div>
     </footer>
   );
 }
