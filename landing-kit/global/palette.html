@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sports Center — Bảng màu & font</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  :root { --ink: #14130f; --paper: #f2efe8; --line: #e2ddd2; --mute: #7a776f; --green: #0f4d34; --lime: #d6f24b; --clay: #c94a1e; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: 'Barlow', system-ui, sans-serif; font-size: 15px; line-height: 1.5; }
+  .wrap { max-width: 1100px; margin: 0 auto; padding: 48px 24px 80px; }
+  h1 { font-family: 'Barlow Condensed', sans-serif; font-size: 56px; font-weight: 800; text-transform: uppercase; line-height: .95; margin: 0 0 8px; }
+  h1 em { font-style: normal; color: var(--clay); }
+  .lead { color: var(--mute); max-width: 60ch; margin: 0 0 40px; }
+  h2 { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--mute); margin: 44px 0 14px; display: flex; align-items: center; gap: 10px; }
+  h2::before { content: ''; width: 10px; height: 10px; background: var(--clay); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+  .sw { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; cursor: pointer; transition: transform .2s; }
+  .sw:hover { transform: translateY(-2px); }
+  .sw .c { height: 84px; display: flex; align-items: flex-end; padding: 8px 10px; font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; }
+  .sw .m { padding: 10px 12px; }
+  .sw .m b { display: block; font-size: 14px; }
+  .sw .m code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; color: var(--ink); }
+  .sw .m small { display: block; color: var(--mute); font-size: 12.5px; margin-top: 4px; line-height: 1.35; }
+  .sw .c.dark { color: #fff; } .sw .c.light { color: var(--ink); }
+  .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .chip { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; background: #fff; font-size: 13.5px; }
+  .chip i { width: 22px; height: 22px; border-radius: 6px; flex-shrink: 0; }
+  .chip code { margin-left: auto; font-size: 12px; color: var(--mute); font-family: ui-monospace, Menlo, Consolas, monospace; }
+  .fonts { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .font { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 20px; }
+  .font .big { font-family: 'Barlow Condensed', sans-serif; font-size: 44px; font-weight: 800; text-transform: uppercase; line-height: 1; margin: 6px 0 10px; }
+  .font .body { font-size: 16px; }
+  .font small { color: var(--mute); display: block; font-size: 12.5px; }
+  .demo { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .panel { border-radius: 10px; padding: 24px; }
+  .panel.ink { background: var(--ink); color: #fff; } .panel.paper { background: #fff; border: 1px solid var(--line); }
+  .btn { display: inline-block; padding: 12px 20px; border-radius: 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800; text-transform: uppercase; letter-spacing: .03em; margin-right: 8px; }
+  .btn.lime { background: var(--lime); color: var(--ink); } .btn.green { background: var(--green); color: #fff; } .btn.ghost { border: 1.5px solid currentColor; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--ink); color: #fff; padding: 8px 14px; border-radius: 6px; font-size: 13px; opacity: 0; transition: all .25s; pointer-events: none; }
+  .toast.on { opacity: 1; transform: translateX(-50%); }
+  @media (max-width: 720px) { h1 { font-size: 40px; } .fonts, .demo { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Sports Center<br /><em>Bảng màu & font</em></h1>
+  <p class="lead">Hệ màu dùng chung cho landing page, trang đăng nhập/đăng ký và app quản lý. Bấm vào ô màu để copy mã hex. Nguồn: <code>src/theme.ts</code>, <code>src/index.css</code>, <code>src/pages/landing/landing.css</code>.</p>
+
+  <h2>Màu chính</h2>
+  <div class="grid" id="core"></div>
+
+  <h2>Chữ, viền, nền</h2>
+  <div class="grid" id="neutral"></div>
+
+  <h2>Trạng thái</h2>
+  <div class="grid" id="status"></div>
+
+  <h2>Vai trò (phân loại)</h2>
+  <div class="row" id="roles"></div>
+
+  <h2>Bộ môn (phân loại, giữ trong mock data)</h2>
+  <div class="row" id="sports"></div>
+
+  <h2>Font</h2>
+  <div class="fonts">
+    <div class="font"><small>Display — Barlow Condensed 600 / 700 / 800</small><div class="big">Chơi hết mình, mỗi ngày.</div><small>Tiêu đề, số liệu, nút CTA lớn, header bảng — luôn in hoa.</small></div>
+    <div class="font"><small>Body — Barlow 400 / 500 / 600 / 700</small><div class="body" style="margin:10px 0">Gym, yoga, bơi, boxing, cầu lông, tennis, pickleball, bóng rổ, bóng đá — 10 bộ môn dưới một mái nhà. Buổi đầu tiên miễn phí.</div><small>Nội dung, nhãn, bảng. Inter chỉ còn dùng trong hóa đơn A4.</small></div>
+  </div>
+
+  <h2>Kết hợp</h2>
+  <div class="demo">
+    <div class="panel ink"><div style="font-family:'Barlow Condensed';font-size:13px;letter-spacing:.12em;color:var(--lime);font-weight:700">TRÊN NỀN MỰC</div><div style="font-family:'Barlow Condensed';font-size:34px;font-weight:800;text-transform:uppercase;line-height:1;margin:8px 0 14px">Sân đang chờ <span style="color:var(--lime)">bạn.</span></div><span class="btn lime">Đặt sân</span><span class="btn ghost">Xem lịch</span></div>
+    <div class="panel paper"><div style="font-family:'Barlow Condensed';font-size:13px;letter-spacing:.12em;color:var(--mute);font-weight:700">TRÊN NỀN GIẤY / TRẮNG</div><div style="font-family:'Barlow Condensed';font-size:34px;font-weight:800;text-transform:uppercase;line-height:1;margin:8px 0 14px">Chọn môn <span style="color:var(--clay)">của bạn.</span></div><span class="btn green">Đăng ký</span><span class="btn ghost" style="color:var(--ink)">Bảng giá</span></div>
+  </div>
+</div>
+<div class="toast" id="toast">Đã copy</div>
+
+<script>
+  const CORE = [
+    ['Mực · ink', '#14130f', 'Chữ chính, sidebar, nền hero / CTA / footer, nút đen'],
+    ['Giấy · paper', '#f2efe8', 'Nền trang (landing + app)'],
+    ['Giấy đậm · paper2', '#e9e5dc', 'Nền section phụ (giờ mở cửa)'],
+    ['Xanh sân · primary', '#0f4d34', 'Primary antd: nút, link, tab, progress; panel tính năng'],
+    ['Xanh sân đậm', '#0b3b28', 'Nền section quyền lợi, hover primary'],
+    ['Xanh sân nhạt · primarySoft', '#e3efe8', 'Nền icon stat, hàng đang chọn, ô sân trống'],
+    ['Vàng chanh · lime', '#d6f24b', 'Logo, nút CTA chính, icon menu đang chọn, thanh tiến độ'],
+    ['Đất nung · accent', '#c94a1e', 'Chữ nhấn tiêu đề, badge, stat doanh thu'],
+    ['Đất nung nhạt', '#e07a4f', 'Nút trên card tối'],
+    ['Đất nung nền', '#f9e6dd', 'Nền icon accent'],
+  ];
+  const NEUTRAL = [
+    ['Chữ phụ · ink2', '#3d3b35', 'Đoạn văn, nhãn form'],
+    ['Chữ mờ · mute', '#7a776f', 'Ghi chú, caption, header bảng'],
+    ['Chữ rất mờ', '#9a968c', 'Placeholder, hint'],
+    ['Viền · border', '#e2ddd2', 'Viền card, input, kẻ bảng'],
+    ['Viền nhạt · borderSoft', '#ece8df', 'Kẻ trong card, hover row'],
+    ['Nền trắng · surface', '#ffffff', 'Card, input'],
+  ];
+  const STATUS = [['Success', '#16a34a', 'Thành công, có mặt, đang mở'], ['Warning', '#d97706', 'Sắp hết hạn, muộn'], ['Error', '#dc2626', 'Hết hạn, vắng, đã hủy']];
+  const ROLES = [['Quản lý', '#c94a1e'], ['Huấn luyện viên', '#0f4d34'], ['Thành viên', '#0891b2'], ['Lễ tân', '#d9a400'], ['Quản lý (sidebar)', '#e07a4f'], ['HLV (sidebar)', '#5cbf8a'], ['Thành viên (sidebar)', '#38bdf8'], ['Lễ tân (sidebar)', '#eab308']];
+  const SPORTS = [['Gym', '#2563eb'], ['Yoga', '#9333ea'], ['Boxing', '#dc2626'], ['Bơi lội', '#0891b2'], ['Cầu lông', '#16a34a'], ['Tennis', '#ca8a04'], ['Pickleball', '#ea580c'], ['Bóng rổ', '#f97316'], ['Zumba', '#db2777'], ['Bóng đá mini', '#15803d']];
+
+  const lum = (hex) => { const n = parseInt(hex.slice(1), 16); const r = n >> 16 & 255, g = n >> 8 & 255, b = n & 255; return (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255; };
+  const sw = ([name, hex, use]) => `<div class="sw" data-hex="${hex}"><div class="c ${lum(hex) > 0.6 ? 'light' : 'dark'}" style="background:${hex}">${hex}</div><div class="m"><b>${name}</b><code>${hex}</code>${use ? `<small>${use}</small>` : ''}</div></div>`;
+  const chip = ([name, hex]) => `<div class="chip sw" data-hex="${hex}"><i style="background:${hex}"></i>${name}<code>${hex}</code></div>`;
+  document.getElementById('core').innerHTML = CORE.map(sw).join('');
+  document.getElementById('neutral').innerHTML = NEUTRAL.map(sw).join('');
+  document.getElementById('status').innerHTML = STATUS.map(sw).join('');
+  document.getElementById('roles').innerHTML = ROLES.map(chip).join('');
+  document.getElementById('sports').innerHTML = SPORTS.map(chip).join('');
+  const toast = document.getElementById('toast');
+  document.querySelectorAll('.sw').forEach((el) => el.addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(el.dataset.hex); toast.textContent = 'Đã copy ' + el.dataset.hex; toast.classList.add('on'); setTimeout(() => toast.classList.remove('on'), 1200); } catch {}
+  }));
+</script>
+</body>
+</html>

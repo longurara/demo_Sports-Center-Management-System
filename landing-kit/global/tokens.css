@@ -1,0 +1,57 @@
+/* =====================================================================
+   Sports Center — design tokens dùng chung (landing, auth, app)
+   Import 1 lần ở entry (main.tsx): import './styles/tokens.css'
+   ===================================================================== */
+@import url('https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700&family=Barlow+Condensed:wght@600;700;800&display=swap');
+
+:root {
+  /* Màu chính */
+  --sc-ink: #14130f;            /* chữ chính, sidebar, nền tối */
+  --sc-ink2: #3d3b35;           /* chữ phụ */
+  --sc-paper: #f2efe8;          /* nền trang */
+  --sc-paper2: #e9e5dc;         /* nền section phụ */
+  --sc-surface: #ffffff;        /* card, input */
+  --sc-primary: #0f4d34;        /* xanh sân — nút, link, tab */
+  --sc-primary-dark: #0b3b28;
+  --sc-primary-soft: #e3efe8;   /* nền icon, hàng chọn */
+  --sc-lime: #d6f24b;           /* logo, CTA chính, điểm nhấn trên nền tối */
+  --sc-accent: #c94a1e;         /* đất nung — chữ nhấn, badge */
+  --sc-accent-light: #e07a4f;
+  --sc-accent-soft: #f9e6dd;
+
+  /* Chữ mờ, viền */
+  --sc-muted: #7a776f;
+  --sc-muted2: #9a968c;
+  --sc-border: #e2ddd2;
+  --sc-border-soft: #ece8df;
+
+  /* Trạng thái */
+  --sc-success: #16a34a;
+  --sc-warning: #d97706;
+  --sc-error: #dc2626;
+
+  /* Vai trò (phân loại) */
+  --sc-role-manager: #c94a1e;
+  --sc-role-coach: #0f4d34;
+  --sc-role-member: #0891b2;
+  --sc-role-receptionist: #d9a400;
+
+  /* Font */
+  --sc-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --sc-body: 'Barlow', 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Bo góc, bóng */
+  --sc-radius: 8px;
+  --sc-radius-lg: 12px;
+  --sc-shadow: 0 1px 2px rgba(20,19,15,.04), 0 4px 16px rgba(20,19,15,.06);
+  --sc-shadow-lg: 0 6px 24px rgba(20,19,15,.10);
+  --sc-ease: cubic-bezier(.22, 1, .36, 1);
+}
+
+/* Nền & chữ mặc định — bỏ khối này nếu app đã có reset riêng */
+html, body { margin: 0; background: var(--sc-paper); color: var(--sc-ink); -webkit-font-smoothing: antialiased; }
+body { font-family: var(--sc-body); }
+::selection { background: var(--sc-lime); color: var(--sc-ink); }
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: #cfcabd; border-radius: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
