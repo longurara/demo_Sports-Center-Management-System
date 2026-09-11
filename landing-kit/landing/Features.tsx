@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { AnimatePresence, motion, useInView } from 'motion/react';
 import dayjs from 'dayjs';
 import { CheckCircleFilled, RobotOutlined } from '@ant-design/icons';
-import { EASE, Reveal } from './ui';
+import { EASE, Reveal, SplitWords } from './ui';
 
 interface Step { key: string; title: string; desc: string; bullets: string[]; visual: ReactNode }
 
@@ -45,10 +45,11 @@ export default function Features() {
     <section className="lp-section lp-features" id="features">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Cách hoạt động</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Đặt sân, đăng ký lớp, <span className="lp-em">theo dõi tiến độ.</span></h2></Reveal>
+        <SplitWords as="h2" onView className="lp-h2" text="Đặt sân, đăng ký lớp, theo dõi tiến độ." em="theo dõi tiến độ." />
         <Reveal delay={0.1}><p className="lp-sub">Năm việc bạn sẽ làm nhiều nhất — và mỗi việc trông như thế nào trên app. Cuộn để xem.</p></Reveal>
         <div className="lp-feat-layout">
           <div className="lp-feat-steps">
+            <div className="lp-feat-rail"><motion.i animate={{ top: `${(active / (STEPS.length - 1)) * 100}%` }} transition={{ duration: 0.6, ease: EASE }} /></div>
             {STEPS.map((s, i) => <StepBlock key={s.key} step={s} index={i} active={active === i} onActive={setActive} />)}
           </div>
           <div className="lp-feat-sticky">
@@ -73,7 +74,7 @@ function StepBlock({ step, index, active, onActive }: { step: Step; index: numbe
   useEffect(() => { if (inView) onActive(index); }, [inView, index, onActive]);
   return (
     <div ref={ref} className={`lp-feat-step ${active ? 'on' : ''}`}>
-      <div className="lp-feat-num">0{index + 1}</div>
+      <motion.div className="lp-feat-num" animate={{ x: active ? 0 : -6, opacity: active ? 1 : 0.35 }} transition={{ duration: 0.5, ease: EASE }}>0{index + 1}</motion.div>
       <h3>{step.title}</h3>
       <p>{step.desc}</p>
       <ul>{step.bullets.map((b) => <li key={b}>{b}</li>)}</ul>

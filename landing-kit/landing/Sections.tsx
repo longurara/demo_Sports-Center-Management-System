@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import { motion, useScroll, useTransform, type MotionValue } from 'motion/react';
 import { MANIFESTO, SPORTS, STATS, type Sport } from './content';
-import { Counter, Item, Reveal, Stagger } from './ui';
+import { Counter, Item, Reveal, SplitWords, Stagger, useHoverParallax } from './ui';
 
 /* ===== Số liệu đếm lên ===== */
 export function Stats() {
@@ -55,7 +55,7 @@ export function Sports() {
     <section className="lp-section" id="sports">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Bộ môn</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Chọn môn của bạn. <span className="lp-em">Hoặc thử hết.</span></h2></Reveal>
+        <SplitWords as="h2" onView className="lp-h2" text="Chọn môn của bạn. Hoặc thử hết." em="Hoặc thử hết." />
         <Reveal delay={0.1}><p className="lp-sub">Từ gym đến bơi, từ cầu lông đến pickleball — {SPORTS.length} bộ môn, mỗi môn có sân riêng, HLV riêng và lịch riêng. Một thẻ thành viên là chơi được tất cả.</p></Reveal>
         <Stagger className="lp-bento" amount={0.1}>
           {SPORTS.map((s, i) => <Item key={s.id} className={`lp-bento-cell ${s.span ?? ''}`}><SportCard sport={s} index={i} /></Item>)}
@@ -66,10 +66,11 @@ export function Sports() {
 }
 
 function SportCard({ sport, index }: { sport: Sport; index: number }) {
+  const px = useHoverParallax(12);
   const isCourt = sport.kind === 'COURT';
   return (
-    <div className="lp-sport">
-      <img className="lp-sport-img" src={sport.image} alt={sport.name} loading="lazy" />
+    <div className="lp-sport" onMouseMove={px.onMouseMove} onMouseLeave={px.onMouseLeave}>
+      <motion.img className="lp-sport-img" src={sport.image} alt={sport.name} loading="lazy" style={{ x: px.x, y: px.y }} />
       <div className="lp-sport-shade" />
       <span className="lp-sport-idx">{String(index + 1).padStart(2, '0')}</span>
       <span className="lp-sport-type">{isCourt ? 'Thuê theo giờ' : 'Theo lớp'}</span>

@@ -48,8 +48,7 @@ export function SplitWords({ text, className, delay = 0, as: Tag = 'h1', onView 
   const reduce = useReducedMotion();
   const emStart = em ? text.indexOf(em) : -1;
   // vị trí ký tự bắt đầu mỗi chữ → biết chữ nào nằm trong phần nhấn màu
-  let pos = 0;
-  const starts = words.map((w) => { const s = pos; pos += w.length + 1; return s; });
+  const starts = words.reduce<number[]>((acc, _w, i) => [...acc, i === 0 ? 0 : acc[i - 1] + words[i - 1].length + 1], []);
   const anim = onView ? { whileInView: 'show', viewport: { once: true, amount: 0.6 } } : { animate: 'show' };
   return (
     <MTag className={className} initial={reduce ? false : 'hidden'} {...anim} variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: delay } } }} aria-label={text}>

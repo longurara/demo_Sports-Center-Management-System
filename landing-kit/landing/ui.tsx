@@ -1,6 +1,6 @@
 /* eslint-disable react-refresh/only-export-components */
 import { Fragment, useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { animate, motion, useInView, useReducedMotion, type Variants } from 'motion/react';
+import { animate, motion, useInView, useMotionValue, useReducedMotion, useSpring, type Variants } from 'motion/react';
 
 export const EASE = [0.22, 1, 0.36, 1] as const; // easeOutQuint — "cảm giác" mượt kiểu Apple
 
@@ -15,7 +15,7 @@ export function Reveal({ children, delay = 0, y = 28, className, style, once = t
       initial={reduce ? false : { opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once, amount }}
-      transition={{ duration: 0.8, delay, ease: EASE }}
+      transition={{ duration: 0.9, delay, ease: EASE }}
     >
       {children}
     </motion.div>
@@ -24,7 +24,7 @@ export function Reveal({ children, delay = 0, y = 28, className, style, once = t
 
 /** Container stagger: các con dùng `<Item>` sẽ lần lượt hiện. */
 const listVariants: Variants = { hidden: {}, show: { transition: { staggerChildren: 0.08, delayChildren: 0.05 } } };
-const itemVariants: Variants = { hidden: { opacity: 0, y: 24, scale: 0.98 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.7, ease: EASE } } };
+const itemVariants: Variants = { hidden: { opacity: 0, y: 28, scale: 0.985 }, show: { opacity: 1, y: 0, scale: 1, transition: { duration: 0.8, ease: EASE } } };
 
 export function Stagger({ children, className, style, amount = 0.2 }: { children: ReactNode; className?: string; style?: CSSProperties; amount?: number }) {
   return <motion.div className={className} style={style} variants={listVariants} initial="hidden" whileInView="show" viewport={{ once: true, amount }}>{children}</motion.div>;
@@ -33,22 +33,35 @@ export function Item({ children, className, style }: { children: ReactNode; clas
   return <motion.div className={className} style={style} variants={itemVariants}>{children}</motion.div>;
 }
 
-/** Tiêu đề hiện từng chữ (word-by-word) — dùng cho hero / CTA. */
-export function SplitWords({ text, className, delay = 0, as: Tag = 'h1' }: { text: string; className?: string; delay?: number; as?: 'h1' | 'h2' | 'p' }) {
+const wordVariants: Variants = { hidden: { y: '110%' }, show: { y: '0%', transition: { duration: 0.9, ease: EASE } } };
+
+/**
+ * Tiêu đề hiện từng chữ, mỗi chữ trượt lên từ sau "mặt nạ".
+ * `onView` = chỉ chạy khi cuộn tới (dùng cho h2 giữa trang); mặc định chạy ngay khi mount (hero).
+ * Cho phép truyền JSX: chữ trong <em> sẽ giữ class nhấn màu.
+ */
+export function SplitWords({ text, className, delay = 0, as: Tag = 'h1', onView = false, em }: {
+  text: string; className?: string; delay?: number; as?: 'h1' | 'h2' | 'p'; onView?: boolean; em?: string;
+}) {
   const words = text.split(' ');
   const MTag = motion[Tag];
   const reduce = useReducedMotion();
+  const emStart = em ? text.indexOf(em) : -1;
+  // vị trí ký tự bắt đầu mỗi chữ → biết chữ nào nằm trong phần nhấn màu
+  const starts = words.reduce<number[]>((acc, _w, i) => [...acc, i === 0 ? 0 : acc[i - 1] + words[i - 1].length + 1], []);
+  const anim = onView ? { whileInView: 'show', viewport: { once: true, amount: 0.6 } } : { animate: 'show' };
   return (
-    <MTag className={className} initial={reduce ? false : 'hidden'} animate="show" variants={{ hidden: {}, show: { transition: { staggerChildren: 0.045, delayChildren: delay } } }} aria-label={text}>
-      {words.map((w, i) => (
-        <Fragment key={i}>
-          <span className="lp-word" aria-hidden>
-            <motion.span style={{ display: 'inline-block' }} variants={{ hidden: { y: '110%' }, show: { y: '0%', transition: { duration: 0.9, ease: EASE } } }}>
-              {w}
-            </motion.span>
-          </span>{' '}
-        </Fragment>
-      ))}
+    <MTag className={className} initial={reduce ? false : 'hidden'} {...anim} variants={{ hidden: {}, show: { transition: { staggerChildren: 0.05, delayChildren: delay } } }} aria-label={text}>
+      {words.map((w, i) => {
+        const inEm = emStart >= 0 && starts[i] >= emStart && starts[i] < emStart + em!.length;
+        return (
+          <Fragment key={i}>
+            <span className="lp-word" aria-hidden>
+              <motion.span className={inEm ? 'lp-em' : undefined} style={{ display: 'inline-block' }} variants={wordVariants}>{w}</motion.span>
+            </span>{' '}
+          </Fragment>
+        );
+      })}
     </MTag>
   );
 }
@@ -76,4 +89,31 @@ export function Marquee({ children, speed = 40, reverse = false, className }: { 
       </div>
     </div>
   );
+}
+
+/** Nút "nam châm": hút nhẹ theo con trỏ khi rê gần, thả ra thì bật về. */
+export function Magnetic({ children, strength = 0.3 }: { children: ReactNode; strength?: number }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const x = useSpring(useMotionValue(0), { stiffness: 180, damping: 14, mass: 0.25 });
+  const y = useSpring(useMotionValue(0), { stiffness: 180, damping: 14, mass: 0.25 });
+  const onMove = (e: React.MouseEvent) => {
+    const r = ref.current!.getBoundingClientRect();
+    x.set((e.clientX - (r.left + r.width / 2)) * strength);
+    y.set((e.clientY - (r.top + r.height / 2)) * strength);
+  };
+  const onLeave = () => { x.set(0); y.set(0); };
+  return <motion.div ref={ref} style={{ x, y, display: 'inline-block' }} onMouseMove={onMove} onMouseLeave={onLeave}>{children}</motion.div>;
+}
+
+/** Ảnh trong khung: nghiêng/dịch nhẹ theo chuột — dùng cho card bộ môn. */
+export function useHoverParallax(max = 10) {
+  const x = useSpring(useMotionValue(0), { stiffness: 120, damping: 18 });
+  const y = useSpring(useMotionValue(0), { stiffness: 120, damping: 18 });
+  const onMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    x.set(((e.clientX - r.left) / r.width - 0.5) * -max);
+    y.set(((e.clientY - r.top) / r.height - 0.5) * -max);
+  };
+  const onMouseLeave = () => { x.set(0); y.set(0); };
+  return { x, y, onMouseMove, onMouseLeave };
 }

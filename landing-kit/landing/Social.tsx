@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRightOutlined, CheckOutlined, ThunderboltFilled } from '@ant-design/icons';
 import { useLanding } from './config';
 import { BRAND_NAME, CONTACT, COURT_FROM_PRICE, CTA, FOOTER, HOURS, PLANS, PRICING_NOTE } from './content';
-import { Item, Reveal, Stagger } from './ui';
+import { Item, Magnetic, Reveal, SplitWords, Stagger } from './ui';
 
 const money = (n: number) => n.toLocaleString('vi-VN') + 'đ';
 const per = (days: number) => days >= 365 ? 'năm' : days >= 90 ? `${days / 30} tháng` : 'tháng';
@@ -15,7 +15,7 @@ export function Pricing() {
     <section className="lp-section" id="pricing">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Bảng giá</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Gói theo môn hoặc <span className="lp-em">All-access</span></h2></Reveal>
+        <SplitWords as="h2" onView className="lp-h2" text="Gói theo môn hoặc All-access" em="All-access" />
         <Reveal delay={0.1}><p className="lp-sub">Không có gói vẫn thuê sân được — từ {money(COURT_FROM_PRICE)}/giờ. Có gói thì được giảm giá sân, mức giảm tăng theo thời hạn gói.</p></Reveal>
         <Stagger className="lp-pricing">
           {PLANS.map((p) => (
@@ -47,7 +47,7 @@ export function Info() {
     <section className="lp-section lp-info" id="info">
       <div className="lp-container">
         <Reveal><span className="lp-eyebrow">Giờ mở cửa & liên hệ</span></Reveal>
-        <Reveal delay={0.05}><h2 className="lp-h2">Mở cửa từ 6 giờ sáng</h2></Reveal>
+        <SplitWords as="h2" onView className="lp-h2" text="Mở cửa từ 6 giờ sáng" />
         <div className="lp-info-grid">
           <Stagger className="lp-hours">
             {HOURS.map((h) => <Item key={h.name} className="lp-hours-row"><b>{h.name}</b><span>{h.time}</span><em>{h.note}</em></Item>)}
@@ -79,13 +79,14 @@ export function Cta() {
     <section ref={ref} className="lp-cta-wrap">
       <motion.div className="lp-cta" style={{ scale, borderRadius: radius }}>
         <motion.img className="lp-cta-img" src={CTA.image} alt="" style={{ y: imgY }} />
+        <div className="lp-grain" />
         <div className="lp-container">
-          <Reveal><h2 className="lp-cta-title">{CTA.title} <span className="lp-em">{CTA.titleEm}</span></h2></Reveal>
+          <SplitWords as="h2" onView className="lp-cta-title" text={`${CTA.title} ${CTA.titleEm}`} em={CTA.titleEm} />
           <Reveal delay={0.1}><p className="lp-lead">{CTA.lead}</p></Reveal>
           <Reveal delay={0.2}>
             <div className="lp-hero-actions">
-              <Link to={links.login} className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link>
-              <Link to={links.register} className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link>
+              <Magnetic><Link to={links.login} className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link></Magnetic>
+              <Magnetic strength={0.18}><Link to={links.register} className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link></Magnetic>
             </div>
           </Reveal>
         </div>
@@ -114,6 +115,7 @@ export function Footer() {
         ))}
       </div>
       <div className="lp-container lp-footer-bottom"><span>{FOOTER.copyright}</span><span>{CONTACT.phone} · {CONTACT.email}</span></div>
+      <div className="lp-footer-mark" aria-hidden>{BRAND_NAME}</div>
     </footer>
   );
 }

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import dayjs from 'dayjs';
 import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRightOutlined } from '@ant-design/icons';
@@ -24,6 +24,17 @@ export default function Hero() {
   const heroScale = useTransform(scrollYProgress, [0, 1], [1, 0.92]);
   const heroRadius = useTransform(scrollYProgress, [0, 1], [0, 32]);
   const heroDim = useTransform(scrollYProgress, [0, 1], [0, 0.55]);
+
+  // Hero có thể cao hơn màn hình (màn nhỏ): ghim theo ĐÁY thay vì đỉnh để phần dưới vẫn lộ ra khi cuộn.
+  useEffect(() => {
+    const el = ref.current; if (!el) return;
+    const pin = el.parentElement!; // .lp-pin — wrapper sticky, cao đúng bằng hero
+    const fit = () => { pin.style.top = `${Math.min(0, window.innerHeight - el.offsetHeight)}px`; };
+    fit();
+    const ro = new ResizeObserver(fit); ro.observe(el);
+    window.addEventListener('resize', fit);
+    return () => { ro.disconnect(); window.removeEventListener('resize', fit); };
+  }, []);
 
   return (
     <motion.section ref={ref} className="lp-hero" style={{ scale: heroScale, borderRadius: heroRadius }}>

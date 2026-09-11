@@ -4,7 +4,7 @@ import { motion, useScroll, useSpring } from 'motion/react';
 import './landing.css';
 import { DEFAULT_CONFIG, LandingConfigProvider, type LandingConfig } from './config';
 import Nav from './Nav';
-import Hero, { Showcase } from './Hero';
+import Hero, { Showcase, Ticker } from './Hero';
 import { Manifesto, Sports, Stats } from './Sections';
 import Features from './Features';
 import Benefits from './Benefits';
@@ -35,16 +35,19 @@ export default function Landing({ title = 'Sports Center — Sân & phòng tập
         <motion.div className="lp-progress" style={{ scaleX: bar }} />
         <Nav />
         <main>
-          <Hero />
-          <Stats />
-          <Manifesto />
-          <Sports />
-          <Showcase />
-          <Features />
-          <Benefits />
-          <Pricing />
-          <Info />
-          <Cta />
+          <div className="lp-pin"><Hero /></div>
+          <div className="lp-after">
+            <Ticker />
+            <Stats />
+            <Manifesto />
+            <Sports />
+            <Showcase />
+            <Features />
+            <Benefits />
+            <Pricing />
+            <Info />
+            <Cta />
+          </div>
         </main>
         <Footer />
       </div>
