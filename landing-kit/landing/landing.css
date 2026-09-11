@@ -8,11 +8,9 @@
   --green: var(--sc-primary, #0f4d34); --green2: var(--sc-primary-dark, #0b3b28); --lime: var(--sc-lime, #d6f24b); --clay: var(--sc-accent, #c94a1e);
   --display: var(--sc-display, 'Barlow Condensed', 'Arial Narrow', sans-serif); --body: var(--sc-body, 'Barlow', 'Inter', system-ui, sans-serif);
   font-family: var(--body); background: var(--paper); color: var(--ink); overflow-x: clip; text-align: left; font-size: 16px; line-height: 1.5; }
-.lp-html { scroll-padding-top: 72px; scrollbar-width: thin; scrollbar-color: #14130f transparent; }
-.lp-html::-webkit-scrollbar { width: 6px; height: 6px; }
-.lp-html::-webkit-scrollbar-track { background: transparent; }
-.lp-html::-webkit-scrollbar-thumb { background: #14130f; border-radius: 999px; border: 1px solid #f2efe8; }
-.lp-html::-webkit-scrollbar-thumb:hover { background: #0f4d34; }
+/* Ẩn scrollbar khi landing mount (vẫn cuộn bình thường; thanh tiến độ vàng ở mép trên thay vai trò chỉ vị trí) */
+.lp-html { scroll-padding-top: 72px; scrollbar-width: none; -ms-overflow-style: none; }
+.lp-html::-webkit-scrollbar { display: none; width: 0; height: 0; }
 .lp-container { width: min(1240px, 100% - 48px); margin-inline: auto; }
 .lp-section { padding: 140px 0; }
 .lp ::selection { background: var(--lime); color: var(--ink); }
