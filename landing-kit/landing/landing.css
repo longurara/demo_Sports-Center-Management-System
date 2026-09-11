@@ -8,7 +8,11 @@
   --green: var(--sc-primary, #0f4d34); --green2: var(--sc-primary-dark, #0b3b28); --lime: var(--sc-lime, #d6f24b); --clay: var(--sc-accent, #c94a1e);
   --display: var(--sc-display, 'Barlow Condensed', 'Arial Narrow', sans-serif); --body: var(--sc-body, 'Barlow', 'Inter', system-ui, sans-serif);
   font-family: var(--body); background: var(--paper); color: var(--ink); overflow-x: clip; text-align: left; font-size: 16px; line-height: 1.5; }
-.lp-html { scroll-padding-top: 72px; }
+.lp-html { scroll-padding-top: 72px; scrollbar-width: thin; scrollbar-color: #14130f transparent; }
+.lp-html::-webkit-scrollbar { width: 6px; height: 6px; }
+.lp-html::-webkit-scrollbar-track { background: transparent; }
+.lp-html::-webkit-scrollbar-thumb { background: #14130f; border-radius: 999px; border: 1px solid #f2efe8; }
+.lp-html::-webkit-scrollbar-thumb:hover { background: #0f4d34; }
 .lp-container { width: min(1240px, 100% - 48px); margin-inline: auto; }
 .lp-section { padding: 140px 0; }
 .lp ::selection { background: var(--lime); color: var(--ink); }
@@ -62,6 +66,7 @@
 /* ===== Nav ===== */
 .lp-nav { position: fixed; top: 0; left: 0; right: 0; z-index: 50; padding: 18px 0; transition: background .3s, border-color .3s, padding .3s; border-bottom: 1px solid transparent; color: #fff; }
 .lp-nav.scrolled { background: rgba(20,19,15,.92); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-color: rgba(255,255,255,.1); padding: 10px 0; }
+.lp-nav-inner.lp-container { width: auto; margin: 0; padding: 0 32px; }
 .lp-nav-inner { display: flex; align-items: center; gap: 36px; }
 .lp-brand { display: inline-flex; align-items: center; gap: 10px; color: inherit; font-family: var(--display); font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: .02em; text-decoration: none; }
 .lp-brand-logo { width: 30px; height: 30px; background: var(--lime); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; font-size: 15px; border-radius: 3px; }
@@ -350,7 +355,7 @@
 @media (max-width: 767px) {
   .lp-container { width: min(1240px, 100% - 32px); }
   .lp-section { padding: 72px 0; }
-  .lp-nav-links, .lp-nav-cta { display: none; } .lp-burger { display: flex; }
+  .lp-nav-links, .lp-nav-cta { display: none; } .lp-burger { display: flex; } .lp-nav-inner.lp-container { padding: 0 20px; }
   .lp-hero { height: auto; min-height: 100svh; } /* mobile: nội dung dài hơn màn hình → để cuộn, JS ghim theo đáy */
   .lp-hero-content { padding-top: 130px; padding-bottom: 36px; }
   .lp-hero-img { width: 100%; height: 70%; top: 0; object-position: 50% 10%; }
