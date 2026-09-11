@@ -6,6 +6,7 @@ import { AppProvider, useApp } from './store/AppContext';
 import AppLayout from './components/AppLayout';
 import type { Role } from './types';
 
+import Landing from './pages/landing/Landing';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import ForgotPassword from './pages/auth/ForgotPassword';
@@ -79,7 +80,7 @@ export default function App() {
       <AppProvider>
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Root />} />
+            <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />

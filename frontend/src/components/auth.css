@@ -1,0 +1,64 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Barlow:wght@400;500;600&display=swap');
+
+/* ===== Trang đăng nhập / đăng ký / quên mật khẩu — cùng nhận diện với landing ===== */
+.au { --paper: #f2efe8; --ink: #14130f; --ink2: #3d3b35; --mute: #7a776f; --line: #d8d3c7; --green: #0f4d34; --lime: #d6f24b;
+  --display: 'Barlow Condensed', 'Arial Narrow', sans-serif; --body: 'Barlow', 'Inter', system-ui, sans-serif;
+  min-height: 100vh; display: grid; grid-template-columns: 1.05fr 1fr; background: var(--paper); color: var(--ink); font-family: var(--body); }
+
+/* Cột ảnh */
+.au-visual { position: sticky; top: 0; height: 100vh; overflow: hidden; background: var(--ink); color: #fff; display: flex; flex-direction: column; justify-content: space-between; padding: 32px 48px 40px; }
+.au { align-items: start; }
+.au-visual img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: var(--pos, center 30%); }
+.au-visual::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, rgba(20,19,15,.55) 0%, rgba(20,19,15,.15) 35%, rgba(20,19,15,.75) 70%, rgba(20,19,15,.95) 100%); }
+.au-visual > * { position: relative; z-index: 1; }
+.au-brand { display: inline-flex; align-items: center; gap: 10px; color: #fff; font-family: var(--display); font-weight: 800; font-size: 22px; text-transform: uppercase; letter-spacing: .02em; text-decoration: none; align-self: flex-start; }
+.au-brand:hover { color: #fff; }
+.au-brand i { width: 30px; height: 30px; background: var(--lime); color: var(--ink); display: inline-flex; align-items: center; justify-content: center; font-size: 15px; border-radius: 3px; font-style: normal; }
+.au-kicker { font-family: var(--display); font-size: 15px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--lime); margin: 0 0 14px; display: flex; align-items: center; gap: 12px; }
+.au-kicker::before { content: ''; width: 32px; height: 2px; background: var(--lime); }
+.au-title { font-family: var(--display); font-size: clamp(44px, 4.6vw, 72px); line-height: 1.02; font-weight: 800; text-transform: uppercase; margin: 0 0 16px; max-width: 12ch; text-wrap: balance; }
+.au-lead { font-size: 17px; line-height: 1.55; color: rgba(255,255,255,.8); max-width: 46ch; margin: 0 0 32px; }
+.au-facts { display: grid; grid-template-columns: repeat(3, auto); gap: 28px; justify-content: start; border-top: 1px solid rgba(255,255,255,.2); padding-top: 22px; }
+.au-facts b { display: block; font-family: var(--display); font-size: 28px; font-weight: 800; line-height: 1; font-variant-numeric: tabular-nums; }
+.au-facts small { display: block; font-size: 13px; color: rgba(255,255,255,.65); margin-top: 4px; }
+.au-steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; border-top: 1px solid rgba(255,255,255,.2); padding-top: 22px; }
+.au-steps li { display: flex; gap: 14px; align-items: baseline; font-size: 15px; color: rgba(255,255,255,.85); }
+.au-steps li b { font-family: var(--display); font-size: 22px; color: var(--lime); font-weight: 800; }
+.au-foot { font-size: 12.5px; color: rgba(255,255,255,.45); }
+
+/* Cột form */
+.au-form { display: flex; flex-direction: column; padding: 28px 32px; min-height: 100vh; }
+.au-form-top { display: flex; justify-content: flex-end; }
+.au-back { color: var(--mute); text-decoration: none; font-size: 14px; font-weight: 500; }
+.au-back:hover { color: var(--ink); }
+.au-card { margin: auto; width: 100%; padding: 24px 0; }
+.au-h { font-family: var(--display); font-size: 42px; font-weight: 800; text-transform: uppercase; line-height: 1; margin: 0 0 8px; color: var(--ink); }
+.au-p { color: var(--mute); font-size: 15px; margin: 0 0 26px; line-height: 1.5; }
+.au-row { display: flex; justify-content: space-between; align-items: center; margin: -6px 0 18px; font-size: 14px; }
+.au-row a { color: var(--green); font-weight: 600; }
+.au-alt { text-align: center; margin-top: 18px; color: var(--mute); font-size: 14.5px; }
+.au-alt a { color: var(--green); font-weight: 600; }
+.au-demo { margin-top: 30px; padding-top: 22px; border-top: 1px dashed var(--line); }
+.au-demo-title { font-family: var(--display); font-size: 13px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--mute); margin-bottom: 12px; }
+.au-demo-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.au-demo-btn { display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px; border-radius: 6px; border: 1px solid var(--line); background: #fff; font: inherit; font-size: 14px; font-weight: 500; color: var(--ink); cursor: pointer; transition: border-color .2s, transform .2s, box-shadow .2s; text-align: left; }
+.au-demo-btn:hover { border-color: var(--ink); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(20,19,15,.08); }
+.au-demo-btn i { width: 10px; height: 10px; border-radius: 999px; flex-shrink: 0; }
+.au-demo-btn small { margin-left: auto; color: var(--mute); font-size: 12px; }
+.au-note { margin-top: 14px; font-size: 12.5px; color: var(--mute); text-align: center; }
+
+/* Ant Design bên trong: nhãn đậm, ô nhập cao, nút bo ít */
+.au .ant-form-item-label > label { font-weight: 600; color: var(--ink2); font-size: 13.5px; }
+.au .ant-form-item { margin-bottom: 16px; }
+.au .ant-input-affix-wrapper, .au .ant-input, .au .ant-picker, .au .ant-select-selector, .au .ant-input-password { background: #fff !important; }
+.au .ant-btn-primary { font-weight: 600; box-shadow: none; }
+.au .ant-checkbox-wrapper { font-size: 14px; color: var(--ink2); }
+
+@media (max-width: 900px) {
+  .au { grid-template-columns: 1fr; }
+  .au-visual { position: relative; padding: 20px 24px 28px; justify-content: flex-end; height: 300px; }
+  .au-visual .au-brand { position: absolute; top: 20px; left: 24px; }
+  .au-title { font-size: 40px; } .au-lead, .au-facts, .au-steps, .au-foot { display: none; }
+  .au-form { padding: 20px 20px 32px; }
+  .au-card { padding: 12px 0; } .au-h { font-size: 34px; }
+}
