@@ -51,7 +51,7 @@ export default function MemberClassDetail() {
                 <Avatar size={72} style={{ background: '#1677ff', fontSize: 28 }}>{coach.fullName.split(' ').pop()?.[0]}</Avatar>
                 <b style={{ fontSize: 16 }}>{coach.fullName}</b>
                 <Space wrap size={[4, 4]} style={{ justifyContent: 'center' }}>{(coach.sportIds ?? []).map((id) => <SportTag key={id} id={id} size="small" />)}</Space>
-                <div style={{ fontSize: 12, color: '#64748b' }}>{coach.specialty}</div>
+                <div style={{ fontSize: 12, color: '#7a776f' }}>{coach.specialty}</div>
                 <div style={{ textAlign: 'center', color: '#666' }}>{coach.bio}</div>
               </Space>
             ) : 'Chưa phân công'}

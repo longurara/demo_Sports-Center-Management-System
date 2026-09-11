@@ -22,19 +22,19 @@ export function Coaches() {
         {coaches.map((c) => (
           <Col xs={24} md={12} xl={8} key={c.id}>
             <div className="sc-coach">
-              <div className="sc-coach-cover" style={{ background: `linear-gradient(135deg, ${data.sports.find((s) => s.id === c.sportIds?.[0])?.color ?? '#2563eb'}, #0b1220)`, position: 'relative' }}>
+              <div className="sc-coach-cover" style={{ background: `linear-gradient(135deg, ${data.sports.find((s) => s.id === c.sportIds?.[0])?.color ?? '#0f4d34'}, #14130f)`, position: 'relative' }}>
                 <div style={{ position: 'absolute', right: 16, top: 14, fontSize: 30, opacity: .9 }}>{(c.sportIds ?? []).map((id) => data.sports.find((s) => s.id === id)?.icon).join(' ')}</div>
               </div>
               <div style={{ padding: '0 20px 20px', marginTop: -32 }}>
-                <Avatar size={64} style={{ background: '#fff', color: '#0f172a', fontSize: 22, fontWeight: 700, border: '3px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)' }}>{c.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</Avatar>
+                <Avatar size={64} style={{ background: '#fff', color: '#14130f', fontSize: 22, fontWeight: 700, border: '3px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)' }}>{c.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</Avatar>
                 <div style={{ marginTop: 10 }}>
                   <b style={{ fontSize: 16 }}>{c.fullName}</b>
-                  <div style={{ fontSize: 12, color: '#64748b' }}>{c.specialty}</div>
+                  <div style={{ fontSize: 12, color: '#7a776f' }}>{c.specialty}</div>
                 </div>
                 <Space wrap size={[4, 4]} style={{ marginTop: 8 }}>{(c.sportIds ?? []).map((id) => <SportTag key={id} id={id} size="small" />)}</Space>
                 <Typography.Paragraph type="secondary" style={{ margin: '8px 0 12px', minHeight: 44 }}>{c.bio}</Typography.Paragraph>
-                <div style={{ fontSize: 12, color: '#64748b' }}>Lớp đang dạy</div>
-                <Space wrap size={4} style={{ marginTop: 4 }}>{data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN').map((x) => <Tag key={x.id} style={{ background: '#f1f5f9', color: '#334155' }}>{x.name}</Tag>)}</Space>
+                <div style={{ fontSize: 12, color: '#7a776f' }}>Lớp đang dạy</div>
+                <Space wrap size={4} style={{ marginTop: 4 }}>{data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN').map((x) => <Tag key={x.id} style={{ background: '#f3f1ec', color: '#3d3b35' }}>{x.name}</Tag>)}</Space>
               </div>
             </div>
           </Col>
@@ -137,13 +137,13 @@ export function MySupport() {
         <List.Item onClick={() => setActive(r.id)} style={{ cursor: 'pointer', padding: '14px 8px', borderRadius: 10 }} className="sc-hover-row"
           actions={[<Button size="small" onClick={(e) => { e.stopPropagation(); setActive(r.id); }}>{r.hasReply ? 'Xem phản hồi' : 'Mở'}</Button>]}>
           <List.Item.Meta
-            avatar={<div style={{ width: 40, height: 40, borderRadius: 12, background: r.status === 'RESOLVED' ? '#dcfce7' : r.hasReply ? '#eff6ff' : '#fff7ed', color: r.status === 'RESOLVED' ? '#16a34a' : r.hasReply ? '#2563eb' : '#f97316', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}><MessageOutlined /></div>}
+            avatar={<div style={{ width: 40, height: 40, borderRadius: 12, background: r.status === 'RESOLVED' ? '#dcfce7' : r.hasReply ? '#e3efe8' : '#f9e6dd', color: r.status === 'RESOLVED' ? '#16a34a' : r.hasReply ? '#0f4d34' : '#c94a1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}><MessageOutlined /></div>}
             title={<Space><b>{r.title}</b><StatusTag value={r.status} />{r.hasReply && r.status !== 'RESOLVED' && <Tag color="blue">Có phản hồi</Tag>}</Space>}
             description={<>
-              <div style={{ color: '#475569', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 560 }}>
+              <div style={{ color: '#3d3b35', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 560 }}>
                 {r.last ? <><b>{r.last.senderId === currentUser!.id ? 'Bạn' : nameOf(r.last.senderId)}:</b> {r.last.content}</> : r.content}
               </div>
-              <div style={{ fontSize: 12, color: '#94a3b8' }}>{r.msgs.length} trao đổi · cập nhật {dayjs(r.lastAt).fromNow()}{r.handledBy ? ` · xử lý bởi ${nameOf(r.handledBy)}` : ''}</div>
+              <div style={{ fontSize: 12, color: '#9a968c' }}>{r.msgs.length} trao đổi · cập nhật {dayjs(r.lastAt).fromNow()}{r.handledBy ? ` · xử lý bởi ${nameOf(r.handledBy)}` : ''}</div>
             </>} />
         </List.Item>
       )} />
@@ -153,7 +153,7 @@ export function MySupport() {
           <Form.Item name="title" label="Tiêu đề" rules={[{ required: true }]}><Input placeholder="VD: Đổi lịch lớp Yoga" /></Form.Item>
           <Form.Item name="content" label="Nội dung" rules={[{ required: true }]}><Input.TextArea rows={4} placeholder="Mô tả chi tiết yêu cầu của bạn…" /></Form.Item>
         </Form>
-        <div style={{ fontSize: 12, color: '#94a3b8' }}>Lễ tân sẽ phản hồi trong vòng 24h. Bạn sẽ nhận thông báo khi có trả lời.</div>
+        <div style={{ fontSize: 12, color: '#9a968c' }}>Lễ tân sẽ phản hồi trong vòng 24h. Bạn sẽ nhận thông báo khi có trả lời.</div>
       </Modal>
     </Page>
   );

@@ -72,10 +72,10 @@ export default function ClassDetail() {
     <Page title={c.name} subtitle={`${data.sports.find((s) => s.id === c.sportId)?.name} · ${room?.name} (${room?.location}) · ${dayjs(c.startDate).format('DD/MM/YYYY')} → ${dayjs(c.endDate).format('DD/MM/YYYY')}`}
       extra={<Space><StatusTag value={c.status} /><Button onClick={() => navigate('/manager/classes')}>Quay lại</Button></Space>} noCard>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Sĩ số" value={`${students.length}/${c.capacity}`} icon={<TeamOutlined />} color="#2563eb" hint={`Lấp đầy ${fillRate}%`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Sĩ số" value={`${students.length}/${c.capacity}`} icon={<TeamOutlined />} color="#0f4d34" hint={`Lấp đầy ${fillRate}%`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Buổi đã dạy" value={sessions.length} icon={<CalendarOutlined />} color="#9333ea" hint={`còn ${weeksLeft} tuần`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Chuyên cần TB" value={`${avgAtt}%`} icon={<UserOutlined />} color="#16a34a" /></Col>
-        <Col xs={12} xl={6}><StatCard title="Doanh thu lớp" value={fmtMoney(revenue.reduce((s, p) => s + p.amount, 0))} icon={<DollarOutlined />} color="#f97316" hint={`${revenue.length} giao dịch`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Doanh thu lớp" value={fmtMoney(revenue.reduce((s, p) => s + p.amount, 0))} icon={<DollarOutlined />} color="#c94a1e" hint={`${revenue.length} giao dịch`} /></Col>
       </Row>
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={9}>
@@ -83,15 +83,15 @@ export default function ClassDetail() {
             {coach ? (
               <>
                 <UserCell user={coach} sub={`${(coach.sportIds ?? []).map((id) => data.sports.find((s) => s.id === id)?.name).filter(Boolean).join(' · ')}${coach.specialty ? ` — ${coach.specialty}` : ''}`} size={44} />
-                <div style={{ color: '#64748b', fontSize: 13, marginTop: 10 }}>{coach.bio}</div>
-                <div style={{ marginTop: 10, fontSize: 12, color: '#94a3b8' }}>Đang dạy {data.classes.filter((x) => x.coachId === coach.id && x.status === 'OPEN').length} lớp</div>
+                <div style={{ color: '#7a776f', fontSize: 13, marginTop: 10 }}>{coach.bio}</div>
+                <div style={{ marginTop: 10, fontSize: 12, color: '#9a968c' }}>Đang dạy {data.classes.filter((x) => x.coachId === coach.id && x.status === 'OPEN').length} lớp</div>
               </>
             ) : <Alert type="warning" showIcon title="Chưa phân công huấn luyện viên" />}
           </Card>
         </Col>
         <Col xs={24} lg={15}>
           <Card title="Tiến độ khóa học" style={{ height: '100%' }}>
-            <Progress percent={progress} strokeColor="#2563eb" />
+            <Progress percent={progress} strokeColor="#0f4d34" />
             <Descriptions column={{ xs: 1, md: 3 }} size="small" style={{ marginTop: 12 }}>
               <Descriptions.Item label="Học phí">{fmtMoney(c.price)}</Descriptions.Item>
               <Descriptions.Item label="Lịch">{schedules.map((s) => <Tag key={s.id} color="blue">{DAY_NAMES[s.dayOfWeek]} {s.startTime}</Tag>)}</Descriptions.Item>
@@ -160,7 +160,7 @@ export default function ClassDetail() {
           <Form.Item name="dayOfWeek" label="Thứ" rules={[{ required: true }]}><Select options={[1, 2, 3, 4, 5, 6, 7].map((d) => ({ value: d, label: DAY_NAMES[d] }))} /></Form.Item>
           <Form.Item name="time" label="Giờ" rules={[{ required: true }]}><TimePicker.RangePicker format="HH:mm" minuteStep={15} style={{ width: '100%' }} /></Form.Item>
         </Form>
-        <div style={{ fontSize: 12, color: '#94a3b8' }}>Hệ thống kiểm tra trùng phòng và trùng giờ dạy của HLV trước khi lưu.</div>
+        <div style={{ fontSize: 12, color: '#9a968c' }}>Hệ thống kiểm tra trùng phòng và trùng giờ dạy của HLV trước khi lưu.</div>
       </Modal>
       <Modal title="Phân công huấn luyện viên" open={coachOpen} onCancel={() => setCoachOpen(false)} onOk={() => coachForm.submit()} okText="Phân công">
         {warn && <Alert type="error" showIcon title={warn} style={{ marginBottom: 12 }} />}
@@ -179,7 +179,7 @@ export default function ClassDetail() {
               })()} />
           </Form.Item>
         </Form>
-        <div style={{ fontSize: 12, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
+        <div style={{ fontSize: 12, color: '#9a968c', display: 'flex', justifyContent: 'space-between' }}>
           <span>Hệ thống kiểm tra HLV không bị trùng giờ với lớp khác đang mở.</span>
           <a onClick={() => setAllCoaches((v) => !v)}>{allCoaches ? 'Chỉ HLV đúng bộ môn' : 'Hiện tất cả HLV'}</a>
         </div>

@@ -52,8 +52,8 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
   return (
     <Modal open={open} onCancel={onClose} footer={null} closable={false} width={640} styles={{ body: { padding: 0 }, container: { padding: 0, overflow: 'hidden' } }} style={{ top: 80 }}>
       <Input
-        autoFocus size="large" variant="borderless" prefix={<SearchOutlined style={{ color: '#94a3b8' }} />} placeholder="Tìm thành viên, lớp học, hóa đơn, trang..."
-        value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} style={{ padding: '14px 18px', borderBottom: '1px solid #eef1f6', borderRadius: 0 }}
+        autoFocus size="large" variant="borderless" prefix={<SearchOutlined style={{ color: '#9a968c' }} />} placeholder="Tìm thành viên, lớp học, hóa đơn, trang..."
+        value={q} onChange={(e) => { setQ(e.target.value); setActive(0); }} style={{ padding: '14px 18px', borderBottom: '1px solid #ece8df', borderRadius: 0 }}
         onKeyDown={(e) => {
           if (e.key === 'ArrowDown') { e.preventDefault(); setActive((a) => Math.min(a + 1, hits.length - 1)); }
           if (e.key === 'ArrowUp') { e.preventDefault(); setActive((a) => Math.max(a - 1, 0)); }
@@ -66,15 +66,15 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
         {hits.map((h, i) => (
           <div key={h.kind + h.key} onMouseEnter={() => setActive(i)} onClick={() => go(h)}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 10, cursor: 'pointer', background: i === active ? '#f5f8ff' : undefined }}>
-            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f1f5f9', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{ICON[h.kind]}</div>
+            <div style={{ width: 32, height: 32, borderRadius: 8, background: '#f3f1ec', color: '#3d3b35', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{ICON[h.kind]}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              {h.node ?? <><div style={{ fontWeight: 600 }}>{h.title}</div>{h.sub && <div style={{ fontSize: 12, color: '#64748b' }}>{h.sub}</div>}</>}
+              {h.node ?? <><div style={{ fontWeight: 600 }}>{h.title}</div>{h.sub && <div style={{ fontSize: 12, color: '#7a776f' }}>{h.sub}</div>}</>}
             </div>
-            <Tag style={{ margin: 0, background: '#f1f5f9', color: '#64748b' }}>{LABEL[h.kind]}</Tag>
+            <Tag style={{ margin: 0, background: '#f3f1ec', color: '#7a776f' }}>{LABEL[h.kind]}</Tag>
           </div>
         ))}
       </div>
-      <div style={{ padding: '8px 16px', borderTop: '1px solid #eef1f6', fontSize: 12, color: '#94a3b8', display: 'flex', gap: 16 }}>
+      <div style={{ padding: '8px 16px', borderTop: '1px solid #ece8df', fontSize: 12, color: '#9a968c', display: 'flex', gap: 16 }}>
         <span><kbd>↑↓</kbd> di chuyển</span><span><kbd>Enter</kbd> mở</span><span><kbd>Esc</kbd> đóng</span>
       </div>
     </Modal>

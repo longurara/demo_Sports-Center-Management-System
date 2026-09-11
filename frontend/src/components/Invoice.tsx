@@ -75,9 +75,9 @@ export default function Invoice() {
   const online = p.createdBy === p.memberId;
   const base = `/${(currentUser?.role ?? 'member').toLowerCase()}`;
 
-  const cell = { padding: '8px 10px', borderBottom: '1px solid #e2e8f0', fontSize: 13 } as const;
-  const head = { ...cell, background: '#f1f5f9', fontWeight: 700, fontSize: 12, color: '#334155', borderBottom: '1px solid #cbd5e1', borderTop: '1px solid #cbd5e1' } as const;
-  const label = { fontSize: 12.5, color: '#64748b', width: 150, flexShrink: 0 } as const;
+  const cell = { padding: '8px 10px', borderBottom: '1px solid #e2ddd2', fontSize: 13 } as const;
+  const head = { ...cell, background: '#f3f1ec', fontWeight: 700, fontSize: 12, color: '#3d3b35', borderBottom: '1px solid #cbd5e1', borderTop: '1px solid #cbd5e1' } as const;
+  const label = { fontSize: 12.5, color: '#7a776f', width: 150, flexShrink: 0 } as const;
   const row = { display: 'flex', gap: 8, padding: '3px 0', fontSize: 13 } as const;
 
   return (
@@ -95,9 +95,9 @@ export default function Invoice() {
           {/* ===== Header: đơn vị bán + số hóa đơn ===== */}
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 24 }}>
             <div style={{ display: 'flex', gap: 12 }}>
-              <div style={{ width: 52, height: 52, borderRadius: 12, background: 'linear-gradient(135deg,#2563eb,#f97316)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}><ThunderboltFilled /></div>
-              <div style={{ fontSize: 12.5, lineHeight: 1.55, color: '#334155' }}>
-                <div style={{ fontWeight: 800, fontSize: 14, color: '#0f172a', letterSpacing: .2 }}>{COMPANY.name}</div>
+              <div style={{ width: 52, height: 52, borderRadius: 12, background: '#d6f24b', color: '#14130f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}><ThunderboltFilled /></div>
+              <div style={{ fontSize: 12.5, lineHeight: 1.55, color: '#3d3b35' }}>
+                <div style={{ fontWeight: 800, fontSize: 14, color: '#14130f', letterSpacing: .2 }}>{COMPANY.name}</div>
                 <div>Mã số thuế: <b>{COMPANY.taxCode}</b></div>
                 <div>Địa chỉ: {COMPANY.address}</div>
                 <div>Điện thoại: {COMPANY.phone} · Email: {COMPANY.email}</div>
@@ -105,28 +105,28 @@ export default function Invoice() {
               </div>
             </div>
             <div style={{ textAlign: 'right', fontSize: 12.5, lineHeight: 1.6, flexShrink: 0 }}>
-              <div style={{ color: '#64748b' }}>Mẫu số: <b style={{ color: '#0f172a' }}>01GTKT0/001</b></div>
-              <div style={{ color: '#64748b' }}>Ký hiệu: <b style={{ color: '#0f172a' }}>{COMPANY.invoiceSymbol}</b></div>
-              <div style={{ color: '#64748b' }}>Số: <b style={{ color: '#dc2626', fontFamily: 'ui-monospace, monospace', fontSize: 16 }}>{seq.padStart(8, '0')}</b></div>
+              <div style={{ color: '#7a776f' }}>Mẫu số: <b style={{ color: '#14130f' }}>01GTKT0/001</b></div>
+              <div style={{ color: '#7a776f' }}>Ký hiệu: <b style={{ color: '#14130f' }}>{COMPANY.invoiceSymbol}</b></div>
+              <div style={{ color: '#7a776f' }}>Số: <b style={{ color: '#dc2626', fontFamily: 'ui-monospace, monospace', fontSize: 16 }}>{seq.padStart(8, '0')}</b></div>
               <Tag color="green" icon={<CheckCircleFilled />} style={{ marginTop: 4, marginRight: 0 }}>ĐÃ THANH TOÁN</Tag>
             </div>
           </div>
 
           {/* ===== Title ===== */}
           <div style={{ textAlign: 'center', margin: '22px 0 16px' }}>
-            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1, color: '#0f172a' }}>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</div>
-            <div style={{ fontSize: 12, color: '#64748b', fontStyle: 'italic' }}>(VAT INVOICE) · Bản thể hiện của hóa đơn điện tử</div>
+            <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1, color: '#14130f' }}>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</div>
+            <div style={{ fontSize: 12, color: '#7a776f', fontStyle: 'italic' }}>(VAT INVOICE) · Bản thể hiện của hóa đơn điện tử</div>
             <div style={{ fontSize: 13, marginTop: 4 }}>Ngày <b>{dayjs(p.paidAt).format('DD')}</b> tháng <b>{dayjs(p.paidAt).format('MM')}</b> năm <b>{dayjs(p.paidAt).format('YYYY')}</b></div>
-            <div style={{ fontSize: 12, color: '#475569', marginTop: 2 }}>Mã của Cơ quan Thuế: <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 600, color: '#0f172a' }}>{taxCode}</span></div>
+            <div style={{ fontSize: 12, color: '#3d3b35', marginTop: 2 }}>Mã của Cơ quan Thuế: <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 600, color: '#14130f' }}>{taxCode}</span></div>
           </div>
 
           {/* ===== Buyer ===== */}
-          <div style={{ border: '1px solid #e2e8f0', borderRadius: 8, padding: '10px 14px', display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '0 24px' }}>
+          <div style={{ border: '1px solid #e2ddd2', borderRadius: 8, padding: '10px 14px', display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '0 24px' }}>
             <div>
               <div style={row}><span style={label}>Họ tên người mua hàng</span><b>{m?.fullName}</b></div>
               <div style={row}><span style={label}>Tên đơn vị</span><span>Khách hàng cá nhân</span></div>
-              <div style={row}><span style={label}>Mã số thuế</span><span style={{ color: '#94a3b8' }}>—</span></div>
-              <div style={row}><span style={label}>Địa chỉ</span><span style={{ color: '#94a3b8' }}>—</span></div>
+              <div style={row}><span style={label}>Mã số thuế</span><span style={{ color: '#9a968c' }}>—</span></div>
+              <div style={row}><span style={label}>Địa chỉ</span><span style={{ color: '#9a968c' }}>—</span></div>
             </div>
             <div>
               <div style={row}><span style={label}>Mã thành viên</span><b style={{ fontFamily: 'ui-monospace, monospace' }}>{p.memberId.toUpperCase()}</b></div>
@@ -151,7 +151,7 @@ export default function Invoice() {
             <tbody>
               <tr>
                 <td style={{ ...cell, textAlign: 'center' }}>1</td>
-                <td style={cell}><b>{desc}</b>{note && <div style={{ fontSize: 12, color: '#64748b' }}>{note}</div>}</td>
+                <td style={cell}><b>{desc}</b>{note && <div style={{ fontSize: 12, color: '#7a776f' }}>{note}</div>}</td>
                 <td style={{ ...cell, textAlign: 'center' }}>{unit}</td>
                 <td style={{ ...cell, textAlign: 'center' }}>{qty}</td>
                 <td style={{ ...cell, textAlign: 'right' }} className="sc-nowrap">{fmtMoney(unitPrice)}</td>
@@ -160,7 +160,7 @@ export default function Invoice() {
               {discount > 0 && (
                 <tr>
                   <td style={{ ...cell, textAlign: 'center' }}>2</td>
-                  <td style={cell}>Chiết khấu thành viên<div style={{ fontSize: 12, color: '#64748b' }}>Ưu đãi gói thành viên áp dụng cho thuê sân</div></td>
+                  <td style={cell}>Chiết khấu thành viên<div style={{ fontSize: 12, color: '#7a776f' }}>Ưu đãi gói thành viên áp dụng cho thuê sân</div></td>
                   <td style={{ ...cell, textAlign: 'center' }}>—</td>
                   <td style={{ ...cell, textAlign: 'center' }}>1</td>
                   <td style={{ ...cell, textAlign: 'right' }} className="sc-nowrap">−{fmtMoney(discount)}</td>
@@ -173,18 +173,18 @@ export default function Invoice() {
 
           {/* ===== Totals ===== */}
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 24, marginTop: 12 }}>
-            <div style={{ fontSize: 12, color: '#64748b', lineHeight: 1.7, maxWidth: 380 }}>
-              <b style={{ color: '#0f172a' }}>Ghi chú</b><br />
+            <div style={{ fontSize: 12, color: '#7a776f', lineHeight: 1.7, maxWidth: 380 }}>
+              <b style={{ color: '#14130f' }}>Ghi chú</b><br />
               • Gói thành viên / học phí đã thanh toán không hoàn lại; bảo lưu tối đa 30 ngày khi có xác nhận y tế.<br />
               • Thuê sân: hủy trước giờ chơi ≥ 2 giờ được hoàn 100%.<br />
               • Vui lòng xuất trình mã thành viên khi check-in.
             </div>
             <div style={{ width: 320, fontSize: 13 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2e8f0' }}><span>Cộng tiền hàng</span><span className="sc-nowrap">{fmtMoney(net)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2e8f0' }}><span>Thuế suất GTGT</span><span>{VAT * 100}%</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2e8f0' }}><span>Tiền thuế GTGT</span><span className="sc-nowrap">{fmtMoney(vat)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 17, fontWeight: 800, borderBottom: '2px solid #0f172a' }}><span>Tổng tiền thanh toán</span><span className="sc-nowrap">{fmtMoney(total)}</span></div>
-              <div style={{ fontSize: 12, color: '#334155', marginTop: 6, fontStyle: 'italic' }}>Số tiền viết bằng chữ: <b>{readMoney(total)}</b></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Cộng tiền hàng</span><span className="sc-nowrap">{fmtMoney(net)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Thuế suất GTGT</span><span>{VAT * 100}%</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Tiền thuế GTGT</span><span className="sc-nowrap">{fmtMoney(vat)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 17, fontWeight: 800, borderBottom: '2px solid #14130f' }}><span>Tổng tiền thanh toán</span><span className="sc-nowrap">{fmtMoney(total)}</span></div>
+              <div style={{ fontSize: 12, color: '#3d3b35', marginTop: 6, fontStyle: 'italic' }}>Số tiền viết bằng chữ: <b>{readMoney(total)}</b></div>
             </div>
           </div>
 
@@ -192,13 +192,13 @@ export default function Invoice() {
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 28, textAlign: 'center' }}>
             <div>
               <b>NGƯỜI MUA HÀNG</b>
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>(Ký, ghi rõ họ tên)</div>
+              <div style={{ fontSize: 11, color: '#9a968c' }}>(Ký, ghi rõ họ tên)</div>
               <div style={{ height: 70 }} />
               <div style={{ fontWeight: 600 }}>{m?.fullName}</div>
             </div>
             <div>
               <b>NGƯỜI BÁN HÀNG</b>
-              <div style={{ fontSize: 11, color: '#94a3b8' }}>(Ký, ghi rõ họ tên)</div>
+              <div style={{ fontSize: 11, color: '#9a968c' }}>(Ký, ghi rõ họ tên)</div>
               <div style={{ margin: '10px auto 6px', width: 250, border: '1.5px solid #16a34a', borderRadius: 6, padding: '6px 10px', textAlign: 'left', fontSize: 11, color: '#166534', background: '#f0fdf4', lineHeight: 1.5 }}>
                 <div style={{ fontWeight: 700 }}><CheckCircleFilled /> Signature Valid</div>
                 <div>Ký bởi: {COMPANY.name}</div>
@@ -209,9 +209,9 @@ export default function Invoice() {
           </div>
 
           {/* ===== Footer: tra cứu ===== */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 24, paddingTop: 12, borderTop: '1px solid #e2e8f0', fontSize: 11.5, color: '#64748b' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 24, paddingTop: 12, borderTop: '1px solid #e2ddd2', fontSize: 11.5, color: '#7a776f' }}>
             <div style={{ lineHeight: 1.6 }}>
-              Tra cứu hóa đơn điện tử tại <b style={{ color: '#2563eb' }}>hoadon.sportscenter.vn</b> · Mã tra cứu: <b style={{ fontFamily: 'ui-monospace, monospace', color: '#0f172a' }}>{taxCode}</b><br />
+              Tra cứu hóa đơn điện tử tại <b style={{ color: '#0f4d34' }}>hoadon.sportscenter.vn</b> · Mã tra cứu: <b style={{ fontFamily: 'ui-monospace, monospace', color: '#14130f' }}>{taxCode}</b><br />
               Hóa đơn được khởi tạo từ hệ thống {COMPANY.short} Management System · Người lập: {online ? 'Tự động (cổng thanh toán)' : nameOf(p.createdBy)} · Trang 1/1
             </div>
             <div style={{ textAlign: 'center', flexShrink: 0 }}>
@@ -222,7 +222,7 @@ export default function Invoice() {
         </div>
         </div>
       </div>
-      <div className="sc-no-print" style={{ textAlign: 'center', fontSize: 12, color: '#94a3b8', marginTop: 12 }}>
+      <div className="sc-no-print" style={{ textAlign: 'center', fontSize: 12, color: '#9a968c', marginTop: 12 }}>
         Bản in theo khổ A4 · Số tiền trong hệ thống đã bao gồm {VAT * 100}% VAT · <a onClick={() => navigate(`${base}/payments`)}>Danh sách hóa đơn</a>
       </div>
     </Page>

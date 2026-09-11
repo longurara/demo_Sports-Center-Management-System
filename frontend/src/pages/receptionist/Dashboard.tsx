@@ -25,7 +25,7 @@ export default function ReceptionistDashboard() {
       </Space>
     } noCard>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Check-in hôm nay" value={todayCheckIns.length} icon={<LoginOutlined />} color="#2563eb" onClick={() => navigate('/receptionist/check-in')} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Check-in hôm nay" value={todayCheckIns.length} icon={<LoginOutlined />} color="#0f4d34" onClick={() => navigate('/receptionist/check-in')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Doanh thu hôm nay" value={fmtMoney(todayRevenue)} icon={<DollarOutlined />} color="#16a34a" onClick={() => navigate('/receptionist/payments')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Gói sắp hết hạn" value={expiring.length} icon={<WarningOutlined />} color="#f59e0b" hint="trong 7 ngày tới" onClick={() => navigate('/receptionist/subscriptions')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Yêu cầu chờ xử lý" value={openSupport.length} icon={<CustomerServiceOutlined />} color="#dc2626" onClick={() => navigate('/receptionist/support')} /></Col>
@@ -45,7 +45,7 @@ export default function ReceptionistDashboard() {
           <Card title="Thành viên sắp hết hạn gói" extra={<a onClick={() => navigate('/receptionist/subscriptions')}>Gia hạn</a>}>
             <List dataSource={expiring} renderItem={(u) => (
               <List.Item actions={[<Button size="small" onClick={() => navigate(`/receptionist/subscriptions?member=${u.id}`)}>Gia hạn</Button>]}>
-                <List.Item.Meta avatar={<Avatar style={{ background: '#fff7ed', color: '#f97316', fontWeight: 600 }}>{u.fullName.split(' ').pop()?.[0]}</Avatar>} title={u.fullName} description={`${u.phone} · hết hạn ${dayjs(activeSubscription(u.id)?.endDate).format('DD/MM/YYYY')}`} />
+                <List.Item.Meta avatar={<Avatar style={{ background: '#f9e6dd', color: '#c94a1e', fontWeight: 600 }}>{u.fullName.split(' ').pop()?.[0]}</Avatar>} title={u.fullName} description={`${u.phone} · hết hạn ${dayjs(activeSubscription(u.id)?.endDate).format('DD/MM/YYYY')}`} />
               </List.Item>
             )} locale={{ emptyText: 'Không có gói sắp hết hạn' }} />
           </Card>

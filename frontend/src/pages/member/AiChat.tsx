@@ -59,14 +59,14 @@ export default function AiChat() {
         <div style={{ flex: 1, overflowY: 'auto', paddingRight: 8 }}>
           {msgs.map((m, i) => (
             <div key={i} className="sc-fade" style={{ display: 'flex', gap: 10, marginBottom: 14, flexDirection: m.role === 'user' ? 'row-reverse' : 'row', alignItems: 'flex-end' }}>
-              <Avatar icon={m.role === 'user' ? <UserOutlined /> : <RobotOutlined />} style={{ background: m.role === 'user' ? '#2563eb' : 'linear-gradient(135deg,#7c3aed,#2563eb)', flexShrink: 0 }} />
-              <div style={{ background: m.role === 'user' ? '#2563eb' : '#f1f5f9', color: m.role === 'user' ? '#fff' : '#0f172a', padding: '10px 14px', borderRadius: 14, borderBottomRightRadius: m.role === 'user' ? 4 : 14, borderBottomLeftRadius: m.role === 'user' ? 14 : 4, maxWidth: '72%', whiteSpace: 'pre-line', fontSize: 14, lineHeight: 1.55, boxShadow: m.role === 'user' ? '0 4px 12px rgba(37,99,235,.25)' : undefined }}>{m.text}</div>
+              <Avatar icon={m.role === 'user' ? <UserOutlined /> : <RobotOutlined />} style={{ background: m.role === 'user' ? '#0f4d34' : 'linear-gradient(135deg,#0f4d34,#2f7d55)', flexShrink: 0 }} />
+              <div style={{ background: m.role === 'user' ? '#0f4d34' : '#f3f1ec', color: m.role === 'user' ? '#fff' : '#14130f', padding: '10px 14px', borderRadius: 14, borderBottomRightRadius: m.role === 'user' ? 4 : 14, borderBottomLeftRadius: m.role === 'user' ? 14 : 4, maxWidth: '72%', whiteSpace: 'pre-line', fontSize: 14, lineHeight: 1.55, boxShadow: m.role === 'user' ? '0 4px 12px rgba(15,77,52,.25)' : undefined }}>{m.text}</div>
             </div>
           ))}
-          {typing && <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}><Avatar icon={<RobotOutlined />} style={{ background: 'linear-gradient(135deg,#7c3aed,#2563eb)' }} /><div className="sc-typing"><span /><span /><span /></div></div>}
+          {typing && <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}><Avatar icon={<RobotOutlined />} style={{ background: 'linear-gradient(135deg,#0f4d34,#2f7d55)' }} /><div className="sc-typing"><span /><span /><span /></div></div>}
           <div ref={bottom} />
         </div>
-        <Space wrap style={{ margin: '10px 0' }}>{SUGGESTIONS.map((s) => <Tag key={s} style={{ cursor: 'pointer', background: '#fff', border: '1px solid #e2e8f0', padding: '4px 12px', fontWeight: 500 }} onClick={() => send(s)}>{s}</Tag>)}</Space>
+        <Space wrap style={{ margin: '10px 0' }}>{SUGGESTIONS.map((s) => <Tag key={s} style={{ cursor: 'pointer', background: '#fff', border: '1px solid #e2ddd2', padding: '4px 12px', fontWeight: 500 }} onClick={() => send(s)}>{s}</Tag>)}</Space>
         <Space.Compact style={{ width: '100%' }}>
           <Input size="large" value={input} onChange={(e) => setInput(e.target.value)} onPressEnter={() => send(input)} placeholder="Nhập câu hỏi cho trợ lý..." />
           <Button size="large" type="primary" icon={<SendOutlined />} onClick={() => send(input)}>Gửi</Button>

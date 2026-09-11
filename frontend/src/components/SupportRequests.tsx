@@ -52,7 +52,7 @@ export default function SupportRequests() {
       <Row gutter={[16, 16]}>
         <Col xs={12} xl={6}><StatCard title="Chờ phản hồi" value={counts.waiting} icon={<MessageOutlined />} color="#dc2626" hint="thành viên đang đợi nhân viên" onClick={() => setStatus('WAITING')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Mới tiếp nhận" value={counts.open} icon={<CustomerServiceOutlined />} color="#f59e0b" onClick={() => setStatus('OPEN')} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Đang xử lý" value={counts.prog} icon={<ClockCircleOutlined />} color="#2563eb" onClick={() => setStatus('IN_PROGRESS')} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Đang xử lý" value={counts.prog} icon={<ClockCircleOutlined />} color="#0f4d34" onClick={() => setStatus('IN_PROGRESS')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Đã xử lý" value={counts.resolved} icon={<CustomerServiceOutlined />} color="#16a34a" hint={avgHours ? `TB ${avgHours} giờ / yêu cầu` : undefined} onClick={() => setStatus('RESOLVED')} /></Col>
       </Row>
       <Table rowKey="id" dataSource={rows} pagination={{ pageSize: 8 }} onRow={(r) => ({ onClick: () => setActive(r.id), style: { cursor: 'pointer' } })} columns={[
@@ -63,13 +63,13 @@ export default function SupportRequests() {
               <b>{r.title}</b>
               {r.waiting && <Tooltip title="Thành viên đang chờ phản hồi"><Badge status="processing" color="#dc2626" /></Tooltip>}
             </div>
-            <div style={{ fontSize: 12.5, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 420 }}>
-              {r.last ? <><b style={{ color: r.last.senderId === r.memberId ? '#dc2626' : '#475569' }}>{r.last.senderId === r.memberId ? 'TV' : nameOf(r.last.senderId).split(' ').pop()}:</b> {r.last.content}</> : r.content}
+            <div style={{ fontSize: 12.5, color: '#7a776f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 420 }}>
+              {r.last ? <><b style={{ color: r.last.senderId === r.memberId ? '#dc2626' : '#3d3b35' }}>{r.last.senderId === r.memberId ? 'TV' : nameOf(r.last.senderId).split(' ').pop()}:</b> {r.last.content}</> : r.content}
             </div>
           </div>
         ) },
-        { title: 'Trao đổi', dataIndex: 'msgs', align: 'center', render: (m) => <span style={{ color: m.length ? '#0f172a' : '#94a3b8' }}><MessageOutlined /> {m.length}</span> },
-        { title: 'Người xử lý', render: (_, r) => r.handledBy ? nameOf(r.handledBy) : <span style={{ color: '#94a3b8' }}>—</span> },
+        { title: 'Trao đổi', dataIndex: 'msgs', align: 'center', render: (m) => <span style={{ color: m.length ? '#14130f' : '#9a968c' }}><MessageOutlined /> {m.length}</span> },
+        { title: 'Người xử lý', render: (_, r) => r.handledBy ? nameOf(r.handledBy) : <span style={{ color: '#9a968c' }}>—</span> },
         { title: 'Cập nhật', dataIndex: 'lastAt', render: (v) => <Tooltip title={v}>{dayjs(v).fromNow()}</Tooltip> },
         { title: 'Trạng thái', dataIndex: 'status', render: (v) => <StatusTag value={v} /> },
         { title: '', render: (_, r) => <Button size="small" type={r.waiting ? 'primary' : 'default'} onClick={(e) => { e.stopPropagation(); setActive(r.id); }}>{r.waiting ? 'Trả lời' : 'Mở'}</Button> },

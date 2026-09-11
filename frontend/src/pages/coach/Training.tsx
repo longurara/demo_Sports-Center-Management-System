@@ -90,7 +90,7 @@ export function TrainingResults() {
         <Form form={form} layout="vertical" onFinish={save}>
           <Form.Item name="sessionId" label="Buổi tập" rules={[{ required: true }]}><Select options={sessions.map((s) => ({ value: s.id, label: `${s.date} — ${data.classes.find((c) => c.id === s.classId)?.name}` }))} /></Form.Item>
           <Form.Item name="memberId" label="Học viên (có mặt)" rules={[{ required: true }]}><Select options={attendees.map((a) => ({ value: a.memberId, label: nameOf(a.memberId) }))} /></Form.Item>
-          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Chỉ số theo bộ môn {sessSport ? <Tag style={{ marginLeft: 4 }}>{sessSport}</Tag> : '(chọn buổi tập trước)'}</div>
+          <div style={{ fontSize: 12, color: '#7a776f', marginBottom: 6 }}>Chỉ số theo bộ môn {sessSport ? <Tag style={{ marginLeft: 4 }}>{sessSport}</Tag> : '(chọn buổi tập trước)'}</div>
           <Form.List name="entries" initialValue={[{}]}>
             {(fields, { add: addRow, remove }) => (
               <>

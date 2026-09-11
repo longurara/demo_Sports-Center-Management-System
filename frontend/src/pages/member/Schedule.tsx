@@ -40,7 +40,7 @@ export default function MySchedule() {
         for (const sc of data.schedules.filter((s) => s.classId === c.id && s.dayOfWeek === dow)) {
           const session = data.sessions.find((s) => s.classId === c.id && s.date === ds);
           const att = session ? data.attendances.find((a) => a.sessionId === session.id && a.memberId === me)?.status : undefined;
-          out.push({ key: `${sc.id}_${ds}`, date: ds, start: sc.startTime, end: sc.endTime, kind: 'CLASS', title: c.name, sportId: c.sportId, room: data.rooms.find((r) => r.id === c.roomId)?.name, coachId: c.coachId, classId: c.id, att, color: sport?.color ?? '#2563eb', icon: sport?.icon });
+          out.push({ key: `${sc.id}_${ds}`, date: ds, start: sc.startTime, end: sc.endTime, kind: 'CLASS', title: c.name, sportId: c.sportId, room: data.rooms.find((r) => r.id === c.roomId)?.name, coachId: c.coachId, classId: c.id, att, color: sport?.color ?? '#0f4d34', icon: sport?.icon });
         }
       }
       for (const b of data.courtBookings.filter((x) => x.memberId === me && x.date === ds && x.status !== 'CANCELLED')) {
@@ -107,7 +107,7 @@ export default function MySchedule() {
                   {dayGroups.map(({ d, ds, list }, i) => {
                     const on = i === dayIdx;
                     return (
-                      <div key={ds} onClick={() => setDayIdx(i)} style={{ textAlign: 'center', padding: '6px 0', borderRadius: 10, cursor: 'pointer', background: on ? '#2563eb' : ds === today ? '#eaf1ff' : '#f4f6fb', color: on ? '#fff' : '#0f172a' }}>
+                      <div key={ds} onClick={() => setDayIdx(i)} style={{ textAlign: 'center', padding: '6px 0', borderRadius: 10, cursor: 'pointer', background: on ? '#0f4d34' : ds === today ? '#eaf1ff' : '#f4f6fb', color: on ? '#fff' : '#14130f' }}>
                         <div style={{ fontSize: 10, opacity: .75 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()].replace('Thứ ', 'T').replace('Chủ nhật', 'CN')}</div>
                         <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.2 }}>{d.format('DD')}</div>
                         <div style={{ display: 'flex', justifyContent: 'center', gap: 2, marginTop: 2, height: 5 }}>{list.slice(0, 3).map((x) => <span key={x.key} style={{ width: 5, height: 5, borderRadius: 999, background: on ? '#fff' : x.color }} />)}</div>
@@ -120,17 +120,17 @@ export default function MySchedule() {
             ) : (
               <div>
                 {dayGroups.map(({ d, ds, list }) => (
-                  <div key={ds} style={{ display: 'grid', gridTemplateColumns: isMobile ? '52px 1fr' : '90px 1fr', gap: isMobile ? 8 : 12, padding: '10px 0', borderBottom: '1px solid #f1f5f9' }}>
+                  <div key={ds} style={{ display: 'grid', gridTemplateColumns: isMobile ? '52px 1fr' : '90px 1fr', gap: isMobile ? 8 : 12, padding: '10px 0', borderBottom: '1px solid #f3f1ec' }}>
                     <div style={{ textAlign: 'center', paddingTop: 4 }}>
-                      <div style={{ fontSize: 11, color: ds === today ? '#2563eb' : '#94a3b8', fontWeight: 600 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()].replace('Chủ nhật', 'CN')}</div>
-                      <div style={{ fontSize: 22, fontWeight: 700, color: ds === today ? '#2563eb' : '#0f172a', lineHeight: 1.1 }}>{d.format('DD')}</div>
-                      <div style={{ fontSize: 11, color: '#94a3b8' }}>{d.format(isMobile ? 'MM' : 'MM/YYYY')}</div>
+                      <div style={{ fontSize: 11, color: ds === today ? '#0f4d34' : '#9a968c', fontWeight: 600 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()].replace('Chủ nhật', 'CN')}</div>
+                      <div style={{ fontSize: 22, fontWeight: 700, color: ds === today ? '#0f4d34' : '#14130f', lineHeight: 1.1 }}>{d.format('DD')}</div>
+                      <div style={{ fontSize: 11, color: '#9a968c' }}>{d.format(isMobile ? 'MM' : 'MM/YYYY')}</div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}>
                       {list.length === 0 && <div style={{ color: '#cbd5e1', fontSize: 13, paddingTop: 10 }}>Nghỉ</div>}
                       {list.map((it) => (
                         <div key={it.key} className="sc-hover-row" onClick={() => navigate(it.kind === 'CLASS' ? `/member/classes/${it.classId}` : '/member/courts')}
-                          style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #eef1f6', borderLeft: `4px solid ${it.color}`, cursor: 'pointer', background: '#fff', minWidth: 0 }}>
+                          style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #ece8df', borderLeft: `4px solid ${it.color}`, cursor: 'pointer', background: '#fff', minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                             <span style={{ fontWeight: 700, color: it.color, fontSize: 13, whiteSpace: 'nowrap' }}><ClockCircleOutlined /> {it.start}–{it.end}</span>
                             <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
@@ -140,7 +140,7 @@ export default function MySchedule() {
                             </span>
                           </div>
                           <div style={{ fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.icon} {it.title} {it.kind === 'COURT' && <Tag color="cyan" style={{ marginLeft: 6 }}>Đặt sân</Tag>}</div>
-                          <div style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><EnvironmentOutlined /> {it.room}{it.coachId && <> · <UserOutlined /> HLV {userById(it.coachId)?.fullName}</>}</div>
+                          <div style={{ fontSize: 12, color: '#7a776f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><EnvironmentOutlined /> {it.room}{it.coachId && <> · <UserOutlined /> HLV {userById(it.coachId)?.fullName}</>}</div>
                         </div>
                       ))}
                     </div>
@@ -149,8 +149,8 @@ export default function MySchedule() {
               </div>
             )}
           </Card>
-          <div style={{ display: 'flex', gap: 14, marginTop: 10, fontSize: 12, color: '#64748b', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 14, height: 10, borderRadius: 3, background: '#2563eb22', borderLeft: '3px solid #2563eb' }} />Buổi học lớp</span>
+          <div style={{ display: 'flex', gap: 14, marginTop: 10, fontSize: 12, color: '#7a776f', flexWrap: 'wrap', alignItems: 'center' }}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 14, height: 10, borderRadius: 3, background: '#0f4d3422', borderLeft: '3px solid #0f4d34' }} />Buổi học lớp</span>
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 14, height: 10, borderRadius: 3, border: '1px dashed #0891b2', borderLeft: '3px solid #0891b2' }} />Sân đã đặt</span>
             <span><CheckCircleFilled style={{ color: '#16a34a' }} /> có mặt · <CheckCircleFilled style={{ color: '#f59e0b' }} /> muộn · <CloseCircleFilled style={{ color: '#dc2626' }} /> vắng</span>
             <span style={{ marginLeft: 'auto' }}>Màu theo bộ môn: {enrolled.map((c) => <SportTag key={c.id} id={c.sportId} size="small" />).reduce<ReactNode[]>((acc, x, i) => [...acc, i ? ' ' : null, x], [])}</span>
@@ -161,7 +161,7 @@ export default function MySchedule() {
           <Row gutter={[16, 16]}>
             {/* Buổi tiếp theo */}
             <Col xs={24} md={12} xl={6} xxl={24}>
-            <div style={{ borderRadius: 14, padding: 18, background: 'linear-gradient(135deg,#0b1220 0%,#1d4ed8 140%)', color: '#fff', height: '100%' }}>
+            <div style={{ borderRadius: 14, padding: 18, background: 'linear-gradient(135deg,#14130f 0%,#0f4d34 140%)', color: '#fff', height: '100%' }}>
               <div style={{ fontSize: 11, letterSpacing: '.08em', opacity: .7 }}>BUỔI TIẾP THEO</div>
               {next ? (
                 <>
@@ -188,11 +188,11 @@ export default function MySchedule() {
             <Card size="small" title={isThisWeek ? 'Tuần này' : `Tuần ${weekStart.format('DD/MM')}`} style={{ height: '100%' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
                 {[
-                  { l: 'Buổi học', v: weekClasses.length, c: '#2563eb' },
+                  { l: 'Buổi học', v: weekClasses.length, c: '#0f4d34' },
                   { l: 'Giờ hoạt động', v: `${Math.round(weekHours * 10) / 10}h`, c: '#9333ea' },
                   { l: 'Sân đã đặt', v: items.filter((i) => i.kind === 'COURT').length, c: '#0891b2' },
                   { l: 'Đã điểm danh', v: `${attended}/${weekClasses.filter((i) => i.date <= today).length}`, c: '#16a34a' },
-                ].map((x) => <div key={x.l} style={{ background: '#f8fafc', borderRadius: 10, padding: '8px 10px' }}><div style={{ fontSize: 18, fontWeight: 700, color: x.c }}>{x.v}</div><div style={{ fontSize: 11, color: '#94a3b8' }}>{x.l}</div></div>)}
+                ].map((x) => <div key={x.l} style={{ background: '#f7f5f0', borderRadius: 10, padding: '8px 10px' }}><div style={{ fontSize: 18, fontWeight: 700, color: x.c }}>{x.v}</div><div style={{ fontSize: 11, color: '#9a968c' }}>{x.l}</div></div>)}
               </div>
             </Card>
             </Col>
@@ -200,11 +200,11 @@ export default function MySchedule() {
             {/* Hôm nay */}
             <Col xs={24} md={12} xl={6} xxl={24}>
             <Card size="small" title={`Hôm nay · ${dayjs().format('DD/MM')}`} style={{ height: '100%' }}>
-              {todayItems.length === 0 ? <div style={{ color: '#94a3b8', fontSize: 13 }}>Hôm nay không có lịch — nghỉ ngơi hoặc <a onClick={() => navigate('/member/courts')}>đặt sân</a> nhé.</div>
+              {todayItems.length === 0 ? <div style={{ color: '#9a968c', fontSize: 13 }}>Hôm nay không có lịch — nghỉ ngơi hoặc <a onClick={() => navigate('/member/courts')}>đặt sân</a> nhé.</div>
                 : todayItems.map((it) => (
-                  <div key={it.key} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '6px 0', borderBottom: '1px dashed #f1f5f9' }}>
+                  <div key={it.key} style={{ display: 'flex', gap: 10, alignItems: 'center', padding: '6px 0', borderBottom: '1px dashed #f3f1ec' }}>
                     <div style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, background: it.color }} />
-                    <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 13 }}>{it.title}</div><div style={{ fontSize: 12, color: '#64748b' }}>{it.start}–{it.end} · {it.room}</div></div>
+                    <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 13 }}>{it.title}</div><div style={{ fontSize: 12, color: '#7a776f' }}>{it.start}–{it.end} · {it.room}</div></div>
                     {it.att ? <StatusTag value={it.att} /> : dayjs(`${today} ${it.end}`).isBefore(dayjs()) ? <Tag style={{ margin: 0 }}>Đã qua</Tag> : <Tag color="blue" style={{ margin: 0 }}>Sắp tới</Tag>}
                   </div>
                 ))}
@@ -216,10 +216,10 @@ export default function MySchedule() {
             <Card size="small" title="Lớp đang theo" style={{ height: '100%' }}>
               {enrolled.map((c) => (
                 <div key={c.id} onClick={() => navigate(`/member/classes/${c.id}`)} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '6px 0', cursor: 'pointer' }}>
-                  <span style={{ width: 34, height: 34, borderRadius: 10, background: `${data.sports.find((s) => s.id === c.sportId)?.color ?? '#2563eb'}18`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, flexShrink: 0 }}>{data.sports.find((s) => s.id === c.sportId)?.icon}</span>
+                  <span style={{ width: 34, height: 34, borderRadius: 10, background: `${data.sports.find((s) => s.id === c.sportId)?.color ?? '#0f4d34'}18`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 17, flexShrink: 0 }}>{data.sports.find((s) => s.id === c.sportId)?.icon}</span>
                   <div style={{ minWidth: 0, flex: 1 }}>
                     <div style={{ fontWeight: 600, fontSize: 13, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>
-                    <div style={{ fontSize: 11.5, color: '#64748b' }}>{data.schedules.filter((s) => s.classId === c.id).map((s) => `${DAY_NAMES[s.dayOfWeek].replace('Thứ ', 'T').replace('Chủ nhật', 'CN')} ${s.startTime}`).join(' · ')} · HLV {userById(c.coachId)?.fullName?.split(' ').slice(-1)[0] ?? '—'}</div>
+                    <div style={{ fontSize: 11.5, color: '#7a776f' }}>{data.schedules.filter((s) => s.classId === c.id).map((s) => `${DAY_NAMES[s.dayOfWeek].replace('Thứ ', 'T').replace('Chủ nhật', 'CN')} ${s.startTime}`).join(' · ')} · HLV {userById(c.coachId)?.fullName?.split(' ').slice(-1)[0] ?? '—'}</div>
                   </div>
                 </div>
               ))}

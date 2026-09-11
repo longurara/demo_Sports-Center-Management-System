@@ -83,11 +83,11 @@ export function Showcase() {
 /** Mockup trang chủ thành viên, dựng bằng HTML/CSS thuần (không dùng ảnh). */
 function Mockup() {
   const week = [
-    { d: 'T2', items: [['06:30', 'Gym cơ bản', '#2563eb']] },
+    { d: 'T2', items: [['06:30', 'Gym cơ bản', '#0f4d34']] },
     { d: 'T3', items: [] },
-    { d: 'T4', items: [['06:30', 'Gym cơ bản', '#2563eb'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
-    { d: 'T5', items: [['19:00', 'Yoga tối', '#9333ea']] },
-    { d: 'T6', items: [['06:30', 'Gym cơ bản', '#2563eb'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
+    { d: 'T4', items: [['06:30', 'Gym cơ bản', '#0f4d34'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
+    { d: 'T5', items: [['19:00', 'Yoga tối', '#7c5cbf']] },
+    { d: 'T6', items: [['06:30', 'Gym cơ bản', '#0f4d34'], ['18:00', 'Sân cầu lông 2', '#16a34a']] },
     { d: 'T7', items: [['09:00', 'Bơi tự do', '#0891b2']] },
     { d: 'CN', items: [] },
   ];
@@ -104,7 +104,7 @@ function Mockup() {
         <div className="lp-mock-main">
           <div className="lp-mock-head"><b>Xin chào, Dũng</b><span style={{ textTransform: 'capitalize' }}>{dayjs().format('dddd, DD/MM/YYYY')}</span></div>
           <div className="lp-mock-stats">
-            {[['Gói của bạn', 'All-access 3 tháng', '#2563eb', 'Còn 47 ngày · giảm 25% sân'], ['Buổi tập tháng này', '12', '#16a34a', '+3 so với tháng trước'], ['Kỷ lục mới', 'Squat 40 kg', '#9333ea', 'Tuần trước: 37,5 kg'], ['Sân đã đặt', 'Tối nay 18:00', '#f97316', 'Sân cầu lông 2 · 2 giờ']].map(([t, v, c, h]) => (
+            {[['Gói của bạn', 'All-access 3 tháng', '#0f4d34', 'Còn 47 ngày · giảm 25% sân'], ['Buổi tập tháng này', '12', '#16a34a', '+3 so với tháng trước'], ['Kỷ lục mới', 'Squat 40 kg', '#7c5cbf', 'Tuần trước: 37,5 kg'], ['Sân đã đặt', 'Tối nay 18:00', '#c94a1e', 'Sân cầu lông 2 · 2 giờ']].map(([t, v, c, h]) => (
               <div key={t} className="lp-mock-stat"><i style={{ background: c }} /><div><small>{t}</small><b>{v}</b><em>{h}</em></div></div>
             ))}
           </div>

@@ -32,14 +32,14 @@ export default function MemberHome() {
       )}
       <Row gutter={[16, 16]}>
         <Col xs={24} md={9}>
-          <Card style={{ height: '100%', background: 'linear-gradient(135deg,#0b1220 0%,#1d4ed8 120%)', border: 'none', color: '#fff' }} styles={{ body: { padding: 22 } }}>
+          <Card style={{ height: '100%', background: 'linear-gradient(135deg,#14130f 0%,#0f4d34 120%)', border: 'none', color: '#fff' }} styles={{ body: { padding: 22 } }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ opacity: .7, fontSize: 13 }}>Gói thành viên</span><StatusTag value={st} />
             </div>
             {sub && plan ? (
               <>
                 <div style={{ fontSize: 34, fontWeight: 700, marginTop: 10, letterSpacing: -1 }}>{daysLeft} <span style={{ fontSize: 14, fontWeight: 500, opacity: .8 }}>ngày còn lại</span></div>
-                <Progress percent={pct} showInfo={false} strokeColor="#fb923c" railColor="rgba(255,255,255,.15)" style={{ margin: '6px 0' }} />
+                <Progress percent={pct} showInfo={false} strokeColor="#e07a4f" railColor="rgba(255,255,255,.15)" style={{ margin: '6px 0' }} />
                 <div style={{ opacity: .85, fontSize: 13 }}>{plan.name} · hết hạn {dayjs(sub.endDate).format('DD/MM/YYYY')}</div>
               </>
             ) : <Button style={{ marginTop: 16 }} onClick={() => navigate('/member/plans')}>Đăng ký gói ngay</Button>}
@@ -47,7 +47,7 @@ export default function MemberHome() {
         </Col>
         <Col xs={12} md={5}><StatCard title="Lớp đang học" value={myClasses.length} icon={<BookOutlined />} color="#9333ea" onClick={() => navigate('/member/classes')} /></Col>
         <Col xs={12} md={5}><StatCard title="Chuyên cần" value={`${attendanceRate}%`} icon={<CalendarOutlined />} color="#16a34a" hint={`${att.length} buổi đã điểm danh`} onClick={() => navigate('/member/attendance')} /></Col>
-        <Col xs={12} md={5}><StatCard title="Thông báo mới" value={unread.length} icon={<BellOutlined />} color="#f97316" onClick={() => navigate('/member/notifications')} /></Col>
+        <Col xs={12} md={5}><StatCard title="Thông báo mới" value={unread.length} icon={<BellOutlined />} color="#c94a1e" onClick={() => navigate('/member/notifications')} /></Col>
       </Row>
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={14}>
@@ -55,7 +55,7 @@ export default function MemberHome() {
             <List dataSource={upcoming} renderItem={(s) => { const c = myClasses.find((x) => x.id === s.classId)!; return (
               <List.Item actions={[<Tag>{data.rooms.find((r) => r.id === c.roomId)?.name}</Tag>]}>
                 <List.Item.Meta
-                  avatar={<div style={{ width: 52, textAlign: 'center', background: '#eff6ff', borderRadius: 10, padding: '6px 0', color: '#2563eb', fontWeight: 700, fontSize: 12, lineHeight: 1.3 }}>{DAY_NAMES[s.dayOfWeek].replace('Thứ ', 'T')}<br /><span style={{ fontWeight: 500 }}>{s.startTime}</span></div>}
+                  avatar={<div style={{ width: 52, textAlign: 'center', background: '#e3efe8', borderRadius: 10, padding: '6px 0', color: '#0f4d34', fontWeight: 700, fontSize: 12, lineHeight: 1.3 }}>{DAY_NAMES[s.dayOfWeek].replace('Thứ ', 'T')}<br /><span style={{ fontWeight: 500 }}>{s.startTime}</span></div>}
                   title={<b>{c.name}</b>} description={`${s.startTime} – ${s.endTime} · HLV ${nameOf(c.coachId)}`} />
               </List.Item>
             ); }} locale={{ emptyText: 'Bạn chưa đăng ký lớp nào' }} />

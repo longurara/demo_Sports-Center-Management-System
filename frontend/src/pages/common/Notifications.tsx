@@ -8,10 +8,10 @@ import { useApp } from '../../store/AppContext';
 const kindOf = (title: string) => {
   const t = title.toLowerCase();
   if (/hết hạn|khóa/.test(t)) return { icon: <WarningOutlined />, color: '#f59e0b' };
-  if (/lịch|lớp|phân công/.test(t)) return { icon: <CalendarOutlined />, color: '#2563eb' };
+  if (/lịch|lớp|phân công/.test(t)) return { icon: <CalendarOutlined />, color: '#0f4d34' };
   if (/thanh toán|gia hạn|kích hoạt|hóa đơn/.test(t)) return { icon: <DollarOutlined />, color: '#16a34a' };
   if (/bài tập|kế hoạch|kết quả|nhận xét/.test(t)) return { icon: <FileTextOutlined />, color: '#9333ea' };
-  return { icon: <BellOutlined />, color: '#64748b' };
+  return { icon: <BellOutlined />, color: '#7a776f' };
 };
 
 export default function Notifications() {
@@ -39,11 +39,11 @@ export default function Notifications() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', gap: 12 }}>
                     <div style={{ fontWeight: n.read ? 500 : 700 }}>{n.title}</div>
-                    <Tooltip title={n.createdAt}><span style={{ fontSize: 12, color: '#94a3b8', whiteSpace: 'nowrap' }}>{dayjs(n.createdAt).fromNow()}</span></Tooltip>
+                    <Tooltip title={n.createdAt}><span style={{ fontSize: 12, color: '#9a968c', whiteSpace: 'nowrap' }}>{dayjs(n.createdAt).fromNow()}</span></Tooltip>
                   </div>
-                  <div style={{ color: '#475569', fontSize: 13.5, marginTop: 2 }}>{n.content}</div>
+                  <div style={{ color: '#3d3b35', fontSize: 13.5, marginTop: 2 }}>{n.content}</div>
                 </div>
-                {!n.read && <span style={{ width: 8, height: 8, borderRadius: 999, background: '#2563eb', marginTop: 6, flexShrink: 0 }} />}
+                {!n.read && <span style={{ width: 8, height: 8, borderRadius: 999, background: '#0f4d34', marginTop: 6, flexShrink: 0 }} />}
               </div>
             );
           })}

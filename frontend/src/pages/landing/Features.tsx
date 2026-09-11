@@ -143,11 +143,11 @@ function ProgressVisual() {
     <div className="lp-vis">
       <div className="lp-vis-head"><b>Tiến độ · Nguyễn Văn Dũng</b><span className="lp-chip orange">🏆 PR mới: Squat 40kg</span></div>
       <svg viewBox="0 0 320 90" className="lp-chart">
-        <defs><linearGradient id="lpg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#2563eb" stopOpacity=".35" /><stop offset="1" stopColor="#2563eb" stopOpacity="0" /></linearGradient></defs>
+        <defs><linearGradient id="lpg" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stopColor="#0f4d34" stopOpacity=".35" /><stop offset="1" stopColor="#0f4d34" stopOpacity="0" /></linearGradient></defs>
         {[20, 40, 60].map((y) => <line key={y} x1="10" x2="310" y1={y} y2={y} stroke="#e6eaf2" strokeDasharray="3 3" />)}
         <motion.path d={`${d} L 300 90 L 20 90 Z`} fill="url(#lpg)" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.9, duration: 0.6 }} />
-        <motion.path d={d} fill="none" stroke="#2563eb" strokeWidth="3" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.3, ease: EASE, delay: 0.2 }} />
-        {pts.map(([x, y], i) => <motion.circle key={i} cx={20 + x * 40} cy={y} r="4" fill="#fff" stroke="#2563eb" strokeWidth="2.5" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 + i * 0.15 }} />)}
+        <motion.path d={d} fill="none" stroke="#0f4d34" strokeWidth="3" strokeLinecap="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.3, ease: EASE, delay: 0.2 }} />
+        {pts.map(([x, y], i) => <motion.circle key={i} cx={20 + x * 40} cy={y} r="4" fill="#fff" stroke="#0f4d34" strokeWidth="2.5" initial={{ scale: 0, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ delay: 0.3 + i * 0.15 }} />)}
       </svg>
       <div className="lp-metrics">
         {[['Squat', '40 kg', '+2.5'], ['Plank', '80 s', '+10'], ['Chạy 3km', '17.8 phút', '−0.4'], ['RPE', '7 / 10', '']].map(([n, v, dlt], i) => (

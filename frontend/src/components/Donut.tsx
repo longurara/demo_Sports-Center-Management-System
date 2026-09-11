@@ -16,9 +16,9 @@ export default function Donut({ items, size = 150, thickness = 22, center, forma
         {items.map((i) => (
           <div key={i.label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
             <span style={{ width: 10, height: 10, borderRadius: 999, background: i.color, flexShrink: 0 }} />
-            <span style={{ flex: 1, color: '#475569' }}>{i.label}{i.hint && <span style={{ color: '#94a3b8', fontSize: 12 }}> · {i.hint}</span>}</span>
+            <span style={{ flex: 1, color: '#3d3b35' }}>{i.label}{i.hint && <span style={{ color: '#9a968c', fontSize: 12 }}> · {i.hint}</span>}</span>
             <b>{format ? format(i.value) : i.value}</b>
-            <span style={{ color: '#94a3b8', width: 38, textAlign: 'right' }}>{Math.round((i.value / total) * 100)}%</span>
+            <span style={{ color: '#9a968c', width: 38, textAlign: 'right' }}>{Math.round((i.value / total) * 100)}%</span>
           </div>
         ))}
       </div>

@@ -48,7 +48,7 @@ export default function Courts() {
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
             {days.map((d) => {
               const k = d.format('YYYY-MM-DD'); const active = k === date;
-              return <div key={k} onClick={() => { setDate(k); setSel(null); }} style={{ cursor: 'pointer', padding: '4px 10px', borderRadius: 8, textAlign: 'center', lineHeight: 1.2, background: active ? '#2563eb' : '#f4f6fb', color: active ? '#fff' : '#334155', minWidth: 46 }}>
+              return <div key={k} onClick={() => { setDate(k); setSel(null); }} style={{ cursor: 'pointer', padding: '4px 10px', borderRadius: 8, textAlign: 'center', lineHeight: 1.2, background: active ? '#0f4d34' : '#f4f6fb', color: active ? '#fff' : '#3d3b35', minWidth: 46 }}>
                 <div style={{ fontSize: 10, opacity: .8 }}>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.day()]}</div><div style={{ fontSize: 13, fontWeight: 700 }}>{d.format('DD')}</div>
               </div>;
             })}
@@ -59,26 +59,26 @@ export default function Courts() {
 
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={17}>
-          <Card title={<span><SportTag id={sport} /> <span style={{ marginLeft: 8, fontWeight: 500, color: '#64748b', fontSize: 13 }}>{dayjs(date).format('dddd, DD/MM/YYYY')}</span></span>} size="small">
+          <Card title={<span><SportTag id={sport} /> <span style={{ marginLeft: 8, fontWeight: 500, color: '#7a776f', fontSize: 13 }}>{dayjs(date).format('dddd, DD/MM/YYYY')}</span></span>} size="small">
             {courts.length === 0 ? <Empty description="Bộ môn này chưa có sân" /> : <CourtGrid courts={courts} date={date} meId={me.id} selection={sel} onSelect={setSel} onBookingClick={(b) => b.memberId === me.id && message.info(`Bạn đã đặt ${b.startTime}–${b.endTime}`)} />}
           </Card>
         </Col>
         <Col xs={24} xl={7}>
           <Card title="Khung giờ đã chọn" size="small" style={{ position: 'sticky', top: 80 }}>
             {!sel || !court || !quote ? (
-              <div style={{ color: '#94a3b8', textAlign: 'center', padding: '20px 0' }}><ClockCircleOutlined style={{ fontSize: 28, marginBottom: 8 }} /><div>Click vào ô trống trên lưới để chọn giờ.<br />Click ô kề bên để kéo dài (tối đa 3 giờ).</div></div>
+              <div style={{ color: '#9a968c', textAlign: 'center', padding: '20px 0' }}><ClockCircleOutlined style={{ fontSize: 28, marginBottom: 8 }} /><div>Click vào ô trống trên lưới để chọn giờ.<br />Click ô kề bên để kéo dài (tối đa 3 giờ).</div></div>
             ) : (
               <div>
                 <div style={{ fontWeight: 700, fontSize: 16 }}>{court.name}</div>
-                <div style={{ color: '#64748b', fontSize: 13 }}>{court.location} · sức chứa {court.capacity} người</div>
-                <div style={{ margin: '12px 0', padding: 12, background: '#f8fafc', borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <div><div style={{ fontSize: 11, color: '#94a3b8' }}>NGÀY</div><b>{dayjs(date).format('DD/MM/YYYY')}</b></div>
-                  <div><div style={{ fontSize: 11, color: '#94a3b8' }}>GIỜ</div><b>{hh(sel.start)}–{hh(sel.start + sel.hours)}</b> <span style={{ color: '#94a3b8' }}>({sel.hours}h)</span></div>
+                <div style={{ color: '#7a776f', fontSize: 13 }}>{court.location} · sức chứa {court.capacity} người</div>
+                <div style={{ margin: '12px 0', padding: 12, background: '#f7f5f0', borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                  <div><div style={{ fontSize: 11, color: '#9a968c' }}>NGÀY</div><b>{dayjs(date).format('DD/MM/YYYY')}</b></div>
+                  <div><div style={{ fontSize: 11, color: '#9a968c' }}>GIỜ</div><b>{hh(sel.start)}–{hh(sel.start + sel.hours)}</b> <span style={{ color: '#9a968c' }}>({sel.hours}h)</span></div>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Giá niêm yết</span><span>{fmtMoney(quote.base)}</span></div>
                 {quote.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#16a34a' }}><span>Ưu đãi gói {quote.plan?.name}</span><span>−{quote.discount}%</span></div>}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, marginTop: 6, borderTop: '1px dashed #e2e8f0', paddingTop: 8 }}><span>Thanh toán</span><span className="sc-nowrap">{fmtMoney(quote.price)}</span></div>
-                {quote.discount === 0 && <div style={{ fontSize: 12, color: '#64748b', marginTop: 6 }}><InfoCircleOutlined /> Đăng ký gói All-access để được giảm 20–40% thuê sân. <a onClick={() => navigate('/member/plans')}>Xem gói</a></div>}
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, marginTop: 6, borderTop: '1px dashed #e2ddd2', paddingTop: 8 }}><span>Thanh toán</span><span className="sc-nowrap">{fmtMoney(quote.price)}</span></div>
+                {quote.discount === 0 && <div style={{ fontSize: 12, color: '#7a776f', marginTop: 6 }}><InfoCircleOutlined /> Đăng ký gói All-access để được giảm 20–40% thuê sân. <a onClick={() => navigate('/member/plans')}>Xem gói</a></div>}
                 {conflict && <Alert type="error" showIcon title={conflict} style={{ marginTop: 10 }} />}
                 <Button type="primary" size="large" block style={{ marginTop: 14 }} disabled={!!conflict} onClick={() => navigate(`/member/checkout/court/${court.id}?date=${date}&start=${sel.start}&hours=${sel.hours}`)}>Đặt sân & thanh toán</Button>
                 <Button block style={{ marginTop: 8 }} onClick={() => setSel(null)}>Bỏ chọn</Button>
@@ -96,7 +96,7 @@ export default function Courts() {
           { title: 'Trạng thái', dataIndex: 'status', render: (v) => <StatusTag value={v} /> },
           { title: '', render: (_, r) => r.status === 'BOOKED' && (canCancel(r.date, r.startTime)
             ? <Popconfirm title="Hủy lượt đặt sân này?" description="Hủy trước 2 giờ được hoàn 100%." onConfirm={() => cancel(r.id)}><Button size="small" danger>Hủy</Button></Popconfirm>
-            : <span style={{ fontSize: 12, color: '#94a3b8' }}>Không thể hủy (dưới 2h)</span>) },
+            : <span style={{ fontSize: 12, color: '#9a968c' }}>Không thể hủy (dưới 2h)</span>) },
         ]} />
       </Card>
     </Page>

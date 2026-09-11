@@ -20,9 +20,9 @@ export default function CoachDashboard() {
   return (
     <Page title={`Chào HLV ${me.fullName.split(' ').pop()} 💪`} subtitle={`${DAY_NAMES[dow]}, ${dayjs().format('DD/MM/YYYY')}`} noCard>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Lớp phụ trách" value={myClasses.length} icon={<BookOutlined />} color="#2563eb" onClick={() => navigate('/coach/classes')} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Lớp phụ trách" value={myClasses.length} icon={<BookOutlined />} color="#0f4d34" onClick={() => navigate('/coach/classes')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Học viên" value={students.size} icon={<TeamOutlined />} color="#16a34a" /></Col>
-        <Col xs={12} xl={6}><StatCard title="Buổi dạy hôm nay" value={today.length} icon={<CalendarOutlined />} color="#f97316" onClick={() => navigate('/coach/schedule')} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Buổi dạy hôm nay" value={today.length} icon={<CalendarOutlined />} color="#c94a1e" onClick={() => navigate('/coach/schedule')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Buổi đã điểm danh" value={sessionsThisWeek.length} icon={<CheckSquareOutlined />} color="#9333ea" hint="7 ngày qua" onClick={() => navigate('/coach/attendance')} /></Col>
       </Row>
       <Row gutter={[16, 16]}>

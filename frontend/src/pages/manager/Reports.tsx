@@ -104,9 +104,9 @@ export default function Reports() {
       </Space>
     } noCard>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Tổng doanh thu" value={fmtMoney(total)} icon={<DollarOutlined />} color="#2563eb" hint={`${inRange.length} giao dịch`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Tổng doanh thu" value={fmtMoney(total)} icon={<DollarOutlined />} color="#0f4d34" hint={`${inRange.length} giao dịch`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Gói thành viên" value={fmtMoney(byType[0].value)} icon={<GiftOutlined />} color="#9333ea" hint={`${Math.round((byType[0].value / Math.max(1, total)) * 100)}% tổng doanh thu`} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Học phí lớp" value={fmtMoney(byType[1].value)} icon={<ReadOutlined />} color="#f97316" hint={`${Math.round((byType[1].value / Math.max(1, total)) * 100)}% tổng doanh thu`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Học phí lớp" value={fmtMoney(byType[1].value)} icon={<ReadOutlined />} color="#c94a1e" hint={`${Math.round((byType[1].value / Math.max(1, total)) * 100)}% tổng doanh thu`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Thuê sân" value={fmtMoney(byType[2].value)} icon={<FieldTimeOutlined />} color="#06b6d4" hint={`${inRange.filter((p) => p.type === 'COURT').length} lượt · ${Math.round((byType[2].value / Math.max(1, total)) * 100)}% doanh thu`} /></Col>
       </Row>
       <Card>
@@ -119,16 +119,16 @@ export default function Reports() {
                     <b>Doanh thu theo thời gian</b>
                     <Radio.Group size="small" value={gran} onChange={(e) => setGran(e.target.value)} options={[{ value: 'day', label: 'Ngày' }, { value: 'month', label: 'Tháng' }, { value: 'year', label: 'Năm' }]} optionType="button" />
                   </div>
-                  <Column data={revenueSeries} xField="period" yField="revenue" colorField="type" group height={300} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 44 }} scale={{ color: { range: ['#2563eb', '#f97316', '#06b6d4'] } }} axis={{ y: { labelFormatter: (v: number) => (v / 1e6).toFixed(1) + 'tr', grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => fmtMoney(v) }] }} />
+                  <Column data={revenueSeries} xField="period" yField="revenue" colorField="type" group height={300} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 44 }} scale={{ color: { range: ['#0f4d34', '#c94a1e', '#06b6d4'] } }} axis={{ y: { labelFormatter: (v: number) => (v / 1e6).toFixed(1) + 'tr', grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => fmtMoney(v) }] }} />
                 </Col>
                 <Col xs={24} xl={8}>
                   <b>Theo loại doanh thu</b>
                   <div style={{ margin: '12px 0 20px' }}>
-                    <Donut size={120} thickness={18} items={byType.map((t, i) => ({ label: t.type, value: t.value, color: ['#2563eb', '#f97316', '#06b6d4'][i] }))} format={(v) => fmtMoney(v)} center={<div style={{ fontSize: 11, color: '#94a3b8' }}>Tổng<br /><b style={{ color: '#0f172a', fontSize: 13 }}>{(total / 1e6).toFixed(1)}tr</b></div>} />
+                    <Donut size={120} thickness={18} items={byType.map((t, i) => ({ label: t.type, value: t.value, color: ['#0f4d34', '#c94a1e', '#06b6d4'][i] }))} format={(v) => fmtMoney(v)} center={<div style={{ fontSize: 11, color: '#9a968c' }}>Tổng<br /><b style={{ color: '#14130f', fontSize: 13 }}>{(total / 1e6).toFixed(1)}tr</b></div>} />
                   </div>
                   <b>Theo phương thức thanh toán</b>
                   <div style={{ marginTop: 12 }}>
-                    <Donut size={120} thickness={18} items={byMethod.map((m, i) => ({ label: m.method, value: m.value, color: ['#64748b', '#2563eb', '#06b6d4', '#db2777'][i], hint: `${m.count} GD` }))} format={(v) => fmtMoney(v)} center={<div style={{ fontSize: 11, color: '#94a3b8' }}>{inRange.length}<br />GD</div>} />
+                    <Donut size={120} thickness={18} items={byMethod.map((m, i) => ({ label: m.method, value: m.value, color: ['#7a776f', '#0f4d34', '#06b6d4', '#db2777'][i], hint: `${m.count} GD` }))} format={(v) => fmtMoney(v)} center={<div style={{ fontSize: 11, color: '#9a968c' }}>{inRange.length}<br />GD</div>} />
                   </div>
                 </Col>
               </Row>
@@ -137,10 +137,10 @@ export default function Reports() {
           {
             key: 'classes', label: 'Lớp học', children: (
               <Table size="middle" pagination={false} dataSource={classFill} columns={[
-                { title: 'Lớp', dataIndex: 'name', render: (v, r) => <><b>{v}</b><div style={{ fontSize: 12, color: '#64748b' }}>{r.sport}</div></> },
+                { title: 'Lớp', dataIndex: 'name', render: (v, r) => <><b>{v}</b><div style={{ fontSize: 12, color: '#7a776f' }}>{r.sport}</div></> },
                 { title: 'HLV', dataIndex: 'coach' },
                 { title: 'Sĩ số', render: (_, r) => `${r.n}/${r.capacity}` },
-                { title: 'Lấp đầy', dataIndex: 'rate', width: 180, render: (v) => <Progress percent={v} size="small" strokeColor={v >= 80 ? '#16a34a' : v >= 40 ? '#2563eb' : '#f59e0b'} /> },
+                { title: 'Lấp đầy', dataIndex: 'rate', width: 180, render: (v) => <Progress percent={v} size="small" strokeColor={v >= 80 ? '#16a34a' : v >= 40 ? '#0f4d34' : '#f59e0b'} /> },
                 { title: 'Buổi đã dạy', dataIndex: 'sessions', align: 'right' },
                 { title: 'Chuyên cần', dataIndex: 'attRate', render: (v) => <Tag color={v >= 85 ? 'green' : v >= 70 ? 'blue' : 'orange'}>{v}%</Tag> },
                 { title: 'Doanh thu', dataIndex: 'revenue', align: 'right', render: (v) => <b>{fmtMoney(v)}</b>, sorter: (a, b) => a.revenue - b.revenue },
@@ -178,13 +178,13 @@ export default function Reports() {
           {
             key: 'courts', label: 'Sân', children: (
               <Table size="middle" pagination={false} dataSource={courtUtil} columns={[
-                { title: 'Sân', render: (_, r) => <><b>{r.name}</b><div style={{ fontSize: 12, color: '#64748b' }}><SportTag id={r.sportId} size="small" /> · {r.location}</div></> },
+                { title: 'Sân', render: (_, r) => <><b>{r.name}</b><div style={{ fontSize: 12, color: '#7a776f' }}><SportTag id={r.sportId} size="small" /> · {r.location}</div></> },
                 { title: 'Giá/giờ', dataIndex: 'rate', align: 'right', render: (v) => <span className="sc-nowrap">{fmtMoney(v)}</span> },
-                { title: 'Lượt đặt', dataIndex: 'bookings', align: 'center', render: (v, r) => <span>{v} <span style={{ fontSize: 11, color: '#94a3b8' }}>({r.online} online)</span></span> },
+                { title: 'Lượt đặt', dataIndex: 'bookings', align: 'center', render: (v, r) => <span>{v} <span style={{ fontSize: 11, color: '#9a968c' }}>({r.online} online)</span></span> },
                 { title: 'Giờ sử dụng', dataIndex: 'hours', align: 'center' },
                 { title: 'Hủy', dataIndex: 'cancelled', align: 'center', render: (v) => v ? <Tag color="red" style={{ margin: 0 }}>{v}</Tag> : '0' },
                 { title: 'Giờ cao điểm', dataIndex: 'peakHour', align: 'center' },
-                { title: 'Công suất (6h–22h)', dataIndex: 'util', width: 200, render: (v) => <Progress percent={v} size="small" strokeColor={v >= 40 ? '#16a34a' : v >= 20 ? '#2563eb' : '#f59e0b'} /> },
+                { title: 'Công suất (6h–22h)', dataIndex: 'util', width: 200, render: (v) => <Progress percent={v} size="small" strokeColor={v >= 40 ? '#16a34a' : v >= 20 ? '#0f4d34' : '#f59e0b'} /> },
                 { title: 'Doanh thu', dataIndex: 'revenue', align: 'right', render: (v) => <b className="sc-nowrap">{fmtMoney(v)}</b>, sorter: (a, b) => a.revenue - b.revenue },
               ]} />
             ),
@@ -192,7 +192,7 @@ export default function Reports() {
           {
             key: 'rooms', label: 'Phòng tập', children: (
               <Table size="middle" pagination={false} dataSource={roomUtil} columns={[
-                { title: 'Phòng', dataIndex: 'name', render: (v, r) => <><b>{v}</b><div style={{ fontSize: 12, color: '#64748b' }}>{r.location} · {r.capacity} chỗ</div></> },
+                { title: 'Phòng', dataIndex: 'name', render: (v, r) => <><b>{v}</b><div style={{ fontSize: 12, color: '#7a776f' }}>{r.location} · {r.capacity} chỗ</div></> },
                 { title: 'Ca / tuần', dataIndex: 'slots', align: 'center' },
                 { title: 'Giờ / tuần', dataIndex: 'hours', align: 'center' },
                 { title: 'Ngày hoạt động', dataIndex: 'days' },

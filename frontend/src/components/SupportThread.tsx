@@ -58,11 +58,11 @@ export default function SupportThread({ requestId, onClose }: { requestId: strin
 
   return (
     <Drawer open={!!requestId} onClose={onClose} width={520} styles={{ body: { display: 'flex', flexDirection: 'column', padding: 0 } }}
-      title={<div><div style={{ fontWeight: 700 }}>{req.title}</div><div style={{ fontSize: 12, color: '#64748b', fontWeight: 400 }}>#{req.id.toUpperCase()} · {member?.fullName} · {dayjs(req.createdAt).fromNow()}</div></div>}
+      title={<div><div style={{ fontWeight: 700 }}>{req.title}</div><div style={{ fontSize: 12, color: '#7a776f', fontWeight: 400 }}>#{req.id.toUpperCase()} · {member?.fullName} · {dayjs(req.createdAt).fromNow()}</div></div>}
       extra={<StatusTag value={req.status} />}
     >
-      <div style={{ padding: '12px 20px', background: '#f8fafc', borderBottom: '1px solid #eef1f6', fontSize: 13 }}>
-        <div style={{ color: '#64748b', fontSize: 11, letterSpacing: '.06em', marginBottom: 4 }}>NỘI DUNG YÊU CẦU</div>
+      <div style={{ padding: '12px 20px', background: '#f7f5f0', borderBottom: '1px solid #ece8df', fontSize: 13 }}>
+        <div style={{ color: '#7a776f', fontSize: 11, letterSpacing: '.06em', marginBottom: 4 }}>NỘI DUNG YÊU CẦU</div>
         <div>{req.content}</div>
         <div style={{ marginTop: 8, display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <Tag style={{ background: '#fff' }}>Người xử lý: <b>{req.handledBy ? nameOf(req.handledBy) : 'Chưa tiếp nhận'}</b></Tag>
@@ -73,7 +73,7 @@ export default function SupportThread({ requestId, onClose }: { requestId: strin
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto', padding: 20 }}>
-        {msgs.length === 0 && <div style={{ textAlign: 'center', color: '#94a3b8', padding: 24 }}>{isStaff ? 'Chưa có phản hồi. Hãy trả lời thành viên.' : 'Lễ tân sẽ phản hồi sớm. Bạn có thể bổ sung thông tin bên dưới.'}</div>}
+        {msgs.length === 0 && <div style={{ textAlign: 'center', color: '#9a968c', padding: 24 }}>{isStaff ? 'Chưa có phản hồi. Hãy trả lời thành viên.' : 'Lễ tân sẽ phản hồi sớm. Bạn có thể bổ sung thông tin bên dưới.'}</div>}
         {msgs.map((m) => {
           const mine = m.senderId === me.id;
           const sender = userById(m.senderId);
@@ -81,9 +81,9 @@ export default function SupportThread({ requestId, onClose }: { requestId: strin
             <div key={m.id} style={{ display: 'flex', gap: 10, marginBottom: 14, flexDirection: mine ? 'row-reverse' : 'row', alignItems: 'flex-end' }}>
               <Tooltip title={sender?.fullName}><Avatar size={30} style={{ background: `${avatarColor(sender)}1a`, color: avatarColor(sender), fontWeight: 600, fontSize: 11, flexShrink: 0 }}>{initialsOf(sender?.fullName)}</Avatar></Tooltip>
               <div style={{ maxWidth: '78%' }}>
-                {!mine && <div style={{ fontSize: 11, color: '#64748b', marginBottom: 2 }}>{sender?.fullName} · <StatusTag value={sender?.role} /></div>}
-                <div style={{ background: mine ? '#2563eb' : '#f1f5f9', color: mine ? '#fff' : '#0f172a', padding: '9px 13px', borderRadius: 14, borderBottomRightRadius: mine ? 4 : 14, borderBottomLeftRadius: mine ? 14 : 4, fontSize: 13.5, lineHeight: 1.55, whiteSpace: 'pre-line' }}>{m.content}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 3, textAlign: mine ? 'right' : 'left' }}>{dayjs(m.createdAt).format('HH:mm DD/MM')}</div>
+                {!mine && <div style={{ fontSize: 11, color: '#7a776f', marginBottom: 2 }}>{sender?.fullName} · <StatusTag value={sender?.role} /></div>}
+                <div style={{ background: mine ? '#0f4d34' : '#f3f1ec', color: mine ? '#fff' : '#14130f', padding: '9px 13px', borderRadius: 14, borderBottomRightRadius: mine ? 4 : 14, borderBottomLeftRadius: mine ? 14 : 4, fontSize: 13.5, lineHeight: 1.55, whiteSpace: 'pre-line' }}>{m.content}</div>
+                <div style={{ fontSize: 11, color: '#9a968c', marginTop: 3, textAlign: mine ? 'right' : 'left' }}>{dayjs(m.createdAt).format('HH:mm DD/MM')}</div>
               </div>
             </div>
           );
@@ -91,14 +91,14 @@ export default function SupportThread({ requestId, onClose }: { requestId: strin
         <div ref={bottom} />
       </div>
 
-      <div style={{ padding: 16, borderTop: '1px solid #eef1f6', background: '#fff' }}>
-        {req.status === 'RESOLVED' && !isStaff && <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 6 }}>Yêu cầu đã hoàn tất — trả lời sẽ tự động mở lại yêu cầu.</div>}
+      <div style={{ padding: 16, borderTop: '1px solid #ece8df', background: '#fff' }}>
+        {req.status === 'RESOLVED' && !isStaff && <div style={{ fontSize: 12, color: '#9a968c', marginBottom: 6 }}>Yêu cầu đã hoàn tất — trả lời sẽ tự động mở lại yêu cầu.</div>}
         <Space.Compact style={{ width: '100%' }}>
           <Input.TextArea autoSize={{ minRows: 1, maxRows: 4 }} value={text} onChange={(e) => setText(e.target.value)} placeholder={isStaff ? 'Trả lời thành viên…' : 'Nhập phản hồi…'}
             onPressEnter={(e) => { if (!e.shiftKey) { e.preventDefault(); send(); } }} />
           <Button type="primary" icon={<SendOutlined />} onClick={send} disabled={!text.trim()}>Gửi</Button>
         </Space.Compact>
-        <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 6 }}>Enter để gửi · Shift+Enter xuống dòng</div>
+        <div style={{ fontSize: 11, color: '#9a968c', marginTop: 6 }}>Enter để gửi · Shift+Enter xuống dòng</div>
       </div>
     </Drawer>
   );

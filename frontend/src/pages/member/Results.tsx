@@ -46,9 +46,9 @@ export default function MyResults() {
   const shown = results.filter((r) => classFilter === 'ALL' || r.cls!.id === classFilter);
 
   const Delta = ({ name, from, to }: { name: string; from?: number; to: number }) => {
-    if (from === undefined) return <span style={{ fontSize: 10.5, color: '#94a3b8' }}>mới</span>;
+    if (from === undefined) return <span style={{ fontSize: 10.5, color: '#9a968c' }}>mới</span>;
     const pct = improvement(name, from, to);
-    if (pct === 0) return <span style={{ fontSize: 10.5, color: '#94a3b8' }}>=</span>;
+    if (pct === 0) return <span style={{ fontSize: 10.5, color: '#9a968c' }}>=</span>;
     const up = pct > 0;
     return <span style={{ fontSize: 10.5, fontWeight: 700, color: up ? '#16a34a' : '#dc2626' }}>{up ? <ArrowUpOutlined /> : <ArrowDownOutlined />} {Math.abs(pct)}%</span>;
   };
@@ -56,9 +56,9 @@ export default function MyResults() {
   return (
     <Page title="Kết quả tập luyện & tiến bộ" subtitle="HLV ghi nhận chỉ số sau mỗi buổi; hệ thống so sánh với buổi trước và theo dõi kỷ lục cá nhân" noCard>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Buổi có kết quả" value={results.length} icon={<LineChartOutlined />} color="#2563eb" hint={`${metricNames.length} chỉ số theo dõi`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Buổi có kết quả" value={results.length} icon={<LineChartOutlined />} color="#0f4d34" hint={`${metricNames.length} chỉ số theo dõi`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Tiến bộ nổi bật" value={best ? `${best.pct > 0 ? '+' : ''}${best.pct}%` : '—'} icon={<RiseOutlined />} color="#16a34a" hint={best ? `${best.name}: ${fmtVal(best.first, metricDef(best.name))} → ${fmtVal(best.last, metricDef(best.name))}${best.unit}` : 'Cần ≥ 2 buổi'} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Gắng sức TB (RPE)" value={avgEffort ? `${avgEffort}/10` : '—'} icon={<FireOutlined />} color="#f97316" hint={avgEffort >= 8 ? 'Cường độ cao — chú ý hồi phục' : avgEffort >= 6 ? 'Cường độ vừa, phù hợp' : 'Có thể tăng độ khó'} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Gắng sức TB (RPE)" value={avgEffort ? `${avgEffort}/10` : '—'} icon={<FireOutlined />} color="#c94a1e" hint={avgEffort >= 8 ? 'Cường độ cao — chú ý hồi phục' : avgEffort >= 6 ? 'Cường độ vừa, phù hợp' : 'Có thể tăng độ khó'} /></Col>
         <Col xs={12} xl={6}><StatCard title="Đánh giá từ HLV" value={avgRating ? `${avgRating.toFixed(1)} ★` : '—'} icon={<StarFilled />} color="#eab308" hint={`${reviews.length} lần đánh giá`} /></Col>
       </Row>
 
@@ -74,15 +74,15 @@ export default function MyResults() {
                     { l: 'Mới nhất', v: `${fmtVal(activeSeries[activeSeries.length - 1].value, activeDef)}${activeSeries[0].unit}`, s: dayjs(activeSeries[activeSeries.length - 1].date).format('DD/MM') },
                     { l: 'Kỷ lục', v: `${fmtVal(pbs.find((p) => p.name === active)!.value, activeDef)}${activeSeries[0].unit}`, s: dayjs(pbs.find((p) => p.name === active)!.date).format('DD/MM') },
                     { l: 'Thay đổi', v: activeSeries.length > 1 ? `${improvement(active!, activeSeries[0].value, activeSeries[activeSeries.length - 1].value) > 0 ? '+' : ''}${improvement(active!, activeSeries[0].value, activeSeries[activeSeries.length - 1].value)}%` : '—', s: activeDef ? (activeDef.higherIsBetter ? 'cao hơn = tốt' : 'thấp hơn = tốt') : '' },
-                  ].map((x) => <div key={x.l}><div style={{ fontSize: 11, color: '#94a3b8' }}>{x.l}</div><div style={{ fontWeight: 700, fontSize: 16 }}>{x.v}</div><div style={{ fontSize: 11, color: '#94a3b8' }}>{x.s}</div></div>)}
+                  ].map((x) => <div key={x.l}><div style={{ fontSize: 11, color: '#9a968c' }}>{x.l}</div><div style={{ fontWeight: 700, fontSize: 16 }}>{x.v}</div><div style={{ fontSize: 11, color: '#9a968c' }}>{x.s}</div></div>)}
                 </div>
-                <Line data={activeSeries.map((s) => ({ date: dayjs(s.date).format('DD/MM'), value: s.value }))} xField="date" yField="value" height={220} smooth point={{ size: 4 }} scale={{ y: { domain: [Math.floor(Math.min(...activeSeries.map((x) => x.value)) * 0.9), Math.ceil(Math.max(...activeSeries.map((x) => x.value)) * 1.08)] } }} style={{ stroke: '#2563eb', lineWidth: 2.5 }} area={{ style: { fill: 'linear-gradient(-90deg, rgba(37,99,235,.02) 0%, rgba(37,99,235,.25) 100%)' } }} axis={{ y: { grid: true, gridLineDash: [4, 4], labelFormatter: (v: number) => `${v}${activeSeries[0].unit}` } }} tooltip={{ items: [{ channel: 'y', name: active, valueFormatter: (v: number) => `${fmtVal(v, activeDef)}${activeSeries[0].unit}` }] }} />
+                <Line data={activeSeries.map((s) => ({ date: dayjs(s.date).format('DD/MM'), value: s.value }))} xField="date" yField="value" height={220} smooth point={{ size: 4 }} scale={{ y: { domain: [Math.floor(Math.min(...activeSeries.map((x) => x.value)) * 0.9), Math.ceil(Math.max(...activeSeries.map((x) => x.value)) * 1.08)] } }} style={{ stroke: '#0f4d34', lineWidth: 2.5 }} area={{ style: { fill: 'linear-gradient(-90deg, rgba(15,77,52,.02) 0%, rgba(15,77,52,.25) 100%)' } }} axis={{ y: { grid: true, gridLineDash: [4, 4], labelFormatter: (v: number) => `${v}${activeSeries[0].unit}` } }} tooltip={{ items: [{ channel: 'y', name: active, valueFormatter: (v: number) => `${fmtVal(v, activeDef)}${activeSeries[0].unit}` }] }} />
               </>
             )}
           </Card>
         </Col>
         <Col xs={24} xl={9}>
-          <Card title="Chỉ số cơ thể theo tuần" size="small" style={{ height: '100%' }} extra={<span style={{ fontSize: 12, color: '#94a3b8' }}>InBody / HLV đo</span>}>
+          <Card title="Chỉ số cơ thể theo tuần" size="small" style={{ height: '100%' }} extra={<span style={{ fontSize: 12, color: '#9a968c' }}>InBody / HLV đo</span>}>
             <BodyMetricsChart memberId={me} height={220} />
           </Card>
         </Col>
@@ -97,10 +97,10 @@ export default function MyResults() {
               const sport = data.sports.find((s) => s.id === r.cls!.sportId);
               const coach = userById(r.coachId);
               return (
-                <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '64px 1fr', gap: 14, padding: '14px 0', borderBottom: '1px solid #f1f5f9' }}>
-                  <div style={{ textAlign: 'center', borderRadius: 10, background: `${sport?.color ?? '#2563eb'}12`, padding: '8px 4px', alignSelf: 'start' }}>
+                <div key={r.id} style={{ display: 'grid', gridTemplateColumns: '64px 1fr', gap: 14, padding: '14px 0', borderBottom: '1px solid #f3f1ec' }}>
+                  <div style={{ textAlign: 'center', borderRadius: 10, background: `${sport?.color ?? '#0f4d34'}12`, padding: '8px 4px', alignSelf: 'start' }}>
                     <div style={{ fontSize: 20, fontWeight: 800, color: sport?.color, lineHeight: 1 }}>{dayjs(r.session.date).format('DD')}</div>
-                    <div style={{ fontSize: 11, color: '#64748b' }}>Th{dayjs(r.session.date).format('M')}</div>
+                    <div style={{ fontSize: 11, color: '#7a776f' }}>Th{dayjs(r.session.date).format('M')}</div>
                     <div style={{ fontSize: 16, marginTop: 4 }}>{sport?.icon}</div>
                   </div>
                   <div style={{ minWidth: 0 }}>
@@ -110,12 +110,12 @@ export default function MyResults() {
                         {r.effort && (
                           <Tooltip title={`Mức gắng sức (RPE) ${r.effort}/10`}>
                             <span style={{ display: 'inline-flex', gap: 2, alignItems: 'center' }}>
-                              <FireOutlined style={{ color: r.effort >= 8 ? '#dc2626' : r.effort >= 6 ? '#f97316' : '#16a34a', fontSize: 12 }} />
-                              {Array.from({ length: 10 }).map((_, i) => <span key={i} style={{ width: 5, height: 10, borderRadius: 2, background: i < (r.effort ?? 0) ? (r.effort! >= 8 ? '#dc2626' : r.effort! >= 6 ? '#f97316' : '#16a34a') : '#e2e8f0' }} />)}
+                              <FireOutlined style={{ color: r.effort >= 8 ? '#dc2626' : r.effort >= 6 ? '#c94a1e' : '#16a34a', fontSize: 12 }} />
+                              {Array.from({ length: 10 }).map((_, i) => <span key={i} style={{ width: 5, height: 10, borderRadius: 2, background: i < (r.effort ?? 0) ? (r.effort! >= 8 ? '#dc2626' : r.effort! >= 6 ? '#c94a1e' : '#16a34a') : '#e2ddd2' }} />)}
                             </span>
                           </Tooltip>
                         )}
-                        <span style={{ fontSize: 12, color: '#94a3b8' }}>{dayjs(r.session.date).format('DD/MM/YYYY')}</span>
+                        <span style={{ fontSize: 12, color: '#9a968c' }}>{dayjs(r.session.date).format('DD/MM/YYYY')}</span>
                       </div>
                     </div>
                     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
@@ -124,16 +124,16 @@ export default function MyResults() {
                         const pb = pbs.find((p) => p.name === e.name);
                         const isPb = pb && pb.date === r.session.date && pb.value === e.value && series.get(e.name)!.length > 1;
                         return (
-                          <div key={e.name} style={{ border: `1px solid ${isPb ? '#fde68a' : '#e2e8f0'}`, background: isPb ? '#fffbeb' : '#f8fafc', borderRadius: 10, padding: '6px 10px', minWidth: 110 }}>
-                            <div style={{ fontSize: 11, color: '#64748b', whiteSpace: 'nowrap' }}>{e.name} {isPb && <Tooltip title="Kỷ lục cá nhân"><TrophyOutlined style={{ color: '#d97706' }} /></Tooltip>}</div>
-                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}><b style={{ fontSize: 15 }}>{fmtVal(e.value, metricDef(e.name))}<span style={{ fontSize: 11, fontWeight: 500, color: '#64748b' }}>{e.unit}</span></b><Delta name={e.name} from={prev} to={e.value} /></div>
+                          <div key={e.name} style={{ border: `1px solid ${isPb ? '#fde68a' : '#e2ddd2'}`, background: isPb ? '#fffbeb' : '#f7f5f0', borderRadius: 10, padding: '6px 10px', minWidth: 110 }}>
+                            <div style={{ fontSize: 11, color: '#7a776f', whiteSpace: 'nowrap' }}>{e.name} {isPb && <Tooltip title="Kỷ lục cá nhân"><TrophyOutlined style={{ color: '#d97706' }} /></Tooltip>}</div>
+                            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}><b style={{ fontSize: 15 }}>{fmtVal(e.value, metricDef(e.name))}<span style={{ fontSize: 11, fontWeight: 500, color: '#7a776f' }}>{e.unit}</span></b><Delta name={e.name} from={prev} to={e.value} /></div>
                           </div>
                         );
                       })}
                     </div>
                     {r.note && <div style={{ marginTop: 8, display: 'flex', gap: 8, alignItems: 'flex-start' }}>
                       <UserCell user={coach} size={22} sub="" />
-                      <div style={{ fontSize: 13, color: '#334155', background: '#fff', border: '1px solid #eef1f6', borderRadius: '0 10px 10px 10px', padding: '6px 10px', flex: 1 }}>“{r.note}”</div>
+                      <div style={{ fontSize: 13, color: '#3d3b35', background: '#fff', border: '1px solid #ece8df', borderRadius: '0 10px 10px 10px', padding: '6px 10px', flex: 1 }}>“{r.note}”</div>
                     </div>}
                   </div>
                 </div>
@@ -146,21 +146,21 @@ export default function MyResults() {
           <Card title={<span><TrophyOutlined style={{ color: '#d97706' }} /> Kỷ lục cá nhân</span>} size="small">
             {pbs.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có" />}
             {pbs.map((p) => (
-              <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px dashed #f1f5f9' }}>
-                <div><div style={{ fontWeight: 600, fontSize: 13 }}>{p.name}</div><div style={{ fontSize: 11, color: '#94a3b8' }}>{dayjs(p.date).format('DD/MM/YYYY')} · {series.get(p.name)!.length} lần đo</div></div>
-                <b style={{ fontSize: 16, color: '#0f172a' }}>{fmtVal(p.value, metricDef(p.name))}<span style={{ fontSize: 11, color: '#64748b', fontWeight: 500 }}>{p.unit}</span></b>
+              <div key={p.name} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '7px 0', borderBottom: '1px dashed #f3f1ec' }}>
+                <div><div style={{ fontWeight: 600, fontSize: 13 }}>{p.name}</div><div style={{ fontSize: 11, color: '#9a968c' }}>{dayjs(p.date).format('DD/MM/YYYY')} · {series.get(p.name)!.length} lần đo</div></div>
+                <b style={{ fontSize: 16, color: '#14130f' }}>{fmtVal(p.value, metricDef(p.name))}<span style={{ fontSize: 11, color: '#7a776f', fontWeight: 500 }}>{p.unit}</span></b>
               </div>
             ))}
           </Card>
           <Card title="Đánh giá tiến độ từ HLV" size="small" style={{ marginTop: 16 }}>
             {reviews.length === 0 && <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Chưa có đánh giá" />}
             {reviews.map((r) => (
-              <div key={r.id} style={{ padding: '10px 0', borderBottom: '1px dashed #f1f5f9' }}>
+              <div key={r.id} style={{ padding: '10px 0', borderBottom: '1px dashed #f3f1ec' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <UserCell id={r.coachId} size={28} sub={dayjs(r.createdAt).format('DD/MM/YYYY')} />
                   <Rate disabled value={r.rating} style={{ fontSize: 14 }} />
                 </div>
-                <div style={{ fontSize: 13, color: '#334155', marginTop: 6 }}>{r.comment}</div>
+                <div style={{ fontSize: 13, color: '#3d3b35', marginTop: 6 }}>{r.comment}</div>
                 <Tag color={r.rating >= 4 ? 'green' : r.rating >= 3 ? 'blue' : 'orange'} style={{ marginTop: 6 }}>{r.rating >= 4 ? 'Tiến bộ tốt' : r.rating >= 3 ? 'Đúng lộ trình' : 'Cần cố gắng hơn'}</Tag>
               </div>
             ))}

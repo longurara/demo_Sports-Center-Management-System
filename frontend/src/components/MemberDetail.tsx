@@ -58,7 +58,7 @@ export default function MemberDetail({ receptionist }: { receptionist?: boolean 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                 <b style={{ fontSize: 16 }}>{u.fullName}</b><StatusTag value={u.status} />
               </div>
-              <div style={{ color: '#64748b', fontSize: 13, marginBottom: 14 }}>Tham gia {dayjs(u.createdAt).format('DD/MM/YYYY')} · {dayjs().diff(dayjs(u.createdAt), 'month')} tháng</div>
+              <div style={{ color: '#7a776f', fontSize: 13, marginBottom: 14 }}>Tham gia {dayjs(u.createdAt).format('DD/MM/YYYY')} · {dayjs().diff(dayjs(u.createdAt), 'month')} tháng</div>
               <Descriptions column={1} size="small">
                 <Descriptions.Item label="Ngày sinh">{u.dob ? `${dayjs(u.dob).format('DD/MM/YYYY')} (${dayjs().diff(dayjs(u.dob), 'year')} tuổi)` : '—'}</Descriptions.Item>
                 <Descriptions.Item label="Giới tính"><StatusTag value={u.gender} /></Descriptions.Item>
@@ -76,26 +76,26 @@ export default function MemberDetail({ receptionist }: { receptionist?: boolean 
                 {sub && plan ? (
                   <>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                      <b style={{ fontSize: 16 }}>{plan.name}</b><span style={{ color: '#64748b', fontSize: 13 }}>{fmtMoney(plan.price)}</span>
+                      <b style={{ fontSize: 16 }}>{plan.name}</b><span style={{ color: '#7a776f', fontSize: 13 }}>{fmtMoney(plan.price)}</span>
                     </div>
-                    <Progress percent={Math.round((daysLeft / plan.durationDays) * 100)} showInfo={false} strokeColor={st === 'EXPIRING' ? '#f59e0b' : '#2563eb'} />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: '#64748b' }}>
-                      <span>{dayjs(sub.startDate).format('DD/MM/YYYY')}</span><b style={{ color: st === 'EXPIRING' ? '#f59e0b' : '#0f172a' }}>còn {daysLeft} ngày</b><span>{dayjs(sub.endDate).format('DD/MM/YYYY')}</span>
+                    <Progress percent={Math.round((daysLeft / plan.durationDays) * 100)} showInfo={false} strokeColor={st === 'EXPIRING' ? '#f59e0b' : '#0f4d34'} />
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12.5, color: '#7a776f' }}>
+                      <span>{dayjs(sub.startDate).format('DD/MM/YYYY')}</span><b style={{ color: st === 'EXPIRING' ? '#f59e0b' : '#14130f' }}>còn {daysLeft} ngày</b><span>{dayjs(sub.endDate).format('DD/MM/YYYY')}</span>
                     </div>
                   </>
-                ) : <div style={{ color: '#94a3b8' }}>Chưa có gói còn hiệu lực</div>}
+                ) : <div style={{ color: '#9a968c' }}>Chưa có gói còn hiệu lực</div>}
               </Card>
             </Col>
             <Col xs={12} md={6}><StatCard title="Chuyên cần" value={`${attRate}%`} icon={<CalendarOutlined />} color="#16a34a" hint={`${att.length} buổi`} /></Col>
-            <Col xs={12} md={6}><StatCard title="Tổng chi tiêu" value={fmtMoney(totalPaid)} icon={<DollarOutlined />} color="#f97316" hint={`${pays.length} giao dịch`} /></Col>
+            <Col xs={12} md={6}><StatCard title="Tổng chi tiêu" value={fmtMoney(totalPaid)} icon={<DollarOutlined />} color="#c94a1e" hint={`${pays.length} giao dịch`} /></Col>
             <Col xs={24}>
               <Card title="Lớp đang học">
-                {enrolls.filter((e) => e.status === 'ACTIVE').length === 0 && <span style={{ color: '#94a3b8' }}>Chưa đăng ký lớp nào</span>}
+                {enrolls.filter((e) => e.status === 'ACTIVE').length === 0 && <span style={{ color: '#9a968c' }}>Chưa đăng ký lớp nào</span>}
                 <Space wrap>
                   {enrolls.filter((e) => e.status === 'ACTIVE').map((e) => { const c = data.classes.find((x) => x.id === e.classId)!; return (
-                    <div key={e.id} style={{ border: '1px solid #eef1f6', borderRadius: 12, padding: '10px 14px', minWidth: 220 }}>
+                    <div key={e.id} style={{ border: '1px solid #ece8df', borderRadius: 12, padding: '10px 14px', minWidth: 220 }}>
                       <b>{c.name}</b>
-                      <div style={{ fontSize: 12, color: '#64748b' }}>HLV {nameOf(c.coachId)} · {data.schedules.filter((s) => s.classId === c.id).map((s) => DAY_NAMES[s.dayOfWeek].replace('Thứ ', 'T')).join(', ')}</div>
+                      <div style={{ fontSize: 12, color: '#7a776f' }}>HLV {nameOf(c.coachId)} · {data.schedules.filter((s) => s.classId === c.id).map((s) => DAY_NAMES[s.dayOfWeek].replace('Thứ ', 'T')).join(', ')}</div>
                     </div>
                   ); })}
                 </Space>
@@ -112,7 +112,7 @@ export default function MemberDetail({ receptionist }: { receptionist?: boolean 
               <Col xs={24} lg={10}>
                 <div style={{ fontWeight: 600, marginBottom: 8 }}>Kết quả buổi tập gần đây</div>
                 <Table size="small" rowKey="id" pagination={false} dataSource={results.slice(0, 5)} columns={[{ title: 'Ngày', render: (_, r) => dayjs(r.session.date).format('DD/MM') }, { title: 'Chỉ số', dataIndex: 'metrics' }, { title: 'HLV', render: (_, r) => nameOf(r.coachId) }]} />
-                {reviews.length > 0 && <div style={{ marginTop: 12, fontSize: 13, color: '#475569' }}><b>Nhận xét mới nhất:</b> {reviews[reviews.length - 1].comment}</div>}
+                {reviews.length > 0 && <div style={{ marginTop: 12, fontSize: 13, color: '#3d3b35' }}><b>Nhận xét mới nhất:</b> {reviews[reviews.length - 1].comment}</div>}
               </Col>
             </Row>
           ) },
@@ -120,7 +120,7 @@ export default function MemberDetail({ receptionist }: { receptionist?: boolean 
           { key: 'subs', label: 'Lịch sử gói', children: <Table size="small" rowKey="id" pagination={false} dataSource={subs} columns={[{ title: 'Gói', render: (_, r) => data.plans.find((p) => p.id === r.planId)?.name }, { title: 'Bắt đầu', dataIndex: 'startDate', render: (v) => dayjs(v).format('DD/MM/YYYY') }, { title: 'Kết thúc', dataIndex: 'endDate', render: (v) => dayjs(v).format('DD/MM/YYYY') }, { title: 'Trạng thái', dataIndex: 'status', render: (v) => <StatusTag value={v} /> }]} /> },
           { key: 'pays', label: <span><DollarOutlined /> Thanh toán ({pays.length})</span>, children: <Table size="small" rowKey="id" pagination={{ pageSize: 8 }} dataSource={pays} columns={[{ title: 'Hóa đơn', dataIndex: 'invoiceNo', render: (v, r) => <a onClick={() => navigate(`${receptionist ? '/receptionist' : '/manager'}/payments/${r.id}`)} style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 600 }}>{v}</a> }, { title: 'Nội dung', dataIndex: 'refName' }, { title: 'Loại', dataIndex: 'type', render: (v) => <StatusTag value={v} /> }, { title: 'Số tiền', dataIndex: 'amount', align: 'right', render: (v) => <b>{fmtMoney(v)}</b> }, { title: 'PT', dataIndex: 'method', render: (v) => <StatusTag value={v} /> }, { title: 'Ngày', dataIndex: 'paidAt', render: (v) => <span className="sc-nowrap">{v}</span> }]} /> },
           { key: 'checkins', label: <span><LoginOutlined /> Check-in ({checkIns.length})</span>, children: <Table size="small" rowKey="id" pagination={{ pageSize: 8 }} dataSource={checkIns} columns={[{ title: 'Thời gian', dataIndex: 'time' }, { title: 'Nhân viên', render: (_, r) => nameOf(r.by) }]} /> },
-          { key: 'timeline', label: 'Dòng thời gian', children: <Timeline items={timeline.map((t) => ({ color: t.color, children: <><Tag style={{ background: '#f1f5f9', color: '#475569' }}>{dayjs(t.t).format('DD/MM/YYYY')}</Tag> {t.text}</> }))} style={{ marginTop: 12 }} /> },
+          { key: 'timeline', label: 'Dòng thời gian', children: <Timeline items={timeline.map((t) => ({ color: t.color, children: <><Tag style={{ background: '#f3f1ec', color: '#3d3b35' }}>{dayjs(t.t).format('DD/MM/YYYY')}</Tag> {t.text}</> }))} style={{ marginTop: 12 }} /> },
         ]} />
       </Card>
     </Page>

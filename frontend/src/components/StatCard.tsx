@@ -15,7 +15,7 @@ const hexToRgba = (hex: string, a: number) => {
   return `rgba(${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}, ${a})`;
 };
 
-export default function StatCard({ title, value, icon, color = '#2563eb', hint, onClick }: Props) {
+export default function StatCard({ title, value, icon, color = '#0f4d34', hint, onClick }: Props) {
   return (
     <Card hoverable={!!onClick} onClick={onClick} style={{ height: '100%' }} styles={{ body: { padding: 20, display: 'flex', alignItems: 'center', height: '100%' } }}>
       <div className="sc-stat" style={{ width: '100%' }}>

@@ -68,9 +68,9 @@ export default function CourtBookings({ manager }: { manager?: boolean }) {
         <Button onClick={() => setDate(dayjs().format('YYYY-MM-DD'))}>Hôm nay</Button>
       </Space>}>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Lượt đặt trong ngày" value={active.length} icon={<CalendarOutlined />} color="#2563eb" hint={`${dayBookings.filter((b) => b.status === 'CANCELLED').length} đã hủy`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Lượt đặt trong ngày" value={active.length} icon={<CalendarOutlined />} color="#0f4d34" hint={`${dayBookings.filter((b) => b.status === 'CANCELLED').length} đã hủy`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Doanh thu sân" value={fmtMoney(revenue)} icon={<DollarOutlined />} color="#16a34a" hint={`${bookedHours} giờ sân`} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Công suất sân" value={`${occupancy}%`} icon={<PercentageOutlined />} color="#f97316" hint={`${courts.length} sân · ${HOURS.length}h/ngày`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Công suất sân" value={`${occupancy}%`} icon={<PercentageOutlined />} color="#c94a1e" hint={`${courts.length} sân · ${HOURS.length}h/ngày`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Chờ nhận sân" value={active.filter((b) => b.status === 'BOOKED').length} icon={<ScheduleOutlined />} color="#9333ea" hint={`${active.filter((b) => b.status === 'CHECKED_IN').length} đang chơi`} /></Col>
       </Row>
 
@@ -85,7 +85,7 @@ export default function CourtBookings({ manager }: { manager?: boolean }) {
           { title: 'Thành viên', render: (_, r) => <UserCell id={r.memberId} size={28} /> },
           { title: 'Giá', dataIndex: 'price', align: 'right', render: (v) => <b className="sc-nowrap">{fmtMoney(v)}</b> },
           { title: 'Trạng thái', dataIndex: 'status', render: (v) => <StatusTag value={v} /> },
-          { title: 'Tạo bởi', render: (_, r) => <span style={{ fontSize: 12, color: '#64748b' }}>{r.createdBy === r.memberId ? 'Online' : nameOf(r.createdBy)}</span> },
+          { title: 'Tạo bởi', render: (_, r) => <span style={{ fontSize: 12, color: '#7a776f' }}>{r.createdBy === r.memberId ? 'Online' : nameOf(r.createdBy)}</span> },
           { title: '', render: (_, r) => <Button size="small" onClick={() => setView(r)}>Chi tiết</Button> },
         ]} />
       </Card>
@@ -98,10 +98,10 @@ export default function CourtBookings({ manager }: { manager?: boolean }) {
             <Form.Item name="hours" label="Số giờ"><InputNumber min={1} max={Math.min(3, 22 - sel.start)} style={{ width: '100%' }} /></Form.Item>
             {conflict && <Alert type="error" showIcon title={conflict} style={{ marginBottom: 12 }} />}
             {quote && (
-              <div style={{ background: '#f8fafc', borderRadius: 10, padding: 12, marginBottom: 12 }}>
+              <div style={{ background: '#f7f5f0', borderRadius: 10, padding: 12, marginBottom: 12 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>{hours} giờ × {fmtMoney(court.hourlyRate ?? 0)}</span><span>{fmtMoney(quote.base)}</span></div>
                 {quote.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#16a34a' }}><span>Ưu đãi gói {quote.plan?.name}</span><span>−{quote.discount}%</span></div>}
-                {memberId && quote.discount === 0 && <div style={{ fontSize: 12, color: '#94a3b8' }}>Thành viên chưa có gói ưu đãi sân — tính giá niêm yết.</div>}
+                {memberId && quote.discount === 0 && <div style={{ fontSize: 12, color: '#9a968c' }}>Thành viên chưa có gói ưu đãi sân — tính giá niêm yết.</div>}
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16, marginTop: 6 }}><span>Thu</span><span>{fmtMoney(quote.price)}</span></div>
               </div>
             )}
@@ -133,7 +133,7 @@ export default function CourtBookings({ manager }: { manager?: boolean }) {
                 {(view.status === 'BOOKED' || view.status === 'CHECKED_IN') && <Popconfirm title="Hủy lượt đặt này?" description="Hoàn tiền theo chính sách (trước 2h: 100%)." onConfirm={() => setStatus(view, 'CANCELLED')}><Button danger>Hủy đặt</Button></Popconfirm>}
                 {pay && <Button icon={<PrinterOutlined />} onClick={() => navigate(`${base}/payments/${pay.id}`)}>Hóa đơn {pay.invoiceNo}</Button>}
               </Space>
-              {view.status === 'BOOKED' && !isToday && <div style={{ fontSize: 12, color: '#94a3b8' }}>Chỉ nhận sân trong ngày diễn ra.</div>}
+              {view.status === 'BOOKED' && !isToday && <div style={{ fontSize: 12, color: '#9a968c' }}>Chỉ nhận sân trong ngày diễn ra.</div>}
             </Space>
           );
         })()}

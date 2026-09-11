@@ -7,10 +7,10 @@ import type { Role } from '../../types';
 import heroImg from '../../assets/sports/badminton.jpg';
 
 const QUICK: { role: Role; email: string; label: string; hint: string; color: string }[] = [
-  { role: 'MEMBER', email: 'member.dung@gmail.com', label: 'Thành viên', hint: 'Dũng', color: '#16a34a' },
-  { role: 'COACH', email: 'coach.an@sc.vn', label: 'Huấn luyện viên', hint: 'An · Gym', color: '#2563eb' },
-  { role: 'RECEPTIONIST', email: 'reception@sc.vn', label: 'Lễ tân', hint: 'Quầy', color: '#eab308' },
-  { role: 'MANAGER', email: 'manager@sc.vn', label: 'Quản lý', hint: 'Center', color: '#f97316' },
+  { role: 'MEMBER', email: 'member.dung@gmail.com', label: 'Thành viên', hint: 'Dũng', color: '#0891b2' },
+  { role: 'COACH', email: 'coach.an@sc.vn', label: 'Huấn luyện viên', hint: 'An · Gym', color: '#0f4d34' },
+  { role: 'RECEPTIONIST', email: 'reception@sc.vn', label: 'Lễ tân', hint: 'Quầy', color: '#d9a400' },
+  { role: 'MANAGER', email: 'manager@sc.vn', label: 'Quản lý', hint: 'Center', color: '#c94a1e' },
 ];
 
 export default function Login() {

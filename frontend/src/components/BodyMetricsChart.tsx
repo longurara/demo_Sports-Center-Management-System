@@ -18,16 +18,16 @@ export default function BodyMetricsChart({ memberId, height = 240 }: { memberId:
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
         <div>
           <span style={{ fontSize: 26, fontWeight: 700, letterSpacing: -0.5 }}>{last}{unit}</span>
-          <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 600, color: diff <= 0 ? '#16a34a' : '#f97316' }}>{diff > 0 ? '▲' : '▼'} {Math.abs(diff)}{unit} <span style={{ color: '#94a3b8', fontWeight: 400 }}>/ {rows.length} tuần</span></span>
+          <span style={{ marginLeft: 10, fontSize: 13, fontWeight: 600, color: diff <= 0 ? '#16a34a' : '#c94a1e' }}>{diff > 0 ? '▲' : '▼'} {Math.abs(diff)}{unit} <span style={{ color: '#9a968c', fontWeight: 400 }}>/ {rows.length} tuần</span></span>
         </div>
         <Segmented size="small" value={field} onChange={(v) => setField(v as 'weight' | 'bodyFat')} options={[{ value: 'weight', label: 'Cân nặng' }, { value: 'bodyFat', label: '% Mỡ' }]} />
       </div>
       <Line
         data={rows.map((r) => ({ date: dayjs(r.date).format('DD/MM'), value: r[field] }))}
         xField="date" yField="value" height={height} smooth
-        style={{ stroke: '#2563eb', lineWidth: 2.5 }}
-        point={{ size: 4, style: { fill: '#fff', stroke: '#2563eb', lineWidth: 2 } }}
-        area={{ style: { fill: 'linear-gradient(-90deg, rgba(37,99,235,0.02) 0%, rgba(37,99,235,0.25) 100%)' } }}
+        style={{ stroke: '#0f4d34', lineWidth: 2.5 }}
+        point={{ size: 4, style: { fill: '#fff', stroke: '#0f4d34', lineWidth: 2 } }}
+        area={{ style: { fill: 'linear-gradient(-90deg, rgba(15,77,52,0.02) 0%, rgba(15,77,52,0.25) 100%)' } }}
         axis={{ y: { grid: true, gridLineDash: [4, 4], labelFormatter: (v: number) => `${v}${unit}` }, x: { grid: false } }}
         tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => `${v}${unit}` }] }}
       />

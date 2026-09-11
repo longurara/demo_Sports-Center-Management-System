@@ -49,16 +49,16 @@ export default function WeekCalendar({ weekStart, events, hourFrom = 6, hourTo =
     <div style={{ overflowX: 'auto' }}>
       <div style={{ minWidth: dayCount >= 5 ? 760 : 0 }}>
         {/* Header ngày */}
-        <div style={{ display: 'grid', gridTemplateColumns: cols, borderBottom: '1px solid #eef1f6' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: cols, borderBottom: '1px solid #ece8df' }}>
           <div />
           {days.map((d, i) => {
             const isToday = d.format('YYYY-MM-DD') === today;
             const n = laid[i].length;
             return (
-              <div key={i} style={{ textAlign: 'center', padding: '8px 4px 10px', borderLeft: '1px solid #f1f5f9' }}>
-                <div style={{ fontSize: 11, color: isToday ? '#2563eb' : '#94a3b8', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .4 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()]}</div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 999, marginTop: 2, fontWeight: 700, fontSize: 15, background: isToday ? '#2563eb' : 'transparent', color: isToday ? '#fff' : '#0f172a' }}>{d.format('DD')}</div>
-                <div style={{ fontSize: 10.5, color: '#94a3b8', marginTop: 2 }}>{n ? `${n} hoạt động` : '—'}</div>
+              <div key={i} style={{ textAlign: 'center', padding: '8px 4px 10px', borderLeft: '1px solid #f3f1ec' }}>
+                <div style={{ fontSize: 11, color: isToday ? '#0f4d34' : '#9a968c', fontWeight: 600, textTransform: 'uppercase', letterSpacing: .4 }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()]}</div>
+                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 999, marginTop: 2, fontWeight: 700, fontSize: 15, background: isToday ? '#0f4d34' : 'transparent', color: isToday ? '#fff' : '#14130f' }}>{d.format('DD')}</div>
+                <div style={{ fontSize: 10.5, color: '#9a968c', marginTop: 2 }}>{n ? `${n} hoạt động` : '—'}</div>
               </div>
             );
           })}
@@ -67,15 +67,15 @@ export default function WeekCalendar({ weekStart, events, hourFrom = 6, hourTo =
         <div style={{ display: 'grid', gridTemplateColumns: cols, position: 'relative', height: total }}>
           <div style={{ position: 'relative' }}>
             {Array.from({ length: hourTo - hourFrom }).map((_, i) => (
-              <div key={i} style={{ position: 'absolute', top: i * hourHeight - 7, right: 8, fontSize: 11, color: '#94a3b8', fontWeight: 500 }}>{String(hourFrom + i).padStart(2, '0')}:00</div>
+              <div key={i} style={{ position: 'absolute', top: i * hourHeight - 7, right: 8, fontSize: 11, color: '#9a968c', fontWeight: 500 }}>{String(hourFrom + i).padStart(2, '0')}:00</div>
             ))}
           </div>
           {days.map((d, di) => {
             const isToday = d.format('YYYY-MM-DD') === today;
             return (
-              <div key={di} style={{ position: 'relative', borderLeft: '1px solid #f1f5f9', background: isToday ? 'rgba(37,99,235,.025)' : undefined }}>
+              <div key={di} style={{ position: 'relative', borderLeft: '1px solid #f3f1ec', background: isToday ? 'rgba(15,77,52,.025)' : undefined }}>
                 {Array.from({ length: hourTo - hourFrom }).map((_, i) => (
-                  <div key={i} style={{ position: 'absolute', top: i * hourHeight, left: 0, right: 0, borderTop: `1px ${i % 2 ? 'dashed' : 'solid'} ${i % 2 ? '#f4f6fb' : '#eef1f6'}` }} />
+                  <div key={i} style={{ position: 'absolute', top: i * hourHeight, left: 0, right: 0, borderTop: `1px ${i % 2 ? 'dashed' : 'solid'} ${i % 2 ? '#f4f6fb' : '#ece8df'}` }} />
                 ))}
                 {laid[di].map(({ e, lane, cols }) => {
                   const top = (toMin(e.start) - hourFrom * 60) / 60 * hourHeight;
@@ -95,8 +95,8 @@ export default function WeekCalendar({ weekStart, events, hourFrom = 6, hourTo =
                         <span style={{ fontSize: wide ? 12 : 10.5, fontWeight: 700, color: e.color, whiteSpace: 'nowrap' }}>{e.start}–{e.end}</span>
                         {e.badge}
                       </div>
-                      <div style={{ fontSize: wide ? 14 : 12.5, fontWeight: 600, color: '#0f172a', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.icon && <span style={{ marginRight: 4 }}>{e.icon}</span>}{e.title}</div>
-                      {!compact && e.sub && <div style={{ fontSize: wide ? 12.5 : 11, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.sub}</div>}
+                      <div style={{ fontSize: wide ? 14 : 12.5, fontWeight: 600, color: '#14130f', lineHeight: 1.25, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.icon && <span style={{ marginRight: 4 }}>{e.icon}</span>}{e.title}</div>
+                      {!compact && e.sub && <div style={{ fontSize: wide ? 12.5 : 11, color: '#7a776f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{e.sub}</div>}
                     </div>
                   );
                   return <Tooltip key={e.id} title={e.tooltip ?? `${e.title} · ${e.start}–${e.end}${e.sub ? ` · ${e.sub}` : ''}`} mouseEnterDelay={0.25}>{node}</Tooltip>;

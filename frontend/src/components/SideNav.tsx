@@ -7,7 +7,7 @@ import { useApp } from '../store/AppContext';
 import { labelOf } from './StatusTag';
 import { initialsOf } from './UserCell';
 
-const ROLE_COLOR: Record<string, string> = { MANAGER: '#f97316', COACH: '#3b82f6', MEMBER: '#22c55e', RECEPTIONIST: '#eab308' };
+const ROLE_COLOR: Record<string, string> = { MANAGER: '#e07a4f', COACH: '#5cbf8a', MEMBER: '#38bdf8', RECEPTIONIST: '#eab308' };
 
 export default function SideNav({ collapsed, onToggle, mobile, onNavigate }: { collapsed: boolean; onToggle: () => void; mobile?: boolean; onNavigate?: () => void }) {
   const { data, currentUser, logout, membershipStatus } = useApp();

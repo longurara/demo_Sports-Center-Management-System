@@ -44,7 +44,7 @@ export default function ManagerDashboard() {
     { label: 'Còn hạn', value: statuses.filter((s) => s === 'ACTIVE').length, color: '#16a34a' },
     { label: 'Sắp hết hạn', value: statuses.filter((s) => s === 'EXPIRING').length, color: '#f59e0b' },
     { label: 'Hết hạn', value: statuses.filter((s) => s === 'EXPIRED').length, color: '#dc2626' },
-    { label: 'Chưa có gói', value: statuses.filter((s) => s === 'NONE').length, color: '#94a3b8' },
+    { label: 'Chưa có gói', value: statuses.filter((s) => s === 'NONE').length, color: '#9a968c' },
   ];
 
   const fill = openClasses.map((c) => {
@@ -55,16 +55,16 @@ export default function ManagerDashboard() {
   return (
     <Page title="Tổng quan trung tâm" subtitle={`${DAY_NAMES[dow]}, ${dayjs().format('DD/MM/YYYY')} · ${todayCheckIns} lượt check-in hôm nay`} noCard>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Tổng thành viên" value={members.length} icon={<TeamOutlined />} color="#2563eb" hint={`+${newThisMonth} thành viên mới tháng này`} onClick={() => navigate('/manager/members')} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Tổng thành viên" value={members.length} icon={<TeamOutlined />} color="#0f4d34" hint={`+${newThisMonth} thành viên mới tháng này`} onClick={() => navigate('/manager/members')} /></Col>
         <Col xs={12} xl={6}><StatCard title="Gói còn hiệu lực" value={activeMembers} icon={<IdcardOutlined />} color="#16a34a" hint={`${Math.round((activeMembers / Math.max(1, members.length)) * 100)}% thành viên đang hoạt động`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Lớp đang mở" value={openClasses.length} icon={<BookOutlined />} color="#9333ea" hint={`${todayClasses.length} buổi hôm nay · ${data.users.filter((u) => u.role === 'COACH').length} HLV`} onClick={() => navigate('/manager/classes')} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Doanh thu tháng này" value={fmtMoney(revenueMonth)} icon={<DollarOutlined />} color="#f97316" hint={delta >= 0 ? `▲ ${delta}% so với tháng trước` : `▼ ${Math.abs(delta)}% so với tháng trước`} onClick={() => navigate('/manager/reports')} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Doanh thu tháng này" value={fmtMoney(revenueMonth)} icon={<DollarOutlined />} color="#c94a1e" hint={delta >= 0 ? `▲ ${delta}% so với tháng trước` : `▼ ${Math.abs(delta)}% so với tháng trước`} onClick={() => navigate('/manager/reports')} /></Col>
       </Row>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={15}>
           <Card title="Doanh thu 6 tháng gần nhất" extra={<Tag color="blue">triệu ₫</Tag>}>
-            <Column data={monthly} xField="month" yField="revenue" colorField="type" group height={280} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 40 }} scale={{ color: { range: ['#2563eb', '#f97316', '#06b6d4'] } }} axis={{ y: { grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => v.toFixed(2) + ' triệu' }] }} />
+            <Column data={monthly} xField="month" yField="revenue" colorField="type" group height={280} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 40 }} scale={{ color: { range: ['#0f4d34', '#c94a1e', '#06b6d4'] } }} axis={{ y: { grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => v.toFixed(2) + ' triệu' }] }} />
           </Card>
         </Col>
         <Col xs={24} xl={9}>
@@ -74,25 +74,25 @@ export default function ManagerDashboard() {
                 background: `conic-gradient(${(() => { let acc = 0; const total = Math.max(1, members.length); return statusDist.map((s) => { const from = acc; acc += (s.value / total) * 100; return `${s.color} ${from}% ${acc}%`; }).join(', '); })()})` }}>
                 <div style={{ width: 96, height: 96, borderRadius: '50%', background: '#fff', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
                   <div style={{ fontSize: 24, fontWeight: 700, lineHeight: 1 }}>{members.length}</div>
-                  <div style={{ fontSize: 11, color: '#94a3b8' }}>thành viên</div>
+                  <div style={{ fontSize: 11, color: '#9a968c' }}>thành viên</div>
                 </div>
               </div>
               <div style={{ flex: 1, display: 'grid', gap: 8 }}>
                 {statusDist.map((s) => (
                   <div key={s.label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 13 }}>
                     <span style={{ width: 10, height: 10, borderRadius: 999, background: s.color }} />
-                    <span style={{ flex: 1, color: '#475569' }}>{s.label}</span>
-                    <b>{s.value}</b><span style={{ color: '#94a3b8', width: 36, textAlign: 'right' }}>{Math.round((s.value / Math.max(1, members.length)) * 100)}%</span>
+                    <span style={{ flex: 1, color: '#3d3b35' }}>{s.label}</span>
+                    <b>{s.value}</b><span style={{ color: '#9a968c', width: 36, textAlign: 'right' }}>{Math.round((s.value / Math.max(1, members.length)) * 100)}%</span>
                   </div>
                 ))}
               </div>
             </div>
-            <div style={{ borderTop: '1px solid #eef1f6', marginTop: 14, paddingTop: 12 }}>
-              <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Phân bổ theo gói</div>
+            <div style={{ borderTop: '1px solid #ece8df', marginTop: 14, paddingTop: 12 }}>
+              <div style={{ fontSize: 12, color: '#7a776f', marginBottom: 6 }}>Phân bổ theo gói</div>
               {planDist.map((p) => (
                 <div key={p.plan} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12.5, marginBottom: 4 }}>
-                  <span style={{ width: 90, color: '#475569' }}>{p.plan}</span>
-                  <Progress percent={Math.round((p.value / Math.max(1, activeMembers)) * 100)} size="small" showInfo={false} strokeColor="#2563eb" style={{ flex: 1, margin: 0 }} />
+                  <span style={{ width: 90, color: '#3d3b35' }}>{p.plan}</span>
+                  <Progress percent={Math.round((p.value / Math.max(1, activeMembers)) * 100)} size="small" showInfo={false} strokeColor="#0f4d34" style={{ flex: 1, margin: 0 }} />
                   <b style={{ width: 24, textAlign: 'right' }}>{p.value}</b>
                 </div>
               ))}
@@ -107,7 +107,7 @@ export default function ManagerDashboard() {
             <List size="small" dataSource={todayClasses} locale={{ emptyText: 'Hôm nay không có lớp' }} renderItem={(s) => (
               <List.Item style={{ padding: '8px 0' }} onClick={() => navigate(`/manager/classes/${s.cls.id}`)}>
                 <List.Item.Meta
-                  avatar={<div style={{ width: 54, textAlign: 'center', background: '#eff6ff', borderRadius: 8, padding: '4px 0', color: '#2563eb', fontWeight: 700, fontSize: 12 }}>{s.startTime}</div>}
+                  avatar={<div style={{ width: 54, textAlign: 'center', background: '#e3efe8', borderRadius: 8, padding: '4px 0', color: '#0f4d34', fontWeight: 700, fontSize: 12 }}>{s.startTime}</div>}
                   title={<a>{s.cls.name}</a>} description={`${data.rooms.find((r) => r.id === s.cls.roomId)?.name} · HLV ${nameOf(s.cls.coachId)} · ${data.enrollments.filter((e) => e.classId === s.cls.id && e.status === 'ACTIVE').length}/${s.cls.capacity} HV`} />
               </List.Item>
             )} />
@@ -126,7 +126,7 @@ export default function ManagerDashboard() {
           <Card title="Hoạt động gần đây" extra={<a onClick={() => navigate('/manager/audit-log')}>Audit log</a>} style={{ height: '100%' }}>
             <List size="small" dataSource={data.auditLogs.slice(0, 5)} renderItem={(a) => (
               <List.Item style={{ padding: '8px 0' }}>
-                <List.Item.Meta avatar={<Avatar size={30} style={{ background: '#eff6ff', color: '#2563eb', fontWeight: 600, fontSize: 12 }}>{nameOf(a.userId).split(' ').pop()?.[0]}</Avatar>}
+                <List.Item.Meta avatar={<Avatar size={30} style={{ background: '#e3efe8', color: '#0f4d34', fontWeight: 600, fontSize: 12 }}>{nameOf(a.userId).split(' ').pop()?.[0]}</Avatar>}
                   title={<span style={{ fontSize: 13 }}>{a.detail}</span>} description={<span style={{ fontSize: 12 }}>{nameOf(a.userId)} · {dayjs(a.createdAt).fromNow()}</span>} />
               </List.Item>
             )} />
@@ -139,7 +139,7 @@ export default function ManagerDashboard() {
           { title: 'Lớp', dataIndex: 'name', render: (v) => <b>{v}</b> },
           { title: 'Huấn luyện viên', dataIndex: 'coach' },
           { title: 'Đã đăng ký', render: (_, r) => `${r.n} / ${r.capacity}` },
-          { title: 'Tỷ lệ lấp đầy', dataIndex: 'rate', width: 300, render: (v) => <Progress percent={v} size="small" strokeColor={v >= 80 ? '#16a34a' : v >= 40 ? '#2563eb' : '#f59e0b'} /> },
+          { title: 'Tỷ lệ lấp đầy', dataIndex: 'rate', width: 300, render: (v) => <Progress percent={v} size="small" strokeColor={v >= 80 ? '#16a34a' : v >= 40 ? '#0f4d34' : '#f59e0b'} /> },
           { title: 'Đánh giá', dataIndex: 'rate', render: (v) => v >= 80 ? <Tag color="green">Tốt</Tag> : v >= 40 ? <Tag color="blue">Ổn định</Tag> : <Tag color="orange">Cần đẩy mạnh</Tag> },
         ]} />
       </Card>

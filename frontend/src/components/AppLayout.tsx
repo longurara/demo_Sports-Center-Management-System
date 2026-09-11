@@ -11,7 +11,7 @@ import { labelOf } from './StatusTag';
 import { initialsOf } from './UserCell';
 
 const { Header, Content } = Layout;
-const ROLE_COLOR: Record<string, string> = { MANAGER: '#f97316', COACH: '#2563eb', MEMBER: '#16a34a', RECEPTIONIST: '#eab308' };
+const ROLE_COLOR: Record<string, string> = { MANAGER: '#c94a1e', COACH: '#0f4d34', MEMBER: '#0891b2', RECEPTIONIST: '#d9a400' };
 
 export default function AppLayout() {
   const { currentUser, logout, myNotifications, resetData, update } = useApp();
@@ -53,8 +53,8 @@ export default function AppLayout() {
           {isMobile ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
               <Button type="text" icon={<MenuOutlined style={{ fontSize: 18 }} />} onClick={() => setNavOpen(true)} />
-              <Link to={base} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#0f172a', textDecoration: 'none', minWidth: 0 }}>
-                <span style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#2563eb,#f97316)', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}><ThunderboltFilled /></span>
+              <Link to={base} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#14130f', textDecoration: 'none', minWidth: 0 }}>
+                <span style={{ width: 28, height: 28, borderRadius: 6, background: '#d6f24b', color: '#14130f', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}><ThunderboltFilled /></span>
                 <b style={{ fontSize: 14, whiteSpace: 'nowrap' }}>Sports Center</b>
               </Link>
             </div>
@@ -80,24 +80,24 @@ export default function AppLayout() {
             ) : (
             <Popover placement="bottomRight" trigger="click" arrow={false} styles={{ container: { width: 360, padding: 0 } }} content={
               <div>
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid #eef1f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #ece8df', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <b>Thông báo</b>
                   {unread > 0 && <a style={{ fontSize: 12 }} onClick={() => notis.forEach((n) => !n.read && update('notifications', n.id, { read: true }))}>Đọc tất cả</a>}
                 </div>
                 <div style={{ maxHeight: 360, overflowY: 'auto' }}>
-                  {notis.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: '#94a3b8' }}>Không có thông báo</div>}
+                  {notis.length === 0 && <div style={{ padding: 24, textAlign: 'center', color: '#9a968c' }}>Không có thông báo</div>}
                   {notis.slice(0, 6).map((n) => (
                     <div key={n.id} onClick={() => { update('notifications', n.id, { read: true }); navigate(`${base}/notifications`); }} style={{ display: 'flex', gap: 10, padding: '10px 16px', cursor: 'pointer', background: n.read ? undefined : '#f5f8ff', borderBottom: '1px solid #f4f6fb' }}>
-                      <span style={{ width: 8, height: 8, borderRadius: 999, background: n.read ? '#e2e8f0' : '#2563eb', marginTop: 6, flexShrink: 0 }} />
+                      <span style={{ width: 8, height: 8, borderRadius: 999, background: n.read ? '#e2ddd2' : '#0f4d34', marginTop: 6, flexShrink: 0 }} />
                       <div style={{ minWidth: 0 }}>
                         <div style={{ fontWeight: n.read ? 500 : 600, fontSize: 13 }}>{n.title}</div>
-                        <div style={{ fontSize: 12, color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.content}</div>
-                        <div style={{ fontSize: 11, color: '#94a3b8' }}>{dayjs(n.createdAt).fromNow()}</div>
+                        <div style={{ fontSize: 12, color: '#7a776f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{n.content}</div>
+                        <div style={{ fontSize: 11, color: '#9a968c' }}>{dayjs(n.createdAt).fromNow()}</div>
                       </div>
                     </div>
                   ))}
                 </div>
-                <div style={{ padding: '10px 16px', textAlign: 'center', borderTop: '1px solid #eef1f6' }}><a onClick={() => navigate(`${base}/notifications`)}>Xem tất cả thông báo</a></div>
+                <div style={{ padding: '10px 16px', textAlign: 'center', borderTop: '1px solid #ece8df' }}><a onClick={() => navigate(`${base}/notifications`)}>Xem tất cả thông báo</a></div>
               </div>
             }>
               <Badge count={unread} size="small" offset={[-4, 4]}>
@@ -115,7 +115,7 @@ export default function AppLayout() {
                 ],
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginLeft: isMobile ? 4 : 8, padding: isMobile ? 2 : '4px 10px 4px 4px', borderRadius: 999, border: '1px solid #eef1f6', background: '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginLeft: isMobile ? 4 : 8, padding: isMobile ? 2 : '4px 10px 4px 4px', borderRadius: 999, border: '1px solid #ece8df', background: '#fff' }}>
                 <Avatar size={30} style={{ background: `${roleColor}22`, color: roleColor, fontWeight: 700, fontSize: 12 }}>{initialsOf(currentUser.fullName)}</Avatar>
                 {!isMobile && (
                   <div style={{ lineHeight: 1.15 }}>

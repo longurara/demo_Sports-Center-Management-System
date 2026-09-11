@@ -30,7 +30,7 @@ export default function Profile() {
           <Card style={{ textAlign: 'center', overflow: 'hidden' }} styles={{ body: { padding: 0 } }}>
             <div className="sc-cover" style={{ borderRadius: 0 }} />
             <div style={{ marginTop: -48, padding: '0 20px 20px' }}>
-            <Avatar size={96} style={{ background: '#2563eb', fontSize: 34, fontWeight: 600, border: '4px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)' }}>{u.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</Avatar>
+            <Avatar size={96} style={{ background: '#d6f24b', color: '#14130f', fontSize: 34, fontWeight: 700, border: '4px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)' }}>{u.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</Avatar>
             <h3 style={{ marginBottom: 4 }}>{u.fullName}</h3>
             <StatusTag value={u.role} />
             <div style={{ marginTop: 12 }}>
