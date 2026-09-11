@@ -34,14 +34,18 @@ import Subscriptions from './pages/receptionist/Subscriptions';
 import CheckIn from './pages/receptionist/CheckIn';
 import Enrollments from './pages/receptionist/Enrollments';
 import Payments from './pages/receptionist/Payments';
+import CourtBookings from './pages/receptionist/CourtBookings';
 
 import MemberHome from './pages/member/Home';
 import MemberPlans from './pages/member/Plans';
 import Checkout from './pages/member/Checkout';
 import Membership from './pages/member/Membership';
 import MemberClasses from './pages/member/Classes';
+import Courts from './pages/member/Courts';
 import MemberClassDetail from './pages/member/ClassDetail';
-import { Coaches, MyAttendance, MyResults, MySchedule, MySupport, MyTrainingPlan, PaymentHistory } from './pages/member/Misc';
+import { Coaches, MyAttendance, MySupport, MyTrainingPlan, PaymentHistory } from './pages/member/Misc';
+import MyResults from './pages/member/Results';
+import MySchedule from './pages/member/Schedule';
 import AiChat from './pages/member/AiChat';
 
 import CoachDashboard from './pages/coach/Dashboard';
@@ -93,6 +97,8 @@ export default function App() {
               <Route path="classes" element={<Classes />} />
               <Route path="classes/:id" element={<ClassDetail />} />
               <Route path="schedule" element={<ManagerSchedule />} />
+              <Route path="courts" element={<CourtBookings manager />} />
+              <Route path="payments/:id" element={<Invoice />} />
               <Route path="reports" element={<Reports />} />
               <Route path="support" element={<SupportRequests />} />
               <Route path="audit-log" element={<AuditLogPage />} />
@@ -107,6 +113,7 @@ export default function App() {
               <Route path="subscriptions" element={<Subscriptions />} />
               <Route path="check-in" element={<CheckIn />} />
               <Route path="enrollments" element={<Enrollments />} />
+              <Route path="courts" element={<CourtBookings />} />
               <Route path="payments" element={<Payments />} />
               <Route path="payments/:id" element={<Invoice />} />
               <Route path="support" element={<SupportRequests />} />
@@ -120,6 +127,7 @@ export default function App() {
               <Route path="membership" element={<Membership />} />
               <Route path="classes" element={<MemberClasses />} />
               <Route path="classes/:id" element={<MemberClassDetail />} />
+              <Route path="courts" element={<Courts />} />
               <Route path="schedule" element={<MySchedule />} />
               <Route path="coaches" element={<Coaches />} />
               <Route path="payments" element={<PaymentHistory />} />

@@ -23,11 +23,21 @@ export default function AiSuggest() {
   const [memberId, setMemberId] = useState<string | undefined>(params.get('member') ?? undefined);
   const u = students.find((s) => s.id === memberId);
   const [input, setInput] = useState<PlanInput>({ weeks: 4, sessionsPerWeek: 3, focus: [], equipment: 'FULL_GYM', minutes: 60, note: '' });
+  // Bộ môn của các lớp học viên đang theo với HLV này (mặc định lấy lớp đầu tiên)
+  const studentSports = u ? Array.from(new Set(data.enrollments.filter((e) => e.memberId === u.id && e.status === 'ACTIVE' && myIds.includes(e.classId)).map((e) => data.classes.find((c) => c.id === e.classId)!.sportId))) : [];
+  const sportOptions = Array.from(new Set([...studentSports, ...(currentUser!.sportIds ?? [])])).map((id) => data.sports.find((s) => s.id === id)!).filter(Boolean);
   const [step, setStep] = useState(-1);          // -1 idle, 0..3 đang phân tích, 4 xong
   const [plan, setPlan] = useState<AiPlan | null>(null);
   const [activeWeek, setActiveWeek] = useState('1');
 
-  useEffect(() => { if (u) setInput((i) => ({ ...i, focus: inferFocus(u) })); setPlan(null); setStep(-1); }, [memberId]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    if (u) {
+      const sid = studentSports[0] ?? currentUser!.sportIds?.[0];
+      const sp = data.sports.find((s) => s.id === sid);
+      setInput((i) => ({ ...i, focus: inferFocus(u), sportId: sp?.id, sportName: sp?.name, equipment: sp && !/gym/i.test(sp.name) ? 'BASIC' : i.equipment }));
+    }
+    setPlan(null); setStep(-1);
+  }, [memberId]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const profile = useMemo(() => {
     if (!u) return null;
@@ -110,6 +120,9 @@ export default function AiSuggest() {
           </Card>
 
           <Card title="2. Tham số lộ trình" size="small" style={{ marginTop: 16 }}>
+            <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Bộ môn trọng tâm (theo lớp học viên đang theo)</div>
+            <Select value={input.sportId} onChange={(v) => { const sp = data.sports.find((s) => s.id === v); setInput({ ...input, sportId: v, sportName: sp?.name, equipment: sp && !/gym/i.test(sp.name) ? 'BASIC' : 'FULL_GYM' }); }} style={{ width: '100%', marginBottom: 12 }} placeholder="Chọn học viên trước"
+              options={(sportOptions.length ? sportOptions : data.sports).map((s) => ({ value: s.id, label: `${s.icon} ${s.name}${studentSports.includes(s.id) ? ' · đang học' : ''}` }))} />
             <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Trọng tâm (AI tự suy từ mục tiêu, có thể chỉnh)</div>
             <Space wrap size={6}>
               {(Object.keys(FOCUS_LABEL) as Focus[]).map((f) => {
@@ -125,7 +138,7 @@ export default function AiSuggest() {
             <div style={{ marginTop: 12, fontSize: 12, color: '#64748b' }}>Thời lượng mỗi buổi: <b style={{ color: '#0f172a' }}>{input.minutes} phút</b></div>
             <Slider min={30} max={90} step={15} value={input.minutes} onChange={(v) => setInput({ ...input, minutes: v })} marks={{ 30: '30', 60: '60', 90: '90' }} />
             <div style={{ fontSize: 12, color: '#64748b', marginBottom: 4 }}>Thiết bị sẵn có</div>
-            <Select value={input.equipment} onChange={(v) => setInput({ ...input, equipment: v })} style={{ width: '100%' }} options={[{ value: 'FULL_GYM', label: 'Phòng gym đầy đủ máy & tạ' }, { value: 'BASIC', label: 'Tạ tay + dây kháng lực' }, { value: 'BODYWEIGHT', label: 'Chỉ trọng lượng cơ thể (tập tại nhà)' }]} />
+            <Select value={input.equipment} onChange={(v) => setInput({ ...input, equipment: v })} style={{ width: '100%' }} options={[{ value: 'FULL_GYM', label: 'Phòng gym đầy đủ máy & tạ' }, { value: 'BASIC', label: 'Sân / phòng bộ môn + dụng cụ cơ bản' }, { value: 'BODYWEIGHT', label: 'Chỉ trọng lượng cơ thể (tập tại nhà)' }]} />
             <div style={{ fontSize: 12, color: '#64748b', margin: '12px 0 4px' }}>Ghi chú thêm cho AI (tùy chọn)</div>
             <Input.TextArea rows={2} value={input.note} onChange={(e) => setInput({ ...input, note: e.target.value })} placeholder="VD: học viên sắp thi đấu, tránh bài tập vai vì đang chấn thương nhẹ…" />
             <Button type="primary" size="large" block icon={<ThunderboltFilled />} style={{ marginTop: 16 }} disabled={!u || (step >= 0 && step < STEPS.length)} onClick={run}>

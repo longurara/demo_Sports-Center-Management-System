@@ -7,6 +7,8 @@ import StatusTag from '../../components/StatusTag';
 import { DAY_NAMES, fmtMoney, useApp } from '../../store/AppContext';
 import { memberConflict, seatsLeft } from '../../utils/conflicts';
 import { nextInvoiceNo } from '../../utils/invoice';
+import { planCovers, plansFor, sportOf } from '../../utils/sports';
+import SportTag from '../../components/SportTag';
 
 export default function Enrollments() {
   const { data, add, update, log, notify, nameOf, membershipStatus, currentUser } = useApp();
@@ -20,6 +22,7 @@ export default function Enrollments() {
   const errors: string[] = [];
   if (memberId && cls) {
     if (st === 'EXPIRED' || st === 'NONE') errors.push('Gói thành viên đã hết hạn / chưa có — cần gia hạn trước.');
+    else { const cov = planCovers(data, memberId, cls.sportId); if (!cov.ok) errors.push(`Gói "${cov.plan?.name}" không bao gồm bộ môn ${sportOf(data, cls.sportId)?.name}. Cần nâng cấp: ${plansFor(data, cls.sportId).map((p) => p.name).join(' / ')}.`); }
     if (seatsLeft(data, cls.id) <= 0) errors.push('Lớp đã đủ sĩ số.');
     if (data.enrollments.some((e) => e.memberId === memberId && e.classId === cls.id && e.status === 'ACTIVE')) errors.push('Thành viên đã đăng ký lớp này.');
     const conflict = memberConflict(data, memberId, cls.id);
@@ -67,10 +70,11 @@ export default function Enrollments() {
             {!memberId ? <Alert type="info" title="Chọn thành viên trước" /> : (
               <Space orientation="vertical" style={{ width: '100%' }} size="middle">
                 <Select placeholder="Chọn lớp" style={{ width: '100%' }} value={classId} onChange={setClassId}
-                  options={data.classes.filter((c) => c.status === 'OPEN').map((c) => ({ value: c.id, label: `${c.name} · HLV ${nameOf(c.coachId)} · còn ${seatsLeft(data, c.id)} chỗ · ${fmtMoney(c.price)}` }))} />
+                  options={data.classes.filter((c) => c.status === 'OPEN').map((c) => ({ value: c.id, label: `${sportOf(data, c.sportId)?.icon ?? ''} ${c.name} · HLV ${nameOf(c.coachId)} · còn ${seatsLeft(data, c.id)} chỗ · ${fmtMoney(c.price)}` }))} />
                 {cls && (
-                  <div>
-                    <b>Lịch:</b> {data.schedules.filter((s) => s.classId === cls.id).map((s) => `${DAY_NAMES[s.dayOfWeek]} ${s.startTime}-${s.endTime}`).join(', ')}
+                  <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+                    <SportTag id={cls.sportId} />
+                    <span><b>Lịch:</b> {data.schedules.filter((s) => s.classId === cls.id).map((s) => `${DAY_NAMES[s.dayOfWeek]} ${s.startTime}-${s.endTime}`).join(', ')}</span>
                   </div>
                 )}
                 {errors.map((e) => <Alert key={e} type="error" showIcon title={e} />)}

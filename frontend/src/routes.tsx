@@ -4,11 +4,11 @@ import {
   CreditCardOutlined, CustomerServiceOutlined, DashboardOutlined, DollarOutlined, FileTextOutlined,
   GiftOutlined, HomeOutlined, IdcardOutlined, LineChartOutlined, LoginOutlined, NotificationOutlined,
   RobotOutlined, SafetyCertificateOutlined, ScheduleOutlined, SearchOutlined, SolutionOutlined, TeamOutlined,
-  TrophyOutlined, UserAddOutlined, UsergroupAddOutlined, HomeOutlined as RoomIcon, TagsOutlined, UserOutlined,
+  TrophyOutlined, UserAddOutlined, UsergroupAddOutlined, HomeOutlined as RoomIcon, TagsOutlined, UserOutlined, FieldTimeOutlined,
 } from '@ant-design/icons';
 import type { Role } from './types';
 
-export type Badge = 'support' | 'supportReply' | 'expiring' | 'todaySessions';
+export type Badge = 'support' | 'supportReply' | 'expiring' | 'todaySessions' | 'courtsToday';
 
 export interface NavItem { key: string; label: string; icon: ReactNode; badge?: Badge }
 export interface NavSection { title?: string; items: NavItem[] }
@@ -29,8 +29,9 @@ export const navByRole: Record<Role, NavSection[]> = {
         { key: '/manager/plans', label: 'Gói thành viên', icon: <GiftOutlined /> },
         { key: '/manager/classes', label: 'Lớp học', icon: <BookOutlined /> },
         { key: '/manager/schedule', label: 'Lịch hoạt động', icon: <CalendarOutlined /> },
+        { key: '/manager/courts', label: 'Đặt sân', icon: <FieldTimeOutlined />, badge: 'courtsToday' },
         { key: '/manager/sports', label: 'Bộ môn', icon: <TagsOutlined /> },
-        { key: '/manager/rooms', label: 'Phòng tập', icon: <RoomIcon /> },
+        { key: '/manager/rooms', label: 'Phòng & sân', icon: <RoomIcon /> },
       ],
     },
     {
@@ -54,6 +55,7 @@ export const navByRole: Record<Role, NavSection[]> = {
       title: 'Dịch vụ', items: [
         { key: '/receptionist/subscriptions', label: 'Gói thành viên', icon: <IdcardOutlined />, badge: 'expiring' },
         { key: '/receptionist/enrollments', label: 'Đăng ký lớp', icon: <UsergroupAddOutlined /> },
+        { key: '/receptionist/courts', label: 'Đặt sân', icon: <FieldTimeOutlined />, badge: 'courtsToday' },
         { key: '/receptionist/payments', label: 'Thanh toán & Hóa đơn', icon: <DollarOutlined /> },
         { key: '/receptionist/support', label: 'Yêu cầu hỗ trợ', icon: <CustomerServiceOutlined />, badge: 'support' },
       ],
@@ -71,6 +73,7 @@ export const navByRole: Record<Role, NavSection[]> = {
     {
       title: 'Tập luyện', items: [
         { key: '/member/classes', label: 'Lớp học', icon: <AppstoreOutlined /> },
+        { key: '/member/courts', label: 'Đặt sân', icon: <FieldTimeOutlined /> },
         { key: '/member/schedule', label: 'Lịch tập của tôi', icon: <CalendarOutlined /> },
         { key: '/member/coaches', label: 'Huấn luyện viên', icon: <SolutionOutlined /> },
         { key: '/member/attendance', label: 'Điểm danh', icon: <CheckSquareOutlined /> },
@@ -104,6 +107,14 @@ export const navByRole: Record<Role, NavSection[]> = {
     },
     { title: 'AI', items: [{ key: '/coach/ai-suggest', label: 'AI gợi ý bài tập', icon: <RobotOutlined /> }] },
   ],
+};
+
+/** 4 mục hiển thị trên thanh tab dưới cùng (mobile); mục thứ 5 là Menu. */
+export const mobileTabs: Record<Role, { key: string; label: string }[]> = {
+  MANAGER: [{ key: '/manager', label: 'Tổng quan' }, { key: '/manager/members', label: 'Thành viên' }, { key: '/manager/classes', label: 'Lớp học' }, { key: '/manager/reports', label: 'Báo cáo' }],
+  RECEPTIONIST: [{ key: '/receptionist', label: 'Tổng quan' }, { key: '/receptionist/check-in', label: 'Check-in' }, { key: '/receptionist/members', label: 'Tra cứu' }, { key: '/receptionist/payments', label: 'Thanh toán' }],
+  MEMBER: [{ key: '/member', label: 'Trang chủ' }, { key: '/member/classes', label: 'Lớp học' }, { key: '/member/schedule', label: 'Lịch tập' }, { key: '/member/courts', label: 'Đặt sân' }],
+  COACH: [{ key: '/coach', label: 'Tổng quan' }, { key: '/coach/schedule', label: 'Lịch dạy' }, { key: '/coach/attendance', label: 'Điểm danh' }, { key: '/coach/classes', label: 'Lớp học' }],
 };
 
 /** Danh sách phẳng (dùng cho breadcrumb, tìm kiếm). */

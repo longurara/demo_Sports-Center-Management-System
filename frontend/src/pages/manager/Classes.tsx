@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
+import SportTag from '../../components/SportTag';
 import { fmtMoney, useApp } from '../../store/AppContext';
 import type { GymClass } from '../../types';
 
@@ -14,6 +15,7 @@ export default function Classes() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<GymClass | null>(null);
   const [form] = Form.useForm();
+  const sportId = Form.useWatch('sportId', form);
 
   const openModal = (c?: GymClass) => {
     setEditing(c ?? null); form.resetFields();
@@ -23,7 +25,7 @@ export default function Classes() {
 
   const save = (v: Record<string, unknown>) => {
     const [s, e] = v.range as [dayjs.Dayjs, dayjs.Dayjs];
-    const payload = { name: v.name as string, sportId: v.sportId as string, roomId: v.roomId as string, capacity: v.capacity as number, price: v.price as number, startDate: s.format('YYYY-MM-DD'), endDate: e.format('YYYY-MM-DD') };
+    const payload = { name: v.name as string, sportId: v.sportId as string, roomId: v.roomId as string, coachId: v.coachId as string | undefined, capacity: v.capacity as number, price: v.price as number, startDate: s.format('YYYY-MM-DD'), endDate: e.format('YYYY-MM-DD') };
     if (editing) { update('classes', editing.id, payload); log('UPDATE_CLASS', 'Class', editing.id, `Cập nhật lớp ${payload.name}`); }
     else { const c = add('classes', { ...payload, status: 'OPEN' }); log('CREATE_CLASS', 'Class', c.id, `Tạo lớp ${c.name}`); }
     message.success('Đã lưu lớp học'); setOpen(false);
@@ -42,7 +44,7 @@ export default function Classes() {
         dataSource={data.classes}
         columns={[
           { title: 'Tên lớp', dataIndex: 'name', render: (v, r) => <a onClick={() => navigate(`/manager/classes/${r.id}`)}>{v}</a> },
-          { title: 'Bộ môn', render: (_, r) => data.sports.find((s) => s.id === r.sportId)?.name },
+          { title: 'Bộ môn', render: (_, r) => <SportTag id={r.sportId} /> },
           { title: 'Phòng', render: (_, r) => data.rooms.find((s) => s.id === r.roomId)?.name },
           { title: 'HLV', render: (_, r) => r.coachId ? nameOf(r.coachId) : <span style={{ color: '#fa8c16' }}>Chưa phân công</span> },
           { title: 'Sĩ số', render: (_, r) => `${data.enrollments.filter((e) => e.classId === r.id && e.status === 'ACTIVE').length}/${r.capacity}` },
@@ -63,8 +65,16 @@ export default function Classes() {
       <Modal title={editing ? 'Cập nhật lớp' : 'Tạo lớp học'} open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} okText="Lưu">
         <Form form={form} layout="vertical" onFinish={save}>
           <Form.Item name="name" label="Tên lớp" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="sportId" label="Bộ môn" rules={[{ required: true }]}><Select options={data.sports.map((s) => ({ value: s.id, label: s.name }))} /></Form.Item>
-          <Form.Item name="roomId" label="Phòng" rules={[{ required: true }]}><Select options={data.rooms.map((s) => ({ value: s.id, label: `${s.name} (${s.capacity} chỗ)` }))} /></Form.Item>
+          <Form.Item name="sportId" label="Bộ môn" rules={[{ required: true }]}><Select options={data.sports.map((s) => ({ value: s.id, label: `${s.icon} ${s.name}` }))} onChange={() => form.setFieldsValue({ roomId: undefined, coachId: undefined })} /></Form.Item>
+          <Form.Item name="roomId" label="Phòng / sân" rules={[{ required: true }]}>
+            <Select disabled={!sportId} placeholder={sportId ? 'Chọn phòng hoặc sân' : 'Chọn bộ môn trước'} options={[
+              { label: 'Phòng / sân của bộ môn', options: data.rooms.filter((r) => r.sportId === sportId).map((r) => ({ value: r.id, label: `${r.type === 'COURT' ? 'Sân' : 'Phòng'} · ${r.name} (${r.capacity} chỗ)` })) },
+              { label: 'Khác', options: data.rooms.filter((r) => r.sportId !== sportId).map((r) => ({ value: r.id, label: `${r.name} (${r.capacity} chỗ)` })) },
+            ]} />
+          </Form.Item>
+          <Form.Item name="coachId" label="Huấn luyện viên" extra="Chỉ hiện HLV phụ trách bộ môn đã chọn; có thể phân công sau">
+            <Select allowClear disabled={!sportId} placeholder="Phân công sau" options={data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE' && u.sportIds?.includes(sportId)).map((u) => ({ value: u.id, label: `${u.fullName} — ${u.specialty ?? ''}` }))} />
+          </Form.Item>
           <Form.Item name="capacity" label="Sức chứa lớp" rules={[{ required: true }]}><InputNumber min={1} style={{ width: '100%' }} /></Form.Item>
           <Form.Item name="price" label="Học phí (₫)" rules={[{ required: true }]}><InputNumber min={0} step={50000} style={{ width: '100%' }} /></Form.Item>
           <Form.Item name="range" label="Thời gian khóa học" rules={[{ required: true }]}><DatePicker.RangePicker style={{ width: '100%' }} /></Form.Item>

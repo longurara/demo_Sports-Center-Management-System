@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Card, Col, DatePicker, Progress, Radio, Row, Space, Table, Tabs, Tag, message } from 'antd';
-import { DollarOutlined, DownloadOutlined, GiftOutlined, ReadOutlined, UserAddOutlined } from '@ant-design/icons';
+import { DollarOutlined, DownloadOutlined, FieldTimeOutlined, GiftOutlined, ReadOutlined } from '@ant-design/icons';
 import { Column } from '@ant-design/plots';
 import Donut from '../../components/Donut';
 import dayjs from 'dayjs';
@@ -8,6 +8,7 @@ import Page from '../../components/Page';
 import StatCard from '../../components/StatCard';
 import StatusTag from '../../components/StatusTag';
 import UserCell from '../../components/UserCell';
+import SportTag from '../../components/SportTag';
 import { DAY_NAMES, fmtMoney, useApp } from '../../store/AppContext';
 import { downloadCsv } from '../../utils/csv';
 import { labelOf } from '../../components/StatusTag';
@@ -22,6 +23,7 @@ export default function Reports() {
   const byType = [
     { type: 'Gói thành viên', value: inRange.filter((p) => p.type === 'PLAN').reduce((s, p) => s + p.amount, 0) },
     { type: 'Học phí lớp', value: inRange.filter((p) => p.type === 'CLASS').reduce((s, p) => s + p.amount, 0) },
+    { type: 'Thuê sân', value: inRange.filter((p) => p.type === 'COURT').reduce((s, p) => s + p.amount, 0) },
   ];
   const byMethod = (['CASH', 'BANK', 'VNPAY', 'MOMO'] as const).map((m) => ({ method: labelOf(m), value: inRange.filter((p) => p.method === m).reduce((s, p) => s + p.amount, 0), count: inRange.filter((p) => p.method === m).length }));
 
@@ -34,6 +36,7 @@ export default function Reports() {
     return [
       { period: dayjs(key).format(fmt), type: 'Gói thành viên', revenue: pays.filter((p) => p.type === 'PLAN').reduce((s, p) => s + p.amount, 0) },
       { period: dayjs(key).format(fmt), type: 'Học phí lớp', revenue: pays.filter((p) => p.type === 'CLASS').reduce((s, p) => s + p.amount, 0) },
+      { period: dayjs(key).format(fmt), type: 'Thuê sân', revenue: pays.filter((p) => p.type === 'COURT').reduce((s, p) => s + p.amount, 0) },
     ];
   });
 
@@ -58,12 +61,28 @@ export default function Reports() {
     return { key: u.id, user: u, classes: cls.length, students, sessions: sessions.length, attRate: att.length ? Math.round(att.filter((a) => a.status !== 'ABSENT').length / att.length * 100) : 0, plans: data.trainingPlans.filter((p) => p.coachId === u.id).length, results: data.trainingResults.filter((r) => r.coachId === u.id).length, rating: reviews.length ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1) : '—', revenue: data.payments.filter((p) => p.type === 'CLASS' && cls.some((c) => c.name === p.refName)).reduce((s, p) => s + p.amount, 0) };
   });
 
-  const roomUtil = data.rooms.map((r) => {
+  const roomUtil = data.rooms.filter((r) => r.type === 'ROOM').map((r) => {
     const scs = data.schedules.filter((s) => data.classes.some((c) => c.id === s.classId && c.roomId === r.id && c.status === 'OPEN'));
     const minutes = scs.reduce((s, sc) => s + dayjs(`2000-01-01 ${sc.endTime}`).diff(dayjs(`2000-01-01 ${sc.startTime}`), 'minute'), 0);
     const hoursPerWeek = minutes / 60;
     return { key: r.id, name: r.name, location: r.location, capacity: r.capacity, slots: scs.length, hours: Math.round(hoursPerWeek * 10) / 10, util: Math.min(100, Math.round((hoursPerWeek / (7 * 16)) * 100)), days: Array.from(new Set(scs.map((s) => s.dayOfWeek))).sort().map((d) => DAY_NAMES[d].replace('Thứ ', 'T')).join(' ') };
   });
+
+  const rangeDays = Math.max(1, range[1].diff(range[0], 'day') + 1);
+  const courtUtil = data.rooms.filter((r) => r.type === 'COURT').map((r) => {
+    const bks = data.courtBookings.filter((b) => b.courtId === r.id && b.status !== 'CANCELLED' && b.date >= range[0].format('YYYY-MM-DD') && b.date <= range[1].format('YYYY-MM-DD'));
+    const hours = bks.reduce((s, b) => s + (Number(b.endTime.slice(0, 2)) - Number(b.startTime.slice(0, 2))), 0);
+    const cancelled = data.courtBookings.filter((b) => b.courtId === r.id && b.status === 'CANCELLED' && b.date >= range[0].format('YYYY-MM-DD') && b.date <= range[1].format('YYYY-MM-DD')).length;
+    const peak = bks.reduce<Record<string, number>>((acc, b) => { acc[b.startTime] = (acc[b.startTime] ?? 0) + 1; return acc; }, {});
+    const peakHour = Object.entries(peak).sort((a, b) => b[1] - a[1])[0]?.[0];
+    return { key: r.id, name: r.name, sportId: r.sportId, location: r.location, rate: r.hourlyRate ?? 0, bookings: bks.length, hours, cancelled, util: Math.min(100, Math.round(hours / (rangeDays * 16) * 100)), revenue: bks.reduce((s, b) => s + b.price, 0), peakHour: peakHour ?? '—', online: bks.filter((b) => b.createdBy === b.memberId).length };
+  }).sort((a, b) => b.revenue - a.revenue);
+  const sportRevenue = data.sports.map((sp) => {
+    const cls = inRange.filter((p) => p.type === 'CLASS' && data.classes.some((c) => c.name === p.refName && c.sportId === sp.id)).reduce((s, p) => s + p.amount, 0);
+    const court = courtUtil.filter((c) => c.sportId === sp.id).reduce((s, c) => s + c.revenue, 0);
+    const planOnly = inRange.filter((p) => p.type === 'PLAN' && data.plans.some((pl) => pl.name === p.refName && pl.sportIds.length > 0 && pl.sportIds.includes(sp.id))).reduce((s, p) => s + p.amount, 0);
+    return { key: sp.id, sport: sp, classes: data.classes.filter((c) => c.sportId === sp.id && c.status === 'OPEN').length, students: new Set(data.enrollments.filter((e) => e.status === 'ACTIVE' && data.classes.some((c) => c.id === e.classId && c.sportId === sp.id)).map((e) => e.memberId)).size, cls, court, planOnly, total: cls + court + planOnly };
+  }).sort((a, b) => b.total - a.total);
 
   const topMembers = data.users.filter((u) => u.role === 'MEMBER').map((u) => ({ key: u.id, user: u, total: inRange.filter((p) => p.memberId === u.id).reduce((s, p) => s + p.amount, 0), count: inRange.filter((p) => p.memberId === u.id).length })).filter((x) => x.total > 0).sort((a, b) => b.total - a.total).slice(0, 8);
 
@@ -88,7 +107,7 @@ export default function Reports() {
         <Col xs={12} xl={6}><StatCard title="Tổng doanh thu" value={fmtMoney(total)} icon={<DollarOutlined />} color="#2563eb" hint={`${inRange.length} giao dịch`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Gói thành viên" value={fmtMoney(byType[0].value)} icon={<GiftOutlined />} color="#9333ea" hint={`${Math.round((byType[0].value / Math.max(1, total)) * 100)}% tổng doanh thu`} /></Col>
         <Col xs={12} xl={6}><StatCard title="Học phí lớp" value={fmtMoney(byType[1].value)} icon={<ReadOutlined />} color="#f97316" hint={`${Math.round((byType[1].value / Math.max(1, total)) * 100)}% tổng doanh thu`} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Thành viên mới tháng này" value={newMembers[5].count} icon={<UserAddOutlined />} color="#16a34a" hint={`tháng trước: ${newMembers[4].count}`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Thuê sân" value={fmtMoney(byType[2].value)} icon={<FieldTimeOutlined />} color="#06b6d4" hint={`${inRange.filter((p) => p.type === 'COURT').length} lượt · ${Math.round((byType[2].value / Math.max(1, total)) * 100)}% doanh thu`} /></Col>
       </Row>
       <Card>
         <Tabs items={[
@@ -100,12 +119,12 @@ export default function Reports() {
                     <b>Doanh thu theo thời gian</b>
                     <Radio.Group size="small" value={gran} onChange={(e) => setGran(e.target.value)} options={[{ value: 'day', label: 'Ngày' }, { value: 'month', label: 'Tháng' }, { value: 'year', label: 'Năm' }]} optionType="button" />
                   </div>
-                  <Column data={revenueSeries} xField="period" yField="revenue" colorField="type" group height={300} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 44 }} scale={{ color: { range: ['#2563eb', '#f97316'] } }} axis={{ y: { labelFormatter: (v: number) => (v / 1e6).toFixed(1) + 'tr', grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => fmtMoney(v) }] }} />
+                  <Column data={revenueSeries} xField="period" yField="revenue" colorField="type" group height={300} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 44 }} scale={{ color: { range: ['#2563eb', '#f97316', '#06b6d4'] } }} axis={{ y: { labelFormatter: (v: number) => (v / 1e6).toFixed(1) + 'tr', grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => fmtMoney(v) }] }} />
                 </Col>
                 <Col xs={24} xl={8}>
                   <b>Theo loại doanh thu</b>
                   <div style={{ margin: '12px 0 20px' }}>
-                    <Donut size={120} thickness={18} items={byType.map((t, i) => ({ label: t.type, value: t.value, color: ['#2563eb', '#f97316'][i] }))} format={(v) => fmtMoney(v)} center={<div style={{ fontSize: 11, color: '#94a3b8' }}>Tổng<br /><b style={{ color: '#0f172a', fontSize: 13 }}>{(total / 1e6).toFixed(1)}tr</b></div>} />
+                    <Donut size={120} thickness={18} items={byType.map((t, i) => ({ label: t.type, value: t.value, color: ['#2563eb', '#f97316', '#06b6d4'][i] }))} format={(v) => fmtMoney(v)} center={<div style={{ fontSize: 11, color: '#94a3b8' }}>Tổng<br /><b style={{ color: '#0f172a', fontSize: 13 }}>{(total / 1e6).toFixed(1)}tr</b></div>} />
                   </div>
                   <b>Theo phương thức thanh toán</b>
                   <div style={{ marginTop: 12 }}>
@@ -131,7 +150,7 @@ export default function Reports() {
           {
             key: 'coaches', label: 'Huấn luyện viên', children: (
               <Table size="middle" pagination={false} dataSource={coachPerf} columns={[
-                { title: 'Huấn luyện viên', render: (_, r) => <UserCell user={r.user} sub={r.user.specialty} /> },
+                { title: 'Huấn luyện viên', render: (_, r) => <UserCell user={r.user} sub={(r.user.sportIds ?? []).map((id) => data.sports.find((s) => s.id === id)?.name).filter(Boolean).join(' · ')} /> },
                 { title: 'Lớp', dataIndex: 'classes', align: 'center' },
                 { title: 'Học viên', dataIndex: 'students', align: 'center' },
                 { title: 'Buổi dạy', dataIndex: 'sessions', align: 'center' },
@@ -139,6 +158,34 @@ export default function Reports() {
                 { title: 'Kế hoạch / KQ', render: (_, r) => `${r.plans} / ${r.results}` },
                 { title: 'Đánh giá TB', dataIndex: 'rating', render: (v) => v === '—' ? v : <Tag color="gold">★ {v}</Tag> },
                 { title: 'Doanh thu lớp', dataIndex: 'revenue', align: 'right', render: (v) => <b>{fmtMoney(v)}</b> },
+              ]} />
+            ),
+          },
+          {
+            key: 'sports', label: 'Bộ môn', children: (
+              <Table size="middle" pagination={false} dataSource={sportRevenue} columns={[
+                { title: 'Bộ môn', render: (_, r) => <SportTag id={r.sport.id} /> },
+                { title: 'Lớp mở', dataIndex: 'classes', align: 'center' },
+                { title: 'Học viên', dataIndex: 'students', align: 'center' },
+                { title: 'Học phí lớp', dataIndex: 'cls', align: 'right', render: (v) => <span className="sc-nowrap">{fmtMoney(v)}</span> },
+                { title: 'Thuê sân', dataIndex: 'court', align: 'right', render: (v) => <span className="sc-nowrap">{v ? fmtMoney(v) : '—'}</span> },
+                { title: 'Gói theo môn', dataIndex: 'planOnly', align: 'right', render: (v) => <span className="sc-nowrap">{v ? fmtMoney(v) : '—'}</span> },
+                { title: 'Tổng', dataIndex: 'total', align: 'right', render: (v) => <b className="sc-nowrap">{fmtMoney(v)}</b>, sorter: (a, b) => a.total - b.total },
+                { title: 'Tỷ trọng', dataIndex: 'total', width: 160, render: (v) => <Progress percent={Math.round(v / Math.max(1, sportRevenue.reduce((s, x) => s + x.total, 0)) * 100)} size="small" /> },
+              ]} />
+            ),
+          },
+          {
+            key: 'courts', label: 'Sân', children: (
+              <Table size="middle" pagination={false} dataSource={courtUtil} columns={[
+                { title: 'Sân', render: (_, r) => <><b>{r.name}</b><div style={{ fontSize: 12, color: '#64748b' }}><SportTag id={r.sportId} size="small" /> · {r.location}</div></> },
+                { title: 'Giá/giờ', dataIndex: 'rate', align: 'right', render: (v) => <span className="sc-nowrap">{fmtMoney(v)}</span> },
+                { title: 'Lượt đặt', dataIndex: 'bookings', align: 'center', render: (v, r) => <span>{v} <span style={{ fontSize: 11, color: '#94a3b8' }}>({r.online} online)</span></span> },
+                { title: 'Giờ sử dụng', dataIndex: 'hours', align: 'center' },
+                { title: 'Hủy', dataIndex: 'cancelled', align: 'center', render: (v) => v ? <Tag color="red" style={{ margin: 0 }}>{v}</Tag> : '0' },
+                { title: 'Giờ cao điểm', dataIndex: 'peakHour', align: 'center' },
+                { title: 'Công suất (6h–22h)', dataIndex: 'util', width: 200, render: (v) => <Progress percent={v} size="small" strokeColor={v >= 40 ? '#16a34a' : v >= 20 ? '#2563eb' : '#f59e0b'} /> },
+                { title: 'Doanh thu', dataIndex: 'revenue', align: 'right', render: (v) => <b className="sc-nowrap">{fmtMoney(v)}</b>, sorter: (a, b) => a.revenue - b.revenue },
               ]} />
             ),
           },

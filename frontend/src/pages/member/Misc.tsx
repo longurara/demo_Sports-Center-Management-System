@@ -1,43 +1,37 @@
 import { useState } from 'react';
-import { Avatar, Button, Card, Col, Form, Input, List, Modal, Rate, Row, Space, Statistic, Table, Tabs, Tag, Typography, message } from 'antd';
+import { Avatar, Button, Card, Col, Form, Input, List, Modal, Row, Segmented, Space, Statistic, Table, Tabs, Tag, Typography, message } from 'antd';
+import SportTag from '../../components/SportTag';
 import { MessageOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
-import WeekTimetable from '../../components/WeekTimetable';
-import BodyMetricsChart from '../../components/BodyMetricsChart';
 import SupportThread from '../../components/SupportThread';
 import { fmtMoney, useApp } from '../../store/AppContext';
 
-export function MySchedule() {
-  const { data, currentUser } = useApp();
-  const navigate = useNavigate();
-  const ids = data.enrollments.filter((e) => e.memberId === currentUser!.id && e.status === 'ACTIVE').map((e) => e.classId);
-  const schedules = data.schedules.filter((s) => ids.includes(s.classId));
-  return (
-    <Page title="Lịch tập của tôi" subtitle="Thời khóa biểu tuần theo các lớp đã đăng ký">
-      <WeekTimetable schedules={schedules} onClick={(id) => navigate(`/member/classes/${id}`)} />
-    </Page>
-  );
-}
-
 export function Coaches() {
   const { data } = useApp();
-  const coaches = data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE');
+  const [sport, setSport] = useState<string>('ALL');
+  const coaches = data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE').filter((u) => sport === 'ALL' || u.sportIds?.includes(sport));
   return (
-    <Page title="Huấn luyện viên" noCard>
+    <Page title="Huấn luyện viên" subtitle={`${coaches.length} HLV · ${data.sports.length} bộ môn`} noCard>
+      <div style={{ overflowX: 'auto' }}>
+        <Segmented value={sport} onChange={(v) => setSport(v as string)} options={[{ value: 'ALL', label: 'Tất cả' }, ...data.sports.map((s) => ({ value: s.id, label: `${s.icon} ${s.name}` }))]} />
+      </div>
       <Row gutter={[16, 16]}>
-        {coaches.map((c, i) => (
+        {coaches.map((c) => (
           <Col xs={24} md={12} xl={8} key={c.id}>
             <div className="sc-coach">
-              <div className="sc-coach-cover" style={{ background: `linear-gradient(135deg, ${['#2563eb', '#16a34a', '#f97316', '#9333ea'][i % 4]}, #0b1220)` }} />
+              <div className="sc-coach-cover" style={{ background: `linear-gradient(135deg, ${data.sports.find((s) => s.id === c.sportIds?.[0])?.color ?? '#2563eb'}, #0b1220)`, position: 'relative' }}>
+                <div style={{ position: 'absolute', right: 16, top: 14, fontSize: 30, opacity: .9 }}>{(c.sportIds ?? []).map((id) => data.sports.find((s) => s.id === id)?.icon).join(' ')}</div>
+              </div>
               <div style={{ padding: '0 20px 20px', marginTop: -32 }}>
                 <Avatar size={64} style={{ background: '#fff', color: '#0f172a', fontSize: 22, fontWeight: 700, border: '3px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)' }}>{c.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</Avatar>
-                <div style={{ marginTop: 10, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ marginTop: 10 }}>
                   <b style={{ fontSize: 16 }}>{c.fullName}</b>
-                  <Tag color="blue">{c.specialty}</Tag>
+                  <div style={{ fontSize: 12, color: '#64748b' }}>{c.specialty}</div>
                 </div>
+                <Space wrap size={[4, 4]} style={{ marginTop: 8 }}>{(c.sportIds ?? []).map((id) => <SportTag key={id} id={id} size="small" />)}</Space>
                 <Typography.Paragraph type="secondary" style={{ margin: '8px 0 12px', minHeight: 44 }}>{c.bio}</Typography.Paragraph>
                 <div style={{ fontSize: 12, color: '#64748b' }}>Lớp đang dạy</div>
                 <Space wrap size={4} style={{ marginTop: 4 }}>{data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN').map((x) => <Tag key={x.id} style={{ background: '#f1f5f9', color: '#334155' }}>{x.name}</Tag>)}</Space>
@@ -85,39 +79,6 @@ export function MyAttendance() {
           { key: 'checkin', label: 'Check-in trung tâm', children: <Table size="small" rowKey="id" dataSource={checkIns} columns={[{ title: 'Thời gian', dataIndex: 'time' }]} /> },
         ]} />
       </Card>
-    </Page>
-  );
-}
-
-export function MyResults() {
-  const { data, currentUser, nameOf } = useApp();
-  const me = currentUser!.id;
-  const results = data.trainingResults.filter((r) => r.memberId === me).map((r) => ({ ...r, session: data.sessions.find((s) => s.id === r.sessionId)! })).sort((a, b) => b.session.date.localeCompare(a.session.date));
-  const reviews = data.progressReviews.filter((r) => r.memberId === me).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-  return (
-    <Page title="Kết quả tập luyện & nhận xét" noCard>
-      <Card title="Chỉ số cơ thể theo tuần" extra={<span style={{ fontSize: 12, color: '#94a3b8' }}>Đo InBody / HLV ghi nhận</span>}>
-        <BodyMetricsChart memberId={me} />
-      </Card>
-      <Row gutter={[16, 16]}>
-        <Col xs={24} lg={14}>
-          <Card title="Kết quả từng buổi">
-            <Table size="small" rowKey="id" dataSource={results} columns={[
-              { title: 'Ngày', render: (_, r) => r.session.date }, { title: 'Lớp', render: (_, r) => data.classes.find((c) => c.id === r.session.classId)?.name },
-              { title: 'Chỉ số', dataIndex: 'metrics' }, { title: 'Nhận xét HLV', dataIndex: 'note' },
-            ]} />
-          </Card>
-        </Col>
-        <Col xs={24} lg={10}>
-          <Card title="Đánh giá tiến độ">
-            <List dataSource={reviews} renderItem={(r) => (
-              <List.Item>
-                <List.Item.Meta title={<Space><Rate disabled value={r.rating} /><span style={{ fontSize: 12, color: '#999' }}>{r.createdAt}</span></Space>} description={<><div>{r.comment}</div><div style={{ fontSize: 12 }}>— HLV {nameOf(r.coachId)}</div></>} />
-              </List.Item>
-            )} />
-          </Card>
-        </Col>
-      </Row>
     </Page>
   );
 }

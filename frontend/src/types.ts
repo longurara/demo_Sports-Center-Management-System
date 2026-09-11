@@ -12,7 +12,8 @@ export interface User {
   goal?: string;
   level?: 'BEGINNER' | 'INTERMEDIATE' | 'ADVANCED';
   healthNote?: string;
-  specialty?: string;
+  specialty?: string;   // chứng chỉ / mô tả chuyên môn ngắn (HLV)
+  sportIds?: string[];  // bộ môn phụ trách (HLV)
   bio?: string;
   createdAt: string;
 }
@@ -24,6 +25,8 @@ export interface Plan {
   durationDays: number;
   benefits: string;
   active: boolean;
+  sportIds: string[];     // [] = All-access (mọi bộ môn)
+  courtDiscount: number;  // % giảm giá thuê sân cho thành viên gói này
 }
 
 export interface Subscription {
@@ -35,8 +38,30 @@ export interface Subscription {
   status: 'ACTIVE' | 'EXPIRED' | 'PENDING';
 }
 
-export interface Sport { id: string; name: string; description: string }
-export interface Room { id: string; name: string; capacity: number; location: string }
+export interface Sport { id: string; name: string; description: string; icon: string; color: string }
+export interface Room {
+  id: string;
+  name: string;
+  capacity: number;
+  location: string;
+  type: 'ROOM' | 'COURT'; // phòng tập (theo lớp) | sân (đặt theo giờ)
+  sportId?: string;       // sân dành cho bộ môn nào
+  hourlyRate?: number;    // giá thuê sân / giờ (COURT)
+}
+
+export interface CourtBooking {
+  id: string;
+  courtId: string;
+  memberId: string;
+  date: string;       // YYYY-MM-DD
+  startTime: string;  // HH:mm
+  endTime: string;
+  price: number;
+  status: 'BOOKED' | 'CHECKED_IN' | 'COMPLETED' | 'CANCELLED';
+  createdAt: string;
+  createdBy: string;
+  note?: string;
+}
 
 export interface GymClass {
   id: string;
@@ -73,7 +98,7 @@ export interface Payment {
   memberId: string;
   amount: number;
   method: 'CASH' | 'BANK' | 'VNPAY' | 'MOMO';
-  type: 'PLAN' | 'CLASS';
+  type: 'PLAN' | 'CLASS' | 'COURT';
   refName: string;
   paidAt: string;
   createdBy: string;
@@ -138,13 +163,17 @@ export interface TrainingPlan {
   source?: 'MANUAL' | 'AI';
 }
 
+export interface ResultEntry { name: string; value: number; unit: string }
+
 export interface TrainingResult {
   id: string;
   sessionId: string;
   memberId: string;
   coachId: string;
-  metrics: string;
+  metrics: string;          // bản rút gọn để hiển thị/thông báo
   note: string;
+  entries?: ResultEntry[];  // chỉ số có cấu trúc (theo bộ môn) để vẽ tiến bộ
+  effort?: number;          // RPE 1–10 do HLV đánh giá
 }
 
 export interface ProgressReview {
@@ -196,4 +225,5 @@ export interface AppData {
   homeworks: Homework[];
   bodyMetrics: BodyMetric[];
   supportMessages: SupportMessage[];
+  courtBookings: CourtBooking[];
 }

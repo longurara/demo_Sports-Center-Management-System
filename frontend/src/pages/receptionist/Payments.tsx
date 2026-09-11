@@ -23,7 +23,7 @@ export default function Payments() {
     .filter((p) => !q || p.invoiceNo.toLowerCase().includes(q.toLowerCase()) || nameOf(p.memberId).toLowerCase().includes(q.toLowerCase()))
     .sort((a, b) => b.paidAt.localeCompare(a.paidAt));
 
-  const save = (v: { memberId: string; type: 'PLAN' | 'CLASS'; refName: string; amount: number; method: 'CASH' | 'BANK' | 'VNPAY' | 'MOMO' }) => {
+  const save = (v: { memberId: string; type: 'PLAN' | 'CLASS' | 'COURT'; refName: string; amount: number; method: 'CASH' | 'BANK' | 'VNPAY' | 'MOMO' }) => {
     const p = add('payments', { ...v, invoiceNo: nextInvoiceNo(data.payments), paidAt: dayjs().format('YYYY-MM-DD HH:mm'), createdBy: currentUser!.id });
     log('PAYMENT', 'Payment', p.id, `Thu ${fmtMoney(v.amount)} (${v.refName}) từ ${nameOf(v.memberId)}`);
     message.success(`Đã ghi nhận thanh toán, hóa đơn ${p.invoiceNo}`); setOpen(false);
@@ -50,7 +50,7 @@ export default function Payments() {
       <Modal title="Ghi nhận thanh toán" open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} okText="Lưu & tạo hóa đơn">
         <Form form={form} layout="vertical" onFinish={save} initialValues={{ method: 'CASH', type: 'PLAN' }}>
           <Form.Item name="memberId" label="Thành viên" rules={[{ required: true }]}><Select showSearch optionFilterProp="label" options={data.users.filter((u) => u.role === 'MEMBER').map((u) => ({ value: u.id, label: `${u.fullName} - ${u.phone}` }))} /></Form.Item>
-          <Form.Item name="type" label="Loại"><Select options={[{ value: 'PLAN', label: 'Gói thành viên' }, { value: 'CLASS', label: 'Học phí lớp' }]} /></Form.Item>
+          <Form.Item name="type" label="Loại"><Select options={[{ value: 'PLAN', label: 'Gói thành viên' }, { value: 'CLASS', label: 'Học phí lớp' }, { value: 'COURT', label: 'Thuê sân' }]} /></Form.Item>
           <Form.Item name="refName" label="Nội dung" rules={[{ required: true }]}><Input placeholder="VD: Gói 3 tháng" /></Form.Item>
           <Form.Item name="amount" label="Số tiền (₫)" rules={[{ required: true }]}><InputNumber style={{ width: '100%' }} min={0} step={50000} /></Form.Item>
           <Form.Item name="method" label="Phương thức"><Select options={[{ value: 'CASH', label: 'Tiền mặt' }, { value: 'BANK', label: 'Chuyển khoản' }, { value: 'VNPAY', label: 'VNPay' }, { value: 'MOMO', label: 'MoMo' }]} /></Form.Item>

@@ -17,8 +17,20 @@ Mở http://localhost:5173. Mật khẩu bất kỳ. Tài khoản demo:
 |---|---|
 | Center Manager | manager@sc.vn |
 | Receptionist | reception@sc.vn |
-| Coach | coach.an@sc.vn |
+| Coach (Gym) | coach.an@sc.vn |
+| Coach (Cầu lông / Pickleball) | coach.duy@sc.vn |
 | Member | member.dung@gmail.com |
+
+## Phạm vi nghiệp vụ
+
+- **10 bộ môn** (Gym, Yoga, Boxing, Bơi, Cầu lông, Tennis, Pickleball, Bóng rổ, Zumba, Bóng đá mini) — phòng tập theo lớp và **sân cho thuê theo giờ**.
+- **Đặt sân**: thành viên tự đặt online (lưới sân × khung giờ, kiểm tra trùng lớp/đặt trước, giảm giá theo gói); lễ tân đặt tại quầy, nhận sân, hủy, xuất hóa đơn.
+- **Gói thành viên theo bộ môn**: All-access hoặc gói riêng môn; kiểm tra gói khi đăng ký lớp.
+- **HLV theo bộ môn**: phân công lớp chỉ gợi ý HLV đúng môn.
+- **Kết quả tập luyện có cấu trúc** theo bộ môn (chỉ số, RPE) → biểu đồ tiến bộ, kỷ lục cá nhân.
+- **AI gợi ý bài tập** theo bộ môn học viên đang theo (thư viện bài chuyên môn + thể lực nền).
+- **Hóa đơn GTGT** theo mẫu hóa đơn điện tử (mã CQT, QR tra cứu, số tiền bằng chữ), in A4.
+- **Responsive**: sidebar dạng drawer + thanh tab dưới cùng trên điện thoại.
 
 ## Cấu trúc
 

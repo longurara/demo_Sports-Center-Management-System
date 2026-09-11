@@ -1,7 +1,8 @@
-import { Button, Card, Col, Descriptions, Progress, Row, Table } from 'antd';
+import { Button, Card, Col, Descriptions, Progress, Row, Space, Table, Tag } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
+import SportTag from '../../components/SportTag';
 import StatusTag from '../../components/StatusTag';
 import { fmtMoney, useApp } from '../../store/AppContext';
 
@@ -27,6 +28,8 @@ export default function Membership() {
                   <Descriptions.Item label="Giá">{fmtMoney(plan.price)}</Descriptions.Item>
                   <Descriptions.Item label="Bắt đầu">{dayjs(sub.startDate).format('DD/MM/YYYY')}</Descriptions.Item>
                   <Descriptions.Item label="Hết hạn">{dayjs(sub.endDate).format('DD/MM/YYYY')}</Descriptions.Item>
+                  <Descriptions.Item label="Bộ môn">{plan.sportIds.length === 0 ? <Tag color="gold" style={{ margin: 0, fontWeight: 600 }}>★ All-access — mọi bộ môn</Tag> : <Space wrap size={[4, 4]}>{plan.sportIds.map((id) => <SportTag key={id} id={id} />)}</Space>}</Descriptions.Item>
+                  {plan.courtDiscount > 0 && <Descriptions.Item label="Ưu đãi thuê sân">Giảm {plan.courtDiscount}% mọi sân</Descriptions.Item>}
                   <Descriptions.Item label="Quyền lợi">{plan.benefits}</Descriptions.Item>
                 </Descriptions>
                 <Progress percent={Math.round((daysLeft / plan.durationDays) * 100)} format={() => `${daysLeft} ngày`} />

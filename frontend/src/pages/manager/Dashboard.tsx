@@ -35,6 +35,7 @@ export default function ManagerDashboard() {
     return [
       { month: m.format('MM/YYYY'), type: 'Gói thành viên', revenue: pays.filter((p) => p.type === 'PLAN').reduce((s, p) => s + p.amount, 0) / 1e6 },
       { month: m.format('MM/YYYY'), type: 'Học phí lớp', revenue: pays.filter((p) => p.type === 'CLASS').reduce((s, p) => s + p.amount, 0) / 1e6 },
+      { month: m.format('MM/YYYY'), type: 'Thuê sân', revenue: pays.filter((p) => p.type === 'COURT').reduce((s, p) => s + p.amount, 0) / 1e6 },
     ];
   }).flat();
 
@@ -63,7 +64,7 @@ export default function ManagerDashboard() {
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={15}>
           <Card title="Doanh thu 6 tháng gần nhất" extra={<Tag color="blue">triệu ₫</Tag>}>
-            <Column data={monthly} xField="month" yField="revenue" colorField="type" group height={280} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 40 }} scale={{ color: { range: ['#2563eb', '#f97316'] } }} axis={{ y: { grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => v.toFixed(2) + ' triệu' }] }} />
+            <Column data={monthly} xField="month" yField="revenue" colorField="type" group height={280} style={{ radiusTopLeft: 6, radiusTopRight: 6, maxWidth: 40 }} scale={{ color: { range: ['#2563eb', '#f97316', '#06b6d4'] } }} axis={{ y: { grid: true, gridLineDash: [4, 4] } }} legend={{ color: { position: 'top' } }} tooltip={{ items: [{ channel: 'y', valueFormatter: (v: number) => v.toFixed(2) + ' triệu' }] }} />
           </Card>
         </Col>
         <Col xs={24} xl={9}>

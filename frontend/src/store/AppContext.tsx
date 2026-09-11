@@ -32,7 +32,7 @@ let seq = Number(sessionStorage.getItem('sc_seq') ?? 1000);
 export const nextId = (prefix = 'id') => { sessionStorage.setItem('sc_seq', String(++seq)); return `${prefix}${seq}`; };
 
 // Prototype: giữ dữ liệu giả lập trong sessionStorage để F5 không mất trạng thái khi demo.
-const DATA_KEY = 'sc_data_v4'; // đổi version khi thay đổi cấu trúc mock data
+const DATA_KEY = 'sc_data_v6'; // đổi version khi thay đổi cấu trúc mock data
 const load = <T,>(key: string, fallback: T): T => {
   try { const v = sessionStorage.getItem(key); return v ? (JSON.parse(v) as T) : fallback; } catch { return fallback; }
 };

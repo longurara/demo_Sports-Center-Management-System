@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Button, Card, Col, Form, Input, List, Modal, Radio, Rate, Row, Select, Space, Table, Tabs, Tag, message } from 'antd';
-import { PlusOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, Input, InputNumber, List, Modal, Radio, Rate, Row, Select, Slider, Space, Table, Tabs, Tag, message } from 'antd';
+import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
 import { useSearchParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
+import { entriesOf, entriesToString, fmtVal, metricDef, metricsFor } from '../../utils/results';
 import StatusTag from '../../components/StatusTag';
 import { useApp } from '../../store/AppContext';
 
@@ -64,9 +65,14 @@ export function TrainingResults() {
   const attendees = sess ? data.attendances.filter((a) => a.sessionId === sess.id && a.status !== 'ABSENT') : [];
   const rows = data.trainingResults.filter((r) => r.coachId === currentUser!.id).map((r) => ({ ...r, session: data.sessions.find((s) => s.id === r.sessionId)! })).sort((a, b) => b.session.date.localeCompare(a.session.date));
 
-  const save = (v: { sessionId: string; memberId: string; metrics: string; note: string }) => {
-    add('trainingResults', { ...v, coachId: currentUser!.id });
-    notify(v.memberId, 'Kết quả buổi tập', `HLV đã ghi nhận kết quả buổi ${sess?.date}: ${v.metrics}`);
+  const sessSport = sess ? data.sports.find((x) => x.id === data.classes.find((c) => c.id === sess.classId)?.sportId)?.name : undefined;
+  const defs = metricsFor(sessSport);
+  const save = (v: { sessionId: string; memberId: string; entries?: { name: string; value: number }[]; effort?: number; note: string }) => {
+    const entries = (v.entries ?? []).filter((e) => e && e.name && e.value !== undefined && e.value !== null).map((e) => ({ name: e.name, value: Number(e.value), unit: metricDef(e.name)?.unit ?? '' }));
+    if (!entries.length) { message.warning('Nhập ít nhất 1 chỉ số'); return; }
+    const metrics = entriesToString(entries);
+    add('trainingResults', { sessionId: v.sessionId, memberId: v.memberId, coachId: currentUser!.id, metrics, note: v.note ?? '', entries, effort: v.effort });
+    notify(v.memberId, 'Kết quả buổi tập', `HLV đã ghi nhận kết quả buổi ${sess?.date}: ${metrics}`);
     message.success('Đã ghi nhận kết quả'); setOpen(false); form.resetFields();
   };
 
@@ -76,14 +82,35 @@ export function TrainingResults() {
         { title: 'Ngày', render: (_, r) => r.session.date },
         { title: 'Lớp', render: (_, r) => data.classes.find((c) => c.id === r.session.classId)?.name },
         { title: 'Học viên', render: (_, r) => nameOf(r.memberId) },
-        { title: 'Chỉ số', dataIndex: 'metrics' }, { title: 'Nhận xét', dataIndex: 'note' },
+        { title: 'Chỉ số', dataIndex: 'metrics', render: (_, r) => <Space wrap size={[4, 4]}>{entriesOf(r).map((e) => <Tag key={e.name} style={{ margin: 0 }}>{e.name} <b>{fmtVal(e.value, metricDef(e.name))}{e.unit}</b></Tag>)}</Space> },
+        { title: 'RPE', dataIndex: 'effort', align: 'center', render: (v) => v ? <Tag color={v >= 8 ? 'red' : v >= 6 ? 'orange' : 'green'} style={{ margin: 0 }}>{v}/10</Tag> : '—' },
+        { title: 'Nhận xét', dataIndex: 'note' },
       ]} />
       <Modal title="Ghi nhận kết quả buổi tập" open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} okText="Lưu">
         <Form form={form} layout="vertical" onFinish={save}>
           <Form.Item name="sessionId" label="Buổi tập" rules={[{ required: true }]}><Select options={sessions.map((s) => ({ value: s.id, label: `${s.date} — ${data.classes.find((c) => c.id === s.classId)?.name}` }))} /></Form.Item>
           <Form.Item name="memberId" label="Học viên (có mặt)" rules={[{ required: true }]}><Select options={attendees.map((a) => ({ value: a.memberId, label: nameOf(a.memberId) }))} /></Form.Item>
-          <Form.Item name="metrics" label="Chỉ số" rules={[{ required: true }]}><Input placeholder="VD: Squat 40kg x 10, chạy 3km/18 phút" /></Form.Item>
-          <Form.Item name="note" label="Nhận xét"><Input.TextArea rows={3} /></Form.Item>
+          <div style={{ fontSize: 12, color: '#64748b', marginBottom: 6 }}>Chỉ số theo bộ môn {sessSport ? <Tag style={{ marginLeft: 4 }}>{sessSport}</Tag> : '(chọn buổi tập trước)'}</div>
+          <Form.List name="entries" initialValue={[{}]}>
+            {(fields, { add: addRow, remove }) => (
+              <>
+                {fields.map((f) => (
+                  <div key={f.key} style={{ display: 'grid', gridTemplateColumns: '1fr 120px 32px', gap: 8, marginBottom: 8 }}>
+                    <Form.Item name={[f.name, 'name']} noStyle rules={[{ required: true, message: 'Chọn chỉ số' }]}>
+                      <Select placeholder="Chỉ số" options={defs.map((d) => ({ value: d.name, label: `${d.name} (${d.unit})` }))} disabled={!sess} />
+                    </Form.Item>
+                    <Form.Item name={[f.name, 'value']} noStyle rules={[{ required: true, message: 'Nhập giá trị' }]}>
+                      <InputNumber placeholder="Giá trị" style={{ width: '100%' }} min={0} />
+                    </Form.Item>
+                    <Button icon={<DeleteOutlined />} onClick={() => remove(f.name)} disabled={fields.length === 1} />
+                  </div>
+                ))}
+                <Button type="dashed" size="small" onClick={() => addRow({})} disabled={fields.length >= 4}>+ Thêm chỉ số</Button>
+              </>
+            )}
+          </Form.List>
+          <Form.Item name="effort" label="Mức gắng sức (RPE 1–10)" style={{ marginTop: 16 }} initialValue={7}><Slider min={1} max={10} marks={{ 1: 'Nhẹ', 5: 'Vừa', 10: 'Tối đa' }} /></Form.Item>
+          <Form.Item name="note" label="Nhận xét"><Input.TextArea rows={3} placeholder="Kỹ thuật, điểm cần cải thiện, mục tiêu buổi sau…" /></Form.Item>
         </Form>
       </Modal>
     </Page>

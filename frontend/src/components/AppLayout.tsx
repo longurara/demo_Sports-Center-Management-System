@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Avatar, Badge, Button, Dropdown, Layout, Popover, Space, Tooltip } from 'antd';
-import { BellOutlined, LogoutOutlined, ReloadOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
-import { Outlet, useNavigate } from 'react-router-dom';
+import { Avatar, Badge, Button, Drawer, Dropdown, Grid, Layout, Popover, Space, Tooltip } from 'antd';
+import { AppstoreOutlined, BellOutlined, LogoutOutlined, MenuOutlined, ReloadOutlined, SearchOutlined, ThunderboltFilled, UserOutlined } from '@ant-design/icons';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { flatNav, mobileTabs } from '../routes';
 import dayjs from 'dayjs';
 import GlobalSearch from './GlobalSearch';
 import SideNav from './SideNav';
@@ -16,7 +17,11 @@ export default function AppLayout() {
   const { currentUser, logout, myNotifications, resetData, update } = useApp();
   const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('sc_nav_collapsed') === '1'; } catch { return false; } });
   const [searchOpen, setSearchOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const screens = Grid.useBreakpoint();
+  const isMobile = screens.md === false; // < 768px
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => { if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); setSearchOpen(true); } };
@@ -31,18 +36,38 @@ export default function AppLayout() {
   const base = `/${currentUser.role.toLowerCase()}`;
   const roleColor = ROLE_COLOR[currentUser.role];
 
+  // Thanh tab dưới cùng trên mobile: 4 mục đầu của vai trò + nút Menu mở drawer
+  const tabItems = mobileTabs[currentUser.role].map((t) => ({ ...flatNav(currentUser.role).find((i) => i.key === t.key)!, label: t.label })).filter((t) => t.key);
+  const isActive = (key: string) => (key === base ? pathname === base : pathname === key || pathname.startsWith(key + '/'));
+
   return (
-    <Layout style={{ minHeight: '100vh' }} hasSider>
-      <SideNav collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />
+    <Layout style={{ minHeight: '100vh' }} hasSider={!isMobile}>
+      {!isMobile && <SideNav collapsed={collapsed} onToggle={() => setCollapsed((c) => !c)} />}
+      {isMobile && (
+        <Drawer placement="left" open={navOpen} onClose={() => setNavOpen(false)} closable={false} width={288} className="sc-nav-drawer" styles={{ body: { padding: 0 } }}>
+          <SideNav collapsed={false} mobile onToggle={() => setNavOpen(false)} onNavigate={() => setNavOpen(false)} />
+        </Drawer>
+      )}
       <Layout>
-        <Header className="sc-header" style={{ padding: '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div onClick={() => setSearchOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f4f6fb', borderRadius: 10, padding: '7px 12px', width: 320, color: '#94a3b8', fontSize: 13, cursor: 'pointer', border: '1px solid transparent' }}
-            onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#dbe6ff')} onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}>
-            <SearchOutlined /> Tìm thành viên, lớp, hóa đơn… <span style={{ marginLeft: 'auto', fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 6, padding: '0 6px', background: '#fff' }}>Ctrl K</span>
-          </div>
-          <Space size={4}>
-            <Tooltip title="Reset dữ liệu demo"><Button type="text" icon={<ReloadOutlined />} onClick={resetData} /></Tooltip>
-            <Popover placement="bottomRight" trigger="click" arrow={false} styles={{ container: { width: 360, padding: 0 } }} content={
+        <Header className="sc-header" style={{ padding: isMobile ? '0 12px' : '0 24px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          {isMobile ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+              <Button type="text" icon={<MenuOutlined style={{ fontSize: 18 }} />} onClick={() => setNavOpen(true)} />
+              <Link to={base} style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#0f172a', textDecoration: 'none', minWidth: 0 }}>
+                <span style={{ width: 28, height: 28, borderRadius: 8, background: 'linear-gradient(135deg,#2563eb,#f97316)', color: '#fff', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, flexShrink: 0 }}><ThunderboltFilled /></span>
+                <b style={{ fontSize: 14, whiteSpace: 'nowrap' }}>Sports Center</b>
+              </Link>
+            </div>
+          ) : (
+            <div onClick={() => setSearchOpen(true)} style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#f4f6fb', borderRadius: 10, padding: '7px 12px', width: 320, color: '#94a3b8', fontSize: 13, cursor: 'pointer', border: '1px solid transparent' }}
+              onMouseEnter={(e) => (e.currentTarget.style.borderColor = '#dbe6ff')} onMouseLeave={(e) => (e.currentTarget.style.borderColor = 'transparent')}>
+              <SearchOutlined /> Tìm thành viên, lớp, hóa đơn… <span style={{ marginLeft: 'auto', fontSize: 11, border: '1px solid #e2e8f0', borderRadius: 6, padding: '0 6px', background: '#fff' }}>Ctrl K</span>
+            </div>
+          )}
+          <Space size={isMobile ? 0 : 4}>
+            {isMobile && <Button type="text" icon={<SearchOutlined style={{ fontSize: 17 }} />} onClick={() => setSearchOpen(true)} />}
+            {!isMobile && <Tooltip title="Reset dữ liệu demo"><Button type="text" icon={<ReloadOutlined />} onClick={resetData} /></Tooltip>}
+            <Popover placement="bottomRight" trigger="click" arrow={false} styles={{ container: { width: isMobile ? 'calc(100vw - 16px)' : 360, padding: 0 } }} content={
               <div>
                 <div style={{ padding: '12px 16px', borderBottom: '1px solid #eef1f6', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <b>Thông báo</b>
@@ -72,24 +97,37 @@ export default function AppLayout() {
               menu={{
                 items: [
                   { key: 'profile', icon: <UserOutlined />, label: 'Hồ sơ cá nhân', onClick: () => navigate(`${base}/profile`) },
-                  { type: 'divider' },
+                  ...(isMobile ? [{ key: 'reset', icon: <ReloadOutlined />, label: 'Reset dữ liệu demo', onClick: resetData }] : []),
+                  { type: 'divider' as const },
                   { key: 'logout', icon: <LogoutOutlined />, label: 'Đăng xuất', onClick: () => { logout(); navigate('/login'); } },
                 ],
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginLeft: 8, padding: '4px 10px 4px 4px', borderRadius: 999, border: '1px solid #eef1f6', background: '#fff' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', marginLeft: isMobile ? 4 : 8, padding: isMobile ? 2 : '4px 10px 4px 4px', borderRadius: 999, border: '1px solid #eef1f6', background: '#fff' }}>
                 <Avatar size={30} style={{ background: `${roleColor}22`, color: roleColor, fontWeight: 700, fontSize: 12 }}>{initialsOf(currentUser.fullName)}</Avatar>
-                <div style={{ lineHeight: 1.15 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600 }}>{currentUser.fullName}</div>
-                  <div style={{ fontSize: 11, color: roleColor, fontWeight: 600 }}>{labelOf(currentUser.role)}</div>
-                </div>
+                {!isMobile && (
+                  <div style={{ lineHeight: 1.15 }}>
+                    <div style={{ fontSize: 13, fontWeight: 600 }}>{currentUser.fullName}</div>
+                    <div style={{ fontSize: 11, color: roleColor, fontWeight: 600 }}>{labelOf(currentUser.role)}</div>
+                  </div>
+                )}
               </div>
             </Dropdown>
           </Space>
         </Header>
-        <Content style={{ padding: '24px 28px 40px', maxWidth: 1440, width: '100%', margin: '0 auto' }}>
+        <Content style={{ padding: isMobile ? '14px 12px 84px' : '24px 28px 40px', maxWidth: 1440, width: '100%', margin: '0 auto', minWidth: 0 }}>
           <Outlet />
         </Content>
+        {isMobile && (
+          <nav className="sc-tabbar">
+            {tabItems.map((it) => (
+              <Link key={it.key} to={it.key} className={`sc-tabbar-item${isActive(it.key) ? ' active' : ''}`}>
+                <span className="ico">{it.icon}</span><span className="lbl">{it.label}</span>
+              </Link>
+            ))}
+            <a className="sc-tabbar-item" onClick={() => setNavOpen(true)}><span className="ico"><AppstoreOutlined /></span><span className="lbl">Menu</span></a>
+          </nav>
+        )}
         <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
       </Layout>
     </Layout>

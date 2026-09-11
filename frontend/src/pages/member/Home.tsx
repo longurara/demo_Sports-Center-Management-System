@@ -45,9 +45,9 @@ export default function MemberHome() {
             ) : <Button style={{ marginTop: 16 }} onClick={() => navigate('/member/plans')}>Đăng ký gói ngay</Button>}
           </Card>
         </Col>
-        <Col xs={24} md={5}><StatCard title="Lớp đang học" value={myClasses.length} icon={<BookOutlined />} color="#9333ea" onClick={() => navigate('/member/classes')} /></Col>
-        <Col xs={24} md={5}><StatCard title="Chuyên cần" value={`${attendanceRate}%`} icon={<CalendarOutlined />} color="#16a34a" hint={`${att.length} buổi đã điểm danh`} onClick={() => navigate('/member/attendance')} /></Col>
-        <Col xs={24} md={5}><StatCard title="Thông báo mới" value={unread.length} icon={<BellOutlined />} color="#f97316" onClick={() => navigate('/member/notifications')} /></Col>
+        <Col xs={12} md={5}><StatCard title="Lớp đang học" value={myClasses.length} icon={<BookOutlined />} color="#9333ea" onClick={() => navigate('/member/classes')} /></Col>
+        <Col xs={12} md={5}><StatCard title="Chuyên cần" value={`${attendanceRate}%`} icon={<CalendarOutlined />} color="#16a34a" hint={`${att.length} buổi đã điểm danh`} onClick={() => navigate('/member/attendance')} /></Col>
+        <Col xs={12} md={5}><StatCard title="Thông báo mới" value={unread.length} icon={<BellOutlined />} color="#f97316" onClick={() => navigate('/member/notifications')} /></Col>
       </Row>
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={14}>

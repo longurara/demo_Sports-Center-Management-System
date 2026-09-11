@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Button, Form, Input, Modal, Popconfirm, Space, Table, message } from 'antd';
+import { Button, Form, Input, Modal, Popconfirm, Select, Space, Table, message } from 'antd';
+import SportTag from '../../components/SportTag';
 import { PlusOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
@@ -46,7 +47,8 @@ export default function StaffPage({ role }: { role: Extract<Role, 'COACH' | 'REC
           { title: title, dataIndex: 'fullName', render: (_, r) => <UserCell user={r} /> },
           { title: 'SĐT', dataIndex: 'phone' },
           ...(isCoach ? [
-            { title: 'Chuyên môn', dataIndex: 'specialty' },
+            { title: 'Bộ môn', render: (_: unknown, r: User) => <Space wrap size={[4, 4]}>{(r.sportIds ?? []).map((id) => <SportTag key={id} id={id} size="small" />)}</Space> },
+            { title: 'Chứng chỉ / chuyên môn', dataIndex: 'specialty' },
             { title: 'Lớp phụ trách', render: (_: unknown, r: User) => data.classes.filter((c) => c.coachId === r.id && c.status === 'OPEN').length },
           ] : []),
           { title: 'Trạng thái', dataIndex: 'status', render: (v) => <StatusTag value={v} /> },
@@ -69,7 +71,10 @@ export default function StaffPage({ role }: { role: Extract<Role, 'COACH' | 'REC
           <Form.Item name="phone" label="SĐT" rules={[{ required: true }]}><Input /></Form.Item>
           {!editing && <Form.Item name="password" label="Mật khẩu tạm" rules={[{ required: true }]}><Input.Password /></Form.Item>}
           {isCoach && <>
-            <Form.Item name="specialty" label="Chuyên môn" rules={[{ required: true }]}><Input placeholder="VD: Gym / Yoga / Boxing" /></Form.Item>
+            <Form.Item name="sportIds" label="Bộ môn phụ trách" rules={[{ required: true, message: 'Chọn ít nhất 1 bộ môn' }]}>
+              <Select mode="multiple" placeholder="Chọn bộ môn" options={data.sports.map((sp) => ({ value: sp.id, label: `${sp.icon} ${sp.name}` }))} />
+            </Form.Item>
+            <Form.Item name="specialty" label="Chứng chỉ / chuyên môn"><Input placeholder="VD: NASM-CPT · 5 năm kinh nghiệm" /></Form.Item>
             <Form.Item name="bio" label="Giới thiệu"><Input.TextArea rows={3} /></Form.Item>
           </>}
         </Form>

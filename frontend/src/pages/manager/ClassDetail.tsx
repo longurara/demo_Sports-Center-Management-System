@@ -8,6 +8,7 @@ import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
 import StatCard from '../../components/StatCard';
 import UserCell from '../../components/UserCell';
+import SportTag from '../../components/SportTag';
 import { DAY_NAMES, fmtMoney, useApp } from '../../store/AppContext';
 import { coachConflict, roomConflict } from '../../utils/conflicts';
 
@@ -20,6 +21,7 @@ export default function ClassDetail() {
   const [scForm] = Form.useForm();
   const [coachForm] = Form.useForm();
   const [warn, setWarn] = useState<string | null>(null);
+  const [allCoaches, setAllCoaches] = useState(false);
 
   const c = data.classes.find((x) => x.id === id);
   if (!c) return <Page title="Không tìm thấy lớp"><Button onClick={() => navigate(-1)}>Quay lại</Button></Page>;
@@ -80,7 +82,7 @@ export default function ClassDetail() {
           <Card title="Huấn luyện viên" extra={<Button size="small" type="link" onClick={() => { coachForm.setFieldsValue({ coachId: c.coachId }); setWarn(null); setCoachOpen(true); }}>Phân công</Button>} style={{ height: '100%' }}>
             {coach ? (
               <>
-                <UserCell user={coach} sub={coach.specialty} size={44} />
+                <UserCell user={coach} sub={`${(coach.sportIds ?? []).map((id) => data.sports.find((s) => s.id === id)?.name).filter(Boolean).join(' · ')}${coach.specialty ? ` — ${coach.specialty}` : ''}`} size={44} />
                 <div style={{ color: '#64748b', fontSize: 13, marginTop: 10 }}>{coach.bio}</div>
                 <div style={{ marginTop: 10, fontSize: 12, color: '#94a3b8' }}>Đang dạy {data.classes.filter((x) => x.coachId === coach.id && x.status === 'OPEN').length} lớp</div>
               </>
@@ -163,11 +165,24 @@ export default function ClassDetail() {
       <Modal title="Phân công huấn luyện viên" open={coachOpen} onCancel={() => setCoachOpen(false)} onOk={() => coachForm.submit()} okText="Phân công">
         {warn && <Alert type="error" showIcon title={warn} style={{ marginBottom: 12 }} />}
         <Form form={coachForm} layout="vertical" onFinish={assignCoach}>
-          <Form.Item name="coachId" label="Huấn luyện viên" rules={[{ required: true }]}>
-            <Select options={data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE').map((u) => ({ value: u.id, label: `${u.fullName} — ${u.specialty} (${data.classes.filter((x) => x.coachId === u.id && x.status === 'OPEN').length} lớp)` }))} />
+          <Form.Item name="coachId" label={<span>Huấn luyện viên <SportTag id={c.sportId} size="small" /></span>} rules={[{ required: true }]}>
+            <Select
+              options={(() => {
+                const coaches = data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE');
+                const opt = (u: typeof coaches[number]) => ({ value: u.id, label: `${u.fullName} — ${u.specialty ?? ''} (${data.classes.filter((x) => x.coachId === u.id && x.status === 'OPEN').length} lớp)` });
+                const match = coaches.filter((u) => u.sportIds?.includes(c.sportId));
+                const other = coaches.filter((u) => !u.sportIds?.includes(c.sportId));
+                return [
+                  { label: `HLV bộ môn ${data.sports.find((s) => s.id === c.sportId)?.name}`, options: match.map(opt) },
+                  ...(allCoaches ? [{ label: 'HLV bộ môn khác', options: other.map(opt) }] : []),
+                ];
+              })()} />
           </Form.Item>
         </Form>
-        <div style={{ fontSize: 12, color: '#94a3b8' }}>Hệ thống sẽ kiểm tra HLV không bị trùng giờ với lớp khác đang mở.</div>
+        <div style={{ fontSize: 12, color: '#94a3b8', display: 'flex', justifyContent: 'space-between' }}>
+          <span>Hệ thống kiểm tra HLV không bị trùng giờ với lớp khác đang mở.</span>
+          <a onClick={() => setAllCoaches((v) => !v)}>{allCoaches ? 'Chỉ HLV đúng bộ môn' : 'Hiện tất cả HLV'}</a>
+        </div>
       </Modal>
     </Page>
   );

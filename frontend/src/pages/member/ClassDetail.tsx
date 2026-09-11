@@ -1,9 +1,11 @@
-import { Avatar, Button, Card, Col, Descriptions, Popconfirm, Row, Space, Tag, message } from 'antd';
+import { Alert, Avatar, Button, Card, Col, Descriptions, Popconfirm, Row, Space, Tag, message } from 'antd';
 import { useNavigate, useParams } from 'react-router-dom';
 import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
 import { DAY_NAMES, fmtMoney, useApp } from '../../store/AppContext';
 import { seatsLeft } from '../../utils/conflicts';
+import { planCovers, plansFor } from '../../utils/sports';
+import SportTag from '../../components/SportTag';
 
 export default function MemberClassDetail() {
   const { id } = useParams();
@@ -16,6 +18,7 @@ export default function MemberClassDetail() {
   const en = data.enrollments.find((e) => e.memberId === me.id && e.classId === c.id && e.status === 'ACTIVE');
   const left = seatsLeft(data, c.id);
   const plans = data.trainingPlans.filter((p) => p.classId === c.id);
+  const cov = planCovers(data, me.id, c.sportId);
 
   return (
     <Page title={c.name} extra={<Space>
@@ -27,7 +30,7 @@ export default function MemberClassDetail() {
         <Col xs={24} md={14}>
           <Card title="Thông tin lớp" extra={<StatusTag value={c.status} />}>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label="Bộ môn">{data.sports.find((s) => s.id === c.sportId)?.name}</Descriptions.Item>
+              <Descriptions.Item label="Bộ môn"><SportTag id={c.sportId} /></Descriptions.Item>
               <Descriptions.Item label="Phòng">{data.rooms.find((r) => r.id === c.roomId)?.name}</Descriptions.Item>
               <Descriptions.Item label="Lịch học">{data.schedules.filter((s) => s.classId === c.id).map((s) => <Tag key={s.id}>{DAY_NAMES[s.dayOfWeek]} {s.startTime}-{s.endTime}</Tag>)}</Descriptions.Item>
               <Descriptions.Item label="Khóa học">{c.startDate} → {c.endDate}</Descriptions.Item>
@@ -35,6 +38,10 @@ export default function MemberClassDetail() {
               <Descriptions.Item label="Học phí">{fmtMoney(c.price)}</Descriptions.Item>
             </Descriptions>
           </Card>
+          {!en && !cov.ok && (
+            <Alert type="warning" showIcon style={{ marginTop: 16 }} title={cov.plan ? `Gói "${cov.plan.name}" của bạn không bao gồm bộ môn này` : 'Bạn chưa có gói thành viên còn hiệu lực'}
+              description={<span>Gói phù hợp: {plansFor(data, c.sportId).map((p) => p.name).join(', ')}. <a onClick={() => navigate(`/member/plans?sport=${c.sportId}`)}>Xem gói →</a></span>} />
+          )}
           {plans.length > 0 && <Card title="Giáo án" style={{ marginTop: 16 }}>{plans.map((p) => <div key={p.id} style={{ marginBottom: 12 }}><b>{p.title}</b><div style={{ whiteSpace: 'pre-line', color: '#555' }}>{p.content}</div></div>)}</Card>}
         </Col>
         <Col xs={24} md={10}>
@@ -43,7 +50,8 @@ export default function MemberClassDetail() {
               <Space orientation="vertical" align="center" style={{ width: '100%' }}>
                 <Avatar size={72} style={{ background: '#1677ff', fontSize: 28 }}>{coach.fullName.split(' ').pop()?.[0]}</Avatar>
                 <b style={{ fontSize: 16 }}>{coach.fullName}</b>
-                <Tag color="blue">{coach.specialty}</Tag>
+                <Space wrap size={[4, 4]} style={{ justifyContent: 'center' }}>{(coach.sportIds ?? []).map((id) => <SportTag key={id} id={id} size="small" />)}</Space>
+                <div style={{ fontSize: 12, color: '#64748b' }}>{coach.specialty}</div>
                 <div style={{ textAlign: 'center', color: '#666' }}>{coach.bio}</div>
               </Space>
             ) : 'Chưa phân công'}

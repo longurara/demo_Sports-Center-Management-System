@@ -3,11 +3,12 @@ import { UploadOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useState } from 'react';
 import Page from '../../components/Page';
+import SportTag from '../../components/SportTag';
 import StatusTag from '../../components/StatusTag';
 import { useApp } from '../../store/AppContext';
 
 export default function Profile() {
-  const { currentUser, update } = useApp();
+  const { data, currentUser, update } = useApp();
   const [editing, setEditing] = useState(false);
   const [pwOpen, setPwOpen] = useState(false);
   const [form] = Form.useForm();
@@ -55,7 +56,8 @@ export default function Profile() {
                 <Descriptions.Item label="Ghi chú sức khỏe">{u.healthNote ?? '—'}</Descriptions.Item>
               </>}
               {isCoach && <>
-                <Descriptions.Item label="Chuyên môn">{u.specialty}</Descriptions.Item>
+                <Descriptions.Item label="Bộ môn phụ trách"><Space wrap size={[4, 4]}>{(u.sportIds ?? []).map((id) => <SportTag key={id} id={id} />)}</Space></Descriptions.Item>
+                <Descriptions.Item label="Chứng chỉ / chuyên môn">{u.specialty ?? '—'}</Descriptions.Item>
                 <Descriptions.Item label="Giới thiệu">{u.bio}</Descriptions.Item>
               </>}
             </Descriptions>
@@ -75,7 +77,8 @@ export default function Profile() {
             <Form.Item name="healthNote" label="Ghi chú sức khỏe"><Input.TextArea rows={2} /></Form.Item>
           </>}
           {isCoach && <>
-            <Form.Item name="specialty" label="Chuyên môn"><Input /></Form.Item>
+            <Form.Item name="sportIds" label="Bộ môn phụ trách"><Select mode="multiple" options={data.sports.map((sp) => ({ value: sp.id, label: `${sp.icon} ${sp.name}` }))} /></Form.Item>
+            <Form.Item name="specialty" label="Chứng chỉ / chuyên môn"><Input /></Form.Item>
             <Form.Item name="bio" label="Giới thiệu"><Input.TextArea rows={3} /></Form.Item>
           </>}
         </Form>
