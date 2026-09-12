@@ -4,7 +4,7 @@ import { ArrowRightOutlined, CheckOutlined, ThunderboltFilled } from '@ant-desig
 import { Link } from 'react-router-dom';
 import { initialData } from '../../mock/data';
 import ctaImg from '../../assets/sports/tennis.jpg';
-import { Item, Magnetic, Reveal, SplitWords, Stagger } from './ui';
+import { Item, Reveal, SplitWords, Stagger } from './ui';
 
 /* ===== Bảng giá ===== */
 const FEATURED = ['p1', 'p3', 'p5'];
@@ -101,8 +101,8 @@ export function Cta() {
           <Reveal delay={0.1}><p className="lp-lead">Đăng nhập, chọn sân, chọn giờ. Hệ thống báo ngay nếu trùng lớp hoặc đã có người đặt.</p></Reveal>
           <Reveal delay={0.2}>
             <div className="lp-hero-actions">
-              <Magnetic><Link to="/login" className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link></Magnetic>
-              <Magnetic strength={0.18}><Link to="/register" className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link></Magnetic>
+              <Link to="/login" className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link>
+              <Link to="/register" className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link>
             </div>
           </Reveal>
         </div>

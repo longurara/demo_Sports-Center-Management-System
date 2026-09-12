@@ -3,7 +3,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRightOutlined, CheckOutlined, ThunderboltFilled } from '@ant-design/icons';
 import { useLanding } from './config';
 import { BRAND_NAME, CONTACT, COURT_FROM_PRICE, CTA, FOOTER, HOURS, PLANS, PRICING_NOTE } from './content';
-import { Item, Magnetic, Reveal, SplitWords, Stagger } from './ui';
+import { Item, Reveal, SplitWords, Stagger } from './ui';
 
 const money = (n: number) => n.toLocaleString('vi-VN') + 'đ';
 const per = (days: number) => days >= 365 ? 'năm' : days >= 90 ? `${days / 30} tháng` : 'tháng';
@@ -85,8 +85,8 @@ export function Cta() {
           <Reveal delay={0.1}><p className="lp-lead">{CTA.lead}</p></Reveal>
           <Reveal delay={0.2}>
             <div className="lp-hero-actions">
-              <Magnetic><Link to={links.login} className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link></Magnetic>
-              <Magnetic strength={0.18}><Link to={links.register} className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link></Magnetic>
+              <Link to={links.login} className="lp-btn lp-btn-primary lg">Đặt sân <ArrowRightOutlined /></Link>
+              <Link to={links.register} className="lp-btn lp-btn-ghost light lg">Đăng ký thành viên</Link>
             </div>
           </Reveal>
         </div>
