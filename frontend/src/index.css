@@ -284,6 +284,40 @@ a { cursor: pointer; }
 .sc-thread-composer { padding: 14px 24px 16px; border-top: 1px solid var(--sc-border-soft); background: #fff; }
 .sc-thread-resolved-note { font-size: 12px; color: var(--sc-muted); margin-bottom: 8px; }
 
+/* ===== Gói thành viên ===== */
+.sc-plans { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; align-items: stretch; }
+@media (max-width: 1400px) { .sc-plans { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 1000px) { .sc-plans { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) { .sc-plans { grid-template-columns: 1fr; } }
+.sc-plan { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--sc-border-soft); border-radius: 12px; padding: 22px 24px 24px; box-shadow: 0 1px 2px rgba(20,19,15,.03), 0 2px 10px rgba(20,19,15,.04); transition: border-color .2s, transform .2s, box-shadow .2s; }
+.sc-plan:hover { border-color: var(--sc-border); transform: translateY(-2px); box-shadow: 0 12px 30px rgba(20,19,15,.08); }
+.sc-plan.hot { background: var(--sc-ink); color: #fff; border-color: var(--sc-ink); }
+.sc-plan.current { border: 2px solid var(--sc-primary); padding: 21px 23px 23px; }
+.sc-plan-flag { font-family: var(--sc-display); font-size: 12px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--sc-accent); min-height: 16px; margin-bottom: 14px; }
+.sc-plan.hot .sc-plan-flag { color: var(--sc-lime); }
+.sc-plan.current .sc-plan-flag { color: var(--sc-primary); }
+.sc-plan h3 { margin: 0; font-family: var(--sc-display); font-size: 28px; font-weight: 800; text-transform: uppercase; line-height: 1; letter-spacing: .005em; }
+.sc-plan-scope { margin-top: 6px; font-size: 13px; color: var(--sc-muted); }
+.sc-plan.hot .sc-plan-scope { color: rgba(255,255,255,.6); }
+.sc-plan-price { margin-top: 18px; font-family: var(--sc-display); font-size: 40px; font-weight: 800; line-height: 1; letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.sc-plan-per { margin-top: 6px; font-size: 13px; color: var(--sc-muted); font-variant-numeric: tabular-nums; }
+.sc-plan.hot .sc-plan-per { color: rgba(255,255,255,.6); }
+.sc-plan-list { list-style: none; margin: 18px 0 22px; padding: 0; flex: 1; border-top: 1px solid var(--sc-border-soft); }
+.sc-plan.hot .sc-plan-list { border-top-color: rgba(255,255,255,.14); }
+.sc-plan-list li { padding: 9px 0; border-bottom: 1px solid var(--sc-border-soft); font-size: 14px; line-height: 1.35; }
+.sc-plan.hot .sc-plan-list li { border-bottom-color: rgba(255,255,255,.14); }
+.sc-plan-list li.hl { font-weight: 600; color: var(--sc-primary); }
+.sc-plan.hot .sc-plan-list li.hl { color: var(--sc-lime); }
+.sc-plan-btn { width: 100%; padding: 13px 16px; border-radius: 8px; border: 1.5px solid var(--sc-ink); background: none; color: var(--sc-ink); font-family: var(--sc-display); font-size: 17px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; cursor: pointer; transition: background .15s, color .15s, border-color .15s; }
+.sc-plan-btn:hover { background: var(--sc-ink); color: #fff; }
+.sc-plan-btn.solid { background: var(--sc-primary); border-color: var(--sc-primary); color: #fff; }
+.sc-plan-btn.solid:hover { background: #0c3f2b; border-color: #0c3f2b; }
+.sc-plan.hot .sc-plan-btn { border-color: var(--sc-lime); background: var(--sc-lime); color: var(--sc-ink); }
+.sc-plan.hot .sc-plan-btn:hover { background: #e2f76a; border-color: #e2f76a; }
+.sc-plans-foot { display: flex; flex-wrap: wrap; gap: 8px 32px; margin-top: 6px; font-size: 13px; color: var(--sc-muted); }
+.sc-plans-foot a { color: var(--sc-ink); font-weight: 600; text-decoration: underline; text-decoration-color: var(--sc-border); text-underline-offset: 3px; }
+.sc-plans-foot a:hover { color: var(--sc-primary); text-decoration-color: var(--sc-primary); }
+
 /* ===== Side navigation ===== */
 .sc-nav { width: 252px; height: 100vh; position: sticky; top: 0; z-index: 20; display: flex; flex-direction: column; background: var(--sc-ink); color: #d6d2c8; border-right: 1px solid rgba(255,255,255,.07); transition: width .2s ease; flex-shrink: 0; }
 .sc-nav.collapsed { width: 76px; }
