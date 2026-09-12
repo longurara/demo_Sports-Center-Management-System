@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Button, Card, Col, Form, Input, List, Modal, Row, Space, Statistic, Table, Tabs, Tag, message } from 'antd';
-import { MessageOutlined, PrinterOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Button, Card, Col, Form, Input, List, Row, Space, Statistic, Table, Tabs, Tag, message } from 'antd';
+import { PrinterOutlined } from '@ant-design/icons';
+import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
@@ -118,46 +118,75 @@ export function MyTrainingPlan() {
 
 export function MySupport() {
   const { data, currentUser, add, notify, nameOf } = useApp();
-  const [open, setOpen] = useState(false);
   const [active, setActive] = useState<string | null>(null);
   const [form] = Form.useForm();
-  const rows = data.supportRequests.filter((r) => r.memberId === currentUser!.id).map((r) => {
+  const me = currentUser!;
+  const rows = data.supportRequests.filter((r) => r.memberId === me.id).map((r) => {
     const msgs = data.supportMessages.filter((m) => m.requestId === r.id).sort((a, b) => a.createdAt.localeCompare(b.createdAt));
     const last = msgs[msgs.length - 1];
-    return { ...r, msgs, last, lastAt: last?.createdAt ?? r.createdAt, hasReply: !!last && last.senderId !== currentUser!.id };
+    return { ...r, msgs, last, lastAt: last?.createdAt ?? r.createdAt, hasReply: !!last && last.senderId !== me.id };
   }).sort((a, b) => b.lastAt.localeCompare(a.lastAt));
+  const openCount = rows.filter((r) => r.status !== 'RESOLVED').length;
 
   const send = (v: { title: string; content: string }) => {
-    const r = add('supportRequests', { ...v, memberId: currentUser!.id, status: 'OPEN', createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
-    data.users.filter((u) => u.role === 'RECEPTIONIST' && u.status === 'ACTIVE').forEach((u) => notify(u.id, `Yêu cầu hỗ trợ mới: ${v.title}`, `${currentUser!.fullName}: ${v.content}`));
-    message.success('Đã gửi yêu cầu, lễ tân sẽ phản hồi sớm'); setOpen(false); form.resetFields();
+    const r = add('supportRequests', { ...v, memberId: me.id, status: 'OPEN', createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
+    data.users.filter((u) => u.role === 'RECEPTIONIST' && u.status === 'ACTIVE').forEach((u) => notify(u.id, `Yêu cầu hỗ trợ mới: ${v.title}`, `${me.fullName}: ${v.content}`));
+    message.success('Đã gửi yêu cầu, lễ tân sẽ phản hồi sớm'); form.resetFields();
     setActive(r.id);
   };
 
+  const STATUS: Record<string, string> = { OPEN: 'Đang chờ', IN_PROGRESS: 'Đang xử lý', RESOLVED: 'Đã xong' };
+  const TOPICS = ['Đổi lịch lớp', 'Gói & thanh toán', 'Sân & thiết bị', 'Tủ đồ, tài sản', 'Hóa đơn VAT', 'Khác'];
+
   return (
-    <Page title="Yêu cầu hỗ trợ" subtitle="Gửi yêu cầu và trao đổi trực tiếp với lễ tân" extra={<Button type="primary" onClick={() => setOpen(true)}>Gửi yêu cầu mới</Button>}>
-      <List dataSource={rows} locale={{ emptyText: 'Bạn chưa gửi yêu cầu nào' }} renderItem={(r) => (
-        <List.Item onClick={() => setActive(r.id)} style={{ cursor: 'pointer', padding: '14px 8px', borderRadius: 10 }} className="sc-hover-row"
-          actions={[<Button size="small" onClick={(e) => { e.stopPropagation(); setActive(r.id); }}>{r.hasReply ? 'Xem phản hồi' : 'Mở'}</Button>]}>
-          <List.Item.Meta
-            avatar={<div style={{ width: 40, height: 40, borderRadius: 12, background: r.status === 'RESOLVED' ? '#dcfce7' : r.hasReply ? '#e3efe8' : '#f9e6dd', color: r.status === 'RESOLVED' ? '#16a34a' : r.hasReply ? '#0f4d34' : '#c94a1e', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}><MessageOutlined /></div>}
-            title={<Space><b>{r.title}</b><StatusTag value={r.status} />{r.hasReply && r.status !== 'RESOLVED' && <Tag color="blue">Có phản hồi</Tag>}</Space>}
-            description={<>
-              <div style={{ color: '#3d3b35', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 560 }}>
-                {r.last ? <><b>{r.last.senderId === currentUser!.id ? 'Bạn' : nameOf(r.last.senderId)}:</b> {r.last.content}</> : r.content}
-              </div>
-              <div style={{ fontSize: 12, color: '#9a968c' }}>{r.msgs.length} trao đổi · cập nhật {dayjs(r.lastAt).fromNow()}{r.handledBy ? ` · xử lý bởi ${nameOf(r.handledBy)}` : ''}</div>
-            </>} />
-        </List.Item>
-      )} />
+    <Page title="Yêu cầu hỗ trợ" subtitle={openCount ? `${openCount} yêu cầu đang chờ lễ tân · phản hồi trong vòng 24 giờ` : 'Gửi yêu cầu và trao đổi trực tiếp với lễ tân · phản hồi trong vòng 24 giờ'} noCard>
+      <div className="sc-sup">
+        {/* Danh sách yêu cầu */}
+        <div className="sc-sup-list">
+          <div className="sc-sup-list-head"><small>Yêu cầu của bạn</small><span>{rows.length} yêu cầu</span></div>
+          {rows.length === 0 && <div className="sc-sup-empty">Bạn chưa gửi yêu cầu nào.<br />Điền vào ô bên phải — lễ tân trả lời trong vòng 24 giờ.</div>}
+          {rows.map((r, i) => (
+            <button type="button" key={r.id} className={`sc-sup-row ${r.status === 'RESOLVED' ? 'done' : ''}`} onClick={() => setActive(r.id)}>
+              <span className="sc-sup-idx">{String(rows.length - i).padStart(2, '0')}</span>
+              <span className="sc-sup-main">
+                <span className="sc-sup-title">{r.title}</span>
+                <span className="sc-sup-last">{r.last ? <><b>{r.last.senderId === me.id ? 'Bạn' : nameOf(r.last.senderId).split(' ').slice(-1)[0]}:</b> {r.last.content}</> : r.content}</span>
+                <span className="sc-sup-meta">#{r.id.toUpperCase()} · {r.msgs.length ? `${r.msgs.length} trao đổi` : 'Chưa có phản hồi'} · {dayjs(r.lastAt).fromNow()}{r.handledBy ? ` · ${nameOf(r.handledBy)}` : ''}</span>
+              </span>
+              <span className={`sc-sup-status ${r.status.toLowerCase()} ${r.hasReply && r.status !== 'RESOLVED' ? 'new' : ''}`}>{r.hasReply && r.status !== 'RESOLVED' ? 'Có phản hồi' : STATUS[r.status]}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Cột phải: gửi yêu cầu mới + liên hệ */}
+        <aside className="sc-sup-side">
+          <div className="sc-sup-panel">
+            <small>Gửi yêu cầu mới</small>
+            <div className="sc-sup-topics">{TOPICS.map((t) => <button type="button" key={t} onClick={() => form.setFieldsValue({ title: t === 'Khác' ? '' : t })}>{t}</button>)}</div>
+            <Form form={form} layout="vertical" onFinish={send} requiredMark={false}>
+              <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}><Input placeholder="VD: Đổi lịch lớp Yoga sang ca chiều" /></Form.Item>
+              <Form.Item name="content" label="Nội dung" rules={[{ required: true, message: 'Mô tả yêu cầu của bạn' }]}><Input.TextArea rows={4} placeholder="Bạn cần gì, khi nào, ở lớp/sân nào…" /></Form.Item>
+              <Button type="primary" htmlType="submit" block size="large">Gửi cho lễ tân</Button>
+            </Form>
+            <p className="sc-sup-note">Bạn sẽ nhận thông báo ngay khi lễ tân trả lời.</p>
+          </div>
+          <div className="sc-sup-panel">
+            <small>Cần gấp?</small>
+            <div className="sc-sup-contact"><span>Quầy lễ tân</span><a href="tel:02838123456">028 3812 3456</a><em>06:00 – 22:00, 7 ngày/tuần</em></div>
+            <div className="sc-sup-contact"><span>Email</span><a href="mailto:support@sportscenter.vn">support@sportscenter.vn</a><em>Trả lời trong 1 ngày làm việc</em></div>
+          </div>
+          <div className="sc-sup-panel">
+            <small>Tự làm nhanh hơn</small>
+            <div className="sc-sup-links">
+              <Link to="/member/schedule">Xem lịch tập tuần này</Link>
+              <Link to="/member/plans">Gia hạn hoặc nâng gói</Link>
+              <Link to="/member/courts">Đặt hoặc hủy sân</Link>
+              <Link to="/member/payments">Tải hóa đơn đã thanh toán</Link>
+            </div>
+          </div>
+        </aside>
+      </div>
       <SupportThread requestId={active} onClose={() => setActive(null)} />
-      <Modal title="Gửi yêu cầu hỗ trợ" open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} okText="Gửi">
-        <Form form={form} layout="vertical" onFinish={send}>
-          <Form.Item name="title" label="Tiêu đề" rules={[{ required: true }]}><Input placeholder="VD: Đổi lịch lớp Yoga" /></Form.Item>
-          <Form.Item name="content" label="Nội dung" rules={[{ required: true }]}><Input.TextArea rows={4} placeholder="Mô tả chi tiết yêu cầu của bạn…" /></Form.Item>
-        </Form>
-        <div style={{ fontSize: 12, color: '#9a968c' }}>Lễ tân sẽ phản hồi trong vòng 24h. Bạn sẽ nhận thông báo khi có trả lời.</div>
-      </Modal>
     </Page>
   );
 }

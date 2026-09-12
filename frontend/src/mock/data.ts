@@ -142,6 +142,7 @@ const base: AppData = {
     { id: 'sr1', memberId: 'u6', title: 'Đổi lịch lớp Yoga', content: 'Em muốn chuyển sang ca chiều được không ạ?', status: 'OPEN', createdAt: dt(-2) },
     { id: 'sr2', memberId: 'u9', title: 'Hỏng tủ đồ', content: 'Tủ số 15 bị kẹt khóa.', status: 'IN_PROGRESS', createdAt: dt(-4), handledBy: 'u2' },
     { id: 'sr3', memberId: 'u7', title: 'Xuất hóa đơn VAT', content: 'Cần hóa đơn đỏ cho gói 6 tháng.', status: 'RESOLVED', createdAt: dt(-20), handledBy: 'u2' },
+    { id: 'sr4', memberId: 'u6', title: 'Bảo lưu gói 2 tuần', content: 'Em đi công tác từ 20/8 đến 3/9, cho em bảo lưu gói All-access được không?', status: 'RESOLVED', createdAt: dt(-26), handledBy: 'u2' },
   ],
   notifications: [
     { id: 'n1', userId: 'u8', title: 'Gói tập sắp hết hạn', content: 'Gói All-access 1 tháng của bạn sẽ hết hạn sau 5 ngày. Gia hạn ngay để không gián đoạn.', read: false, createdAt: dt(-1) },
@@ -212,6 +213,8 @@ const base: AppData = {
     { id: 'sm3', requestId: 'sr2', senderId: 'u2', content: 'Dạ, dự kiến 15h chiều nay xong. Em sẽ báo lại anh.', createdAt: dt(-4, 11) },
     { id: 'sm4', requestId: 'sr3', senderId: 'u2', content: 'Em đã xuất hóa đơn VAT và gửi vào email member.em@gmail.com. Anh kiểm tra giúp em nhé.', createdAt: dt(-19, 9) },
     { id: 'sm5', requestId: 'sr3', senderId: 'u7', content: 'Đã nhận, cảm ơn em.', createdAt: dt(-19, 14) },
+    { id: 'sm6', requestId: 'sr4', senderId: 'u2', content: 'Chào chị Dung, gói All-access được bảo lưu tối đa 30 ngày/năm. Em đã bảo lưu 14 ngày, hạn gói lùi tới 12/10 ạ.', createdAt: dt(-26, 10) },
+    { id: 'sm7', requestId: 'sr4', senderId: 'u6', content: 'Cảm ơn em nhiều.', createdAt: dt(-26, 12) },
   ],
 };
 
