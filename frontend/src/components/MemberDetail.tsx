@@ -54,7 +54,7 @@ export default function MemberDetail({ receptionist }: { receptionist?: boolean 
           <Card style={{ overflow: 'hidden' }} styles={{ body: { padding: 0 } }}>
             <div className="sc-cover" style={{ height: 90, borderRadius: 0 }} />
             <div style={{ padding: '0 20px 20px', marginTop: -36 }}>
-              <div style={{ width: 72, height: 72, borderRadius: 999, background: '#fff', border: '4px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: 24, color: '#16a34a', backgroundColor: '#dcfce7' }}>{initialsOf(u.fullName)}</div>
+              <div style={{ position: 'relative', zIndex: 1, width: 72, height: 72, borderRadius: 999, border: '4px solid #fff', boxShadow: '0 6px 16px rgba(20,19,15,.18)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: 26, fontFamily: "'Barlow Condensed', sans-serif", color: '#14130f', backgroundColor: '#d6f24b' }}>{initialsOf(u.fullName)}</div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 10 }}>
                 <b style={{ fontSize: 16 }}>{u.fullName}</b><StatusTag value={u.status} />
               </div>
@@ -71,7 +71,7 @@ export default function MemberDetail({ receptionist }: { receptionist?: boolean 
         </Col>
         <Col xs={24} lg={16}>
           <Row gutter={[16, 16]}>
-            <Col xs={24} md={12}>
+            <Col xs={24} xl={12}>
               <Card title="Gói thành viên" extra={<StatusTag value={st} />} style={{ height: '100%' }}>
                 {sub && plan ? (
                   <>
@@ -86,8 +86,8 @@ export default function MemberDetail({ receptionist }: { receptionist?: boolean 
                 ) : <div style={{ color: '#9a968c' }}>Chưa có gói còn hiệu lực</div>}
               </Card>
             </Col>
-            <Col xs={12} md={6}><StatCard title="Chuyên cần" value={`${attRate}%`} icon={<CalendarOutlined />} color="#16a34a" hint={`${att.length} buổi`} /></Col>
-            <Col xs={12} md={6}><StatCard title="Tổng chi tiêu" value={fmtMoney(totalPaid)} icon={<DollarOutlined />} color="#c94a1e" hint={`${pays.length} giao dịch`} /></Col>
+            <Col xs={12} xl={6}><StatCard title="Chuyên cần" value={`${attRate}%`} icon={<CalendarOutlined />} color="#16a34a" hint={`${att.length} buổi`} /></Col>
+            <Col xs={12} xl={6}><StatCard title="Tổng chi tiêu" value={fmtMoney(totalPaid)} icon={<DollarOutlined />} color="#c94a1e" hint={`${pays.length} giao dịch`} /></Col>
             <Col xs={24}>
               <Card title="Lớp đang học">
                 {enrolls.filter((e) => e.status === 'ACTIVE').length === 0 && <span style={{ color: '#9a968c' }}>Chưa đăng ký lớp nào</span>}

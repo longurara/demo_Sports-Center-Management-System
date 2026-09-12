@@ -22,7 +22,8 @@ export default function StatCard({ title, value, icon, color = '#0f4d34', hint, 
         <div className="sc-stat-icon" style={{ background: hexToRgba(color, 0.12), color }}>{icon}</div>
         <div style={{ minWidth: 0 }}>
           <div className="sc-stat-title">{title}</div>
-          <div className="sc-stat-value" style={{ fontSize: typeof value === 'string' && value.length > 11 ? 19 : typeof value === 'string' && value.length > 8 ? 22 : 26, whiteSpace: 'nowrap' }}>{value}</div>
+          {/* Số tiền dài: cho phép co chữ theo bề rộng ô, không bao giờ cắt */}
+          <div className="sc-stat-value" style={{ fontSize: typeof value === 'string' ? (value.length > 13 ? 'clamp(15px, 1.4vw, 18px)' : value.length > 10 ? 'clamp(16px, 1.6vw, 20px)' : value.length > 7 ? 24 : 28) : 28, whiteSpace: 'nowrap' }}>{value}</div>
           {hint ? <div className="sc-stat-hint" title={hint}>{hint}</div> : <div className="sc-stat-hint">&nbsp;</div>}
         </div>
       </div>
