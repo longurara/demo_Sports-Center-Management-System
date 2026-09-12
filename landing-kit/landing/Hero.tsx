@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from 'motion/react';
 import { ArrowRightOutlined } from '@ant-design/icons';
 import { useLanding } from './config';
 import { BRAND_NAME, HERO, SPORTS } from './content';
-import { EASE, Magnetic, Marquee, Reveal, SplitWords } from './ui';
+import { EASE, Marquee, Reveal, SplitWords } from './ui';
 
 export default function Hero() {
   const { Link, links } = useLanding();
@@ -41,8 +41,8 @@ export default function Hero() {
           <SplitWords className="lp-h1" text={HERO.title} delay={0.15} />
           <motion.p className="lp-lead" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.7, ease: EASE }}>{HERO.lead}</motion.p>
           <motion.div className="lp-hero-actions" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.85, ease: EASE }}>
-            <Magnetic><Link to={links.register} className="lp-btn lp-btn-primary lg">Đăng ký tập thử miễn phí <ArrowRightOutlined /></Link></Magnetic>
-            <Magnetic strength={0.18}><Link to={links.login} className="lp-btn lp-btn-ghost light lg">Đặt sân</Link></Magnetic>
+            <Link to={links.register} className="lp-btn lp-btn-primary lg">Đăng ký tập thử miễn phí <ArrowRightOutlined /></Link>
+            <Link to={links.login} className="lp-btn lp-btn-ghost light lg">Đặt sân</Link>
           </motion.div>
         </motion.div>
         <motion.div className="lp-hero-facts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1.1 }}>

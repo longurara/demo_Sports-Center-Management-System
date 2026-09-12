@@ -5,7 +5,7 @@ import { ArrowRightOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
 import { initialData } from '../../mock/data';
 import fallbackImg from '../../assets/sports/badminton.jpg';
-import { EASE, Magnetic, Marquee, Reveal, SplitWords } from './ui';
+import { EASE, Marquee, Reveal, SplitWords } from './ui';
 
 // Ảnh hero tùy chọn: thả file `src/assets/hero-gym.jpg|png|webp` vào là tự dùng, không có thì lấy ảnh cầu lông.
 const custom = import.meta.glob<string>('../../assets/hero-gym.{jpg,jpeg,png,webp}', { eager: true, import: 'default' });
@@ -49,8 +49,8 @@ export default function Hero() {
             Gym, yoga, bơi, boxing, cầu lông, tennis, pickleball, bóng rổ, bóng đá — 10 bộ môn dưới một mái nhà. Buổi đầu tiên miễn phí, đặt sân online chỉ mất 30 giây.
           </motion.p>
           <motion.div className="lp-hero-actions" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.8, delay: 0.85, ease: EASE }}>
-            <Magnetic><Link to="/register" className="lp-btn lp-btn-primary lg">Đăng ký tập thử miễn phí <ArrowRightOutlined /></Link></Magnetic>
-            <Magnetic strength={0.18}><Link to="/login" className="lp-btn lp-btn-ghost light lg">Đặt sân</Link></Magnetic>
+            <Link to="/register" className="lp-btn lp-btn-primary lg">Đăng ký tập thử miễn phí <ArrowRightOutlined /></Link>
+            <Link to="/login" className="lp-btn lp-btn-ghost light lg">Đặt sân</Link>
           </motion.div>
         </motion.div>
         <motion.div className="lp-hero-facts" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 1, delay: 1.1 }}>
