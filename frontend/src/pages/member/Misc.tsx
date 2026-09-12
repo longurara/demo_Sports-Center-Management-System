@@ -7,7 +7,6 @@ import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
 import SupportThread from '../../components/SupportThread';
 import { fmtMoney, useApp } from '../../store/AppContext';
-import { COACH_PHOTOS } from '../../components/coachPhotos';
 
 export function Coaches() {
   const { data } = useApp();
@@ -23,30 +22,26 @@ export function Coaches() {
           <button key={s.id} type="button" className={`sc-filter-btn ${sport === s.id ? 'on' : ''}`} onClick={() => setSport(s.id)}>{s.name}</button>
         ))}
       </div>
-      <div className="sc-coach-grid">
-        {coaches.map((c) => {
-          const photo = COACH_PHOTOS[c.id];
+      {/* Danh sách kiểu "roster": số thứ tự, tên condensed, chuyên môn, lớp — không ảnh, không icon */}
+      <div className="sc-roster">
+        {coaches.map((c, i) => {
           const classes = data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN');
           return (
-            <article key={c.id} className="sc-coach-card">
-              <div className="sc-coach-photo">
-                {photo ? <img src={photo} alt={c.fullName} loading="lazy" /> : <span className="sc-coach-initials">{c.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</span>}
-                <div className="sc-coach-sports">{(c.sportIds ?? []).map(sportName).join(' · ')}</div>
-              </div>
-              <div className="sc-coach-body">
+            <article key={c.id} className="sc-roster-row">
+              <div className="sc-roster-idx">{String(i + 1).padStart(2, '0')}</div>
+              <div className="sc-roster-main">
                 <h3>{c.fullName}</h3>
-                <div className="sc-coach-spec">{c.specialty}</div>
+                <div className="sc-roster-meta"><span>{(c.sportIds ?? []).map(sportName).join(' · ')}</span>{c.specialty && <><i /><span>{c.specialty}</span></>}</div>
                 <p>{c.bio}</p>
-                {classes.length > 0 && (
-                  <div className="sc-coach-classes">
-                    <small>Lớp đang dạy</small>
-                    {classes.map((x) => <a key={x.id} onClick={() => navigate(`/member/classes/${x.id}`)}>{x.name}</a>)}
-                  </div>
-                )}
+              </div>
+              <div className="sc-roster-side">
+                <small>Lớp đang dạy</small>
+                {classes.length ? classes.map((x) => <a key={x.id} onClick={() => navigate(`/member/classes/${x.id}`)}>{x.name}</a>) : <span className="sc-roster-none">Chưa mở lớp</span>}
               </div>
             </article>
           );
         })}
+        {coaches.length === 0 && <div className="sc-roster-none" style={{ padding: '32px 0' }}>Chưa có HLV cho bộ môn này.</div>}
       </div>
     </Page>
   );
