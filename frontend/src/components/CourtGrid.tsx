@@ -16,15 +16,12 @@ interface Props {
   onClassClick?: (c: GymClass) => void;
 }
 
-const STYLE: Record<SlotState, { bg: string; color: string; label: string }> = {
-  FREE: { bg: '#e4f8eb', color: '#15803d', label: 'Trống' },
-  BOOKED: { bg: '#fee2e2', color: '#b91c1c', label: 'Đã đặt' },
-  MINE: { bg: '#cfe3d8', color: '#0b3b28', label: 'Bạn đã đặt' },
-  CLASS: { bg: '#f3f1ec', color: '#7a776f', label: 'Lớp học' },
-  PAST: { bg: 'repeating-linear-gradient(135deg,#f7f5f0 0 5px,#eef2f7 5px 10px)', color: '#cbd5e1', label: 'Đã qua' },
-};
+const LABEL: Record<SlotState, string> = { FREE: 'Trống', BOOKED: 'Đã đặt', MINE: 'Bạn đã đặt', CLASS: 'Lớp học', PAST: 'Đã qua' };
 
-/** Lưới sân × khung giờ trong một ngày. Click ô trống để chọn; click ô kề để kéo dài. */
+/**
+ * Lưới sân × khung giờ trong một ngày. Click ô trống để chọn; click ô kề để kéo dài.
+ * Ô đơn sắc: trống = trắng viền mảnh, đã đặt = khối xám, lớp = gạch chéo, đang chọn = mực.
+ */
 export default function CourtGrid({ courts, date, meId, selection, maxHours = 3, onSelect, onBookingClick, onClassClick }: Props) {
   const { data, nameOf } = useApp();
 
@@ -42,42 +39,34 @@ export default function CourtGrid({ courts, date, meId, selection, maxHours = 3,
     onSelect({ courtId: court.id, start: hour, hours: 1 });
   };
 
+  const cols = `170px repeat(${HOURS.length}, 1fr)`;
+
   return (
     <div style={{ overflowX: 'auto' }}>
-      <div style={{ minWidth: 760 }}>
-        <div style={{ display: 'grid', gridTemplateColumns: `150px repeat(${HOURS.length}, 1fr)`, gap: 3, marginBottom: 4 }}>
+      <div className="sc-cg" style={{ minWidth: 760 }}>
+        <div className="sc-cg-row head" style={{ gridTemplateColumns: cols }}>
           <div />
-          {HOURS.map((h) => <div key={h} style={{ fontSize: 11, color: '#9a968c', textAlign: 'center', fontWeight: 600 }}>{hh(h)}</div>)}
+          {HOURS.map((h) => <div key={h} className="sc-cg-hour">{hh(h)}</div>)}
         </div>
         {courts.map((court) => {
           const slots = courtDay(data, court, date, meId);
-          const sport = data.sports.find((s) => s.id === court.sportId);
           return (
-            <div key={court.id} style={{ display: 'grid', gridTemplateColumns: `150px repeat(${HOURS.length}, 1fr)`, gap: 3, marginBottom: 3 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 8, minWidth: 0 }}>
-                <span style={{ width: 28, height: 28, borderRadius: 8, background: `${sport?.color ?? '#7a776f'}18`, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', fontSize: 15, flexShrink: 0 }}>{sport?.icon}</span>
-                <div style={{ minWidth: 0 }}>
-                  <div style={{ fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{court.name}</div>
-                  <div style={{ fontSize: 11, color: '#9a968c', whiteSpace: 'nowrap' }}>{(court.hourlyRate ?? 0) / 1000}k/giờ · {court.location}</div>
-                </div>
+            <div key={court.id} className="sc-cg-row" style={{ gridTemplateColumns: cols }}>
+              <div className="sc-cg-court">
+                <b>{court.name}</b>
+                <span>{(court.hourlyRate ?? 0) / 1000}k/giờ · {court.location}</span>
               </div>
               {slots.map((s) => {
-                const selected = !!selection && selection.courtId === court.id && s.hour >= selection.start && s.hour < selection.start + selection.hours;
-                const st = STYLE[s.state];
+                const inSel = !!selection && selection.courtId === court.id && s.hour >= selection.start && s.hour < selection.start + selection.hours;
+                const selStart = inSel && s.hour === selection!.start;
+                const selEnd = inSel && s.hour === selection!.start + selection!.hours - 1;
                 const tip = s.state === 'CLASS' ? `Lớp ${s.cls?.name}` : s.booking ? `${s.state === 'MINE' ? 'Bạn' : nameOf(s.booking.memberId)} · ${s.booking.startTime}–${s.booking.endTime}` : s.state === 'FREE' ? `Trống · ${hh(s.hour)}–${hh(s.hour + 1)}` : 'Đã qua giờ';
                 const clickable = (s.state === 'FREE' && !!onSelect) || ((s.state === 'BOOKED' || s.state === 'MINE') && !!onBookingClick) || (s.state === 'CLASS' && !!onClassClick);
+                const cls = ['sc-cg-cell', s.state.toLowerCase(), inSel ? 'sel' : '', selStart ? 'sel-start' : '', selEnd ? 'sel-end' : '', clickable ? 'clickable' : ''].join(' ');
                 return (
                   <Tooltip key={s.hour} title={tip} mouseEnterDelay={0.3}>
-                    <div onClick={() => click(court, s.hour, s.state, s.booking, s.cls)}
-                      style={{
-                        height: 34, borderRadius: 6, cursor: clickable ? 'pointer' : 'default',
-                        background: selected ? '#0f4d34' : st.bg, color: selected ? '#fff' : st.color,
-                        border: selected ? '1px solid #0b3b28' : s.state === 'FREE' ? '1px dashed #86efac' : '1px solid transparent',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 10.5, fontWeight: 600, transition: 'transform .1s',
-                      }}
-                      onMouseEnter={(e) => { if (s.state === 'FREE' && !selected) e.currentTarget.style.transform = 'scale(1.06)'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}>
-                      {selected ? '✓' : s.state === 'CLASS' ? 'Lớp' : s.state === 'BOOKED' ? '●' : s.state === 'MINE' ? '★' : ''}
+                    <div className={cls} onClick={() => click(court, s.hour, s.state, s.booking, s.cls)}>
+                      {selStart && selection!.hours > 1 ? `${hh(selection!.start)}–${hh(selection!.start + selection!.hours)}` : !inSel && s.state === 'CLASS' ? 'Lớp' : !inSel && s.state === 'MINE' ? 'Bạn' : ''}
                     </div>
                   </Tooltip>
                 );
@@ -85,9 +74,10 @@ export default function CourtGrid({ courts, date, meId, selection, maxHours = 3,
             </div>
           );
         })}
-        <div style={{ display: 'flex', gap: 14, marginTop: 10, fontSize: 12, color: '#7a776f', flexWrap: 'wrap' }}>
-          {(['FREE', 'BOOKED', 'MINE', 'CLASS', 'PAST'] as SlotState[]).map((k) => <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: STYLE[k].bg, border: k === 'FREE' ? '1px dashed #86efac' : '1px solid #e2ddd2' }} />{STYLE[k].label}</span>)}
-          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 14, height: 14, borderRadius: 4, background: '#0f4d34' }} />Đang chọn</span>
+        <div className="sc-cg-legend">
+          {(['FREE', 'BOOKED', 'MINE', 'CLASS', 'PAST'] as SlotState[]).map((k) => <span key={k}><i className={`sc-cg-cell ${k.toLowerCase()}`} />{LABEL[k]}</span>)}
+          <span><i className="sc-cg-cell sel" />Đang chọn</span>
+          {onSelect && maxHours > 1 && <span className="hint">Click ô kề bên để kéo dài, tối đa {maxHours} giờ</span>}
         </div>
       </div>
     </div>

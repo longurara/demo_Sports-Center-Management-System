@@ -74,7 +74,7 @@ export default function CourtBookings({ manager }: { manager?: boolean }) {
         <Col xs={12} xl={6}><StatCard title="Chờ nhận sân" value={active.filter((b) => b.status === 'BOOKED').length} icon={<ScheduleOutlined />} color="#9333ea" hint={`${active.filter((b) => b.status === 'CHECKED_IN').length} đang chơi`} /></Col>
       </Row>
 
-      <Card size="small" title={<div style={{ overflowX: 'auto' }}><Segmented value={sport} onChange={(v) => { setSport(v as string); setSel(null); }} options={[{ value: 'ALL', label: 'Tất cả sân' }, ...data.sports.filter((s) => data.rooms.some((r) => r.type === 'COURT' && r.sportId === s.id)).map((s) => ({ value: s.id, label: `${s.icon} ${s.name}` }))]} /></div>}>
+      <Card size="small" title={<div style={{ overflowX: 'auto' }}><Segmented value={sport} onChange={(v) => { setSport(v as string); setSel(null); }} options={[{ value: 'ALL', label: 'Tất cả sân' }, ...data.sports.filter((s) => data.rooms.some((r) => r.type === 'COURT' && r.sportId === s.id)).map((s) => ({ value: s.id, label: s.name }))]} /></div>}>
         <CourtGrid courts={courts} date={date} selection={sel} maxHours={1} onSelect={(s) => { setSel(s); if (s) form.setFieldsValue({ hours: 1, method: 'CASH' }); }} onBookingClick={setView} onClassClick={(c) => manager ? navigate(`/manager/classes/${c.id}`) : message.info(`Lớp ${c.name} đang dùng sân khung giờ này`)} />
       </Card>
 

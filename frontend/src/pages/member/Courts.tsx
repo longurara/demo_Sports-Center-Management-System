@@ -1,14 +1,13 @@
 import { useMemo, useState } from 'react';
-import { Alert, Button, Card, Col, DatePicker, Empty, Popconfirm, Row, Segmented, Table, Tag, message } from 'antd';
-import { CalendarOutlined, ClockCircleOutlined, InfoCircleOutlined } from '@ant-design/icons';
-import { useNavigate } from 'react-router-dom';
+import { Alert, Button, Card, Col, DatePicker, Popconfirm, Row, Table, message } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
 import CourtGrid, { type Selection } from '../../components/CourtGrid';
 import StatusTag from '../../components/StatusTag';
 import SportTag from '../../components/SportTag';
 import { fmtMoney, useApp } from '../../store/AppContext';
-import { courtConflict, courtPrice, hh } from '../../utils/sports';
+import { courtConflict, courtDay, courtPrice, hh } from '../../utils/sports';
 
 export default function Courts() {
   const { data, currentUser, update, log } = useApp();
@@ -37,58 +36,74 @@ export default function Courts() {
 
   const days = Array.from({ length: 7 }).map((_, i) => dayjs().add(i, 'day'));
 
+  const cap = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
+  const freeCount = courts.reduce((n, c) => n + courtDay(data, c, date, me.id).filter((x) => x.state === 'FREE').length, 0);
+
   return (
-    <Page title="Đặt sân theo giờ" subtitle="Chọn bộ môn → ngày → khung giờ trống trên lưới. Thành viên có gói được giảm giá thuê sân." noCard
-      extra={upcoming.length > 0 && <Tag color="blue" icon={<CalendarOutlined />}>{upcoming.length} lượt sắp tới</Tag>}>
-      <Card size="small">
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ overflowX: 'auto' }}>
-            <Segmented value={sport} onChange={(v) => { setSport(v as string); setSel(null); }} options={courtSports.map((s) => ({ value: s.id, label: `${s.icon} ${s.name}` }))} />
-          </div>
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
-            {days.map((d) => {
-              const k = d.format('YYYY-MM-DD'); const active = k === date;
-              return <div key={k} onClick={() => { setDate(k); setSel(null); }} style={{ cursor: 'pointer', padding: '4px 10px', borderRadius: 8, textAlign: 'center', lineHeight: 1.2, background: active ? '#0f4d34' : '#f4f6fb', color: active ? '#fff' : '#3d3b35', minWidth: 46 }}>
-                <div style={{ fontSize: 10, opacity: .8 }}>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.day()]}</div><div style={{ fontSize: 13, fontWeight: 700 }}>{d.format('DD')}</div>
-              </div>;
-            })}
-            <DatePicker value={dayjs(date)} onChange={(v) => { if (v) { setDate(v.format('YYYY-MM-DD')); setSel(null); } }} minDate={dayjs()} maxDate={dayjs().add(30, 'day')} allowClear={false} format="DD/MM/YYYY" style={{ width: 130 }} />
-          </div>
+    <Page title="Đặt sân theo giờ" subtitle="Chọn bộ môn, ngày và khung giờ trống trên lưới. Thành viên có gói được giảm giá thuê sân." noCard
+      extra={upcoming.length > 0 && <Link to="#my-bookings" className="sc-court-upcoming">{upcoming.length} lượt sắp tới ↓</Link>}>
+      {/* Thanh chọn môn + ngày */}
+      <div className="sc-court-bar">
+        <div className="sc-filter sc-court-sports">
+          {courtSports.map((sp) => <button key={sp.id} type="button" className={`sc-filter-btn ${sport === sp.id ? 'on' : ''}`} onClick={() => { setSport(sp.id); setSel(null); }}>{sp.name}</button>)}
         </div>
-      </Card>
+        <div className="sc-court-days">
+          {days.map((d) => {
+            const k = d.format('YYYY-MM-DD');
+            return (
+              <button key={k} type="button" className={`sc-court-day ${k === date ? 'on' : ''}`} onClick={() => { setDate(k); setSel(null); }}>
+                <small>{['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][d.day()]}</small><b>{d.format('DD')}</b>
+              </button>
+            );
+          })}
+          <DatePicker value={dayjs(date)} onChange={(v) => { if (v) { setDate(v.format('YYYY-MM-DD')); setSel(null); } }} minDate={dayjs()} maxDate={dayjs().add(30, 'day')} allowClear={false} format="DD/MM/YYYY" style={{ width: 132 }} />
+        </div>
+      </div>
 
       <Row gutter={[16, 16]}>
         <Col xs={24} xl={17}>
-          <Card title={<span><SportTag id={sport} /> <span style={{ marginLeft: 8, fontWeight: 500, color: '#7a776f', fontSize: 13 }}>{dayjs(date).format('dddd, DD/MM/YYYY')}</span></span>} size="small">
-            {courts.length === 0 ? <Empty description="Bộ môn này chưa có sân" /> : <CourtGrid courts={courts} date={date} meId={me.id} selection={sel} onSelect={setSel} onBookingClick={(b) => b.memberId === me.id && message.info(`Bạn đã đặt ${b.startTime}–${b.endTime}`)} />}
-          </Card>
+          <div className="sc-court-grid-card">
+            <div className="sc-court-grid-head">
+              <h3>{data.sports.find((x) => x.id === sport)?.name} · {cap(dayjs(date).format('dddd, DD/MM'))}</h3>
+              <span>{courts.length} sân · {freeCount} khung giờ trống</span>
+            </div>
+            {courts.length === 0 ? <div className="sc-court-empty">Bộ môn này chưa có sân cho thuê.</div> : <CourtGrid courts={courts} date={date} meId={me.id} selection={sel} onSelect={setSel} onBookingClick={(b) => b.memberId === me.id && message.info(`Bạn đã đặt ${b.startTime}–${b.endTime}`)} />}
+          </div>
         </Col>
         <Col xs={24} xl={7}>
-          <Card title="Khung giờ đã chọn" size="small" style={{ position: 'sticky', top: 80 }}>
+          <div className="sc-court-side">
             {!sel || !court || !quote ? (
-              <div style={{ color: '#9a968c', textAlign: 'center', padding: '20px 0' }}><ClockCircleOutlined style={{ fontSize: 28, marginBottom: 8 }} /><div>Click vào ô trống trên lưới để chọn giờ.<br />Click ô kề bên để kéo dài (tối đa 3 giờ).</div></div>
+              <div className="sc-court-side-empty">
+                <small>Khung giờ đã chọn</small>
+                <h3>Chưa chọn giờ</h3>
+                <p>Bấm vào một ô trống trên lưới để chọn giờ. Bấm ô kề bên để kéo dài, tối đa 3 giờ mỗi lượt.</p>
+                <p className="muted">Hủy trước giờ chơi 2 tiếng được hoàn 100%.</p>
+              </div>
             ) : (
               <div>
-                <div style={{ fontWeight: 700, fontSize: 16 }}>{court.name}</div>
-                <div style={{ color: '#7a776f', fontSize: 13 }}>{court.location} · sức chứa {court.capacity} người</div>
-                <div style={{ margin: '12px 0', padding: 12, background: '#f7f5f0', borderRadius: 10, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <div><div style={{ fontSize: 11, color: '#9a968c' }}>NGÀY</div><b>{dayjs(date).format('DD/MM/YYYY')}</b></div>
-                  <div><div style={{ fontSize: 11, color: '#9a968c' }}>GIỜ</div><b>{hh(sel.start)}–{hh(sel.start + sel.hours)}</b> <span style={{ color: '#9a968c' }}>({sel.hours}h)</span></div>
+                <small>Khung giờ đã chọn</small>
+                <h3>{court.name}</h3>
+                <div className="sc-court-side-sub">{court.location} · sức chứa {court.capacity} người</div>
+                <div className="sc-court-when">
+                  <div><span>Ngày</span><b>{cap(dayjs(date).format('dddd, DD/MM'))}</b></div>
+                  <div><span>Giờ</span><b>{hh(sel.start)}–{hh(sel.start + sel.hours)}</b><em>{sel.hours} giờ</em></div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>Giá niêm yết</span><span>{fmtMoney(quote.base)}</span></div>
-                {quote.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#16a34a' }}><span>Ưu đãi gói {quote.plan?.name}</span><span>−{quote.discount}%</span></div>}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 18, fontWeight: 700, marginTop: 6, borderTop: '1px dashed #e2ddd2', paddingTop: 8 }}><span>Thanh toán</span><span className="sc-nowrap">{fmtMoney(quote.price)}</span></div>
-                {quote.discount === 0 && <div style={{ fontSize: 12, color: '#7a776f', marginTop: 6 }}><InfoCircleOutlined /> Đăng ký gói All-access để được giảm 20–40% thuê sân. <a onClick={() => navigate('/member/plans')}>Xem gói</a></div>}
+                <div className="sc-court-quote">
+                  <div><span>Giá niêm yết</span><span>{fmtMoney(quote.base)}</span></div>
+                  {quote.discount > 0 && <div className="disc"><span>Ưu đãi gói {quote.plan?.name}</span><span>−{quote.discount}%</span></div>}
+                  <div className="total"><span>Thanh toán</span><span className="sc-nowrap">{fmtMoney(quote.price)}</span></div>
+                </div>
+                {quote.discount === 0 && <p className="sc-court-side-note">Gói All-access được giảm 20–40% thuê sân. <Link to="/member/plans">Xem gói</Link></p>}
                 {conflict && <Alert type="error" showIcon title={conflict} style={{ marginTop: 10 }} />}
-                <Button type="primary" size="large" block style={{ marginTop: 14 }} disabled={!!conflict} onClick={() => navigate(`/member/checkout/court/${court.id}?date=${date}&start=${sel.start}&hours=${sel.hours}`)}>Đặt sân & thanh toán</Button>
-                <Button block style={{ marginTop: 8 }} onClick={() => setSel(null)}>Bỏ chọn</Button>
+                <button type="button" className="sc-plan-btn solid" style={{ marginTop: 16 }} disabled={!!conflict} onClick={() => navigate(`/member/checkout/court/${court.id}?date=${date}&start=${sel.start}&hours=${sel.hours}`)}>Đặt sân & thanh toán</button>
+                <button type="button" className="sc-court-clear" onClick={() => setSel(null)}>Bỏ chọn</button>
               </div>
             )}
-          </Card>
+          </div>
         </Col>
       </Row>
 
-      <Card title="Lịch đặt sân của tôi" size="small">
+      <Card title="Lịch đặt sân của tôi" size="small" id="my-bookings">
         <Table size="small" rowKey="id" dataSource={mine} pagination={{ pageSize: 6 }} columns={[
           { title: 'Sân', render: (_, r) => { const c = data.rooms.find((x) => x.id === r.courtId); return <><b>{c?.name}</b><div style={{ fontSize: 12 }}><SportTag id={c?.sportId} size="small" /></div></>; } },
           { title: 'Thời gian', render: (_, r) => <span className="sc-nowrap">{dayjs(r.date).format('DD/MM/YYYY')} · {r.startTime}–{r.endTime}</span> },
