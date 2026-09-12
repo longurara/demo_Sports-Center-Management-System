@@ -21,7 +21,7 @@ export default function ManagerSchedule() {
         <Select placeholder="Lọc theo HLV" allowClear style={{ width: 180 }} onChange={setCoach} options={data.users.filter((u) => u.role === 'COACH').map((u) => ({ value: u.id, label: u.fullName }))} />
       </Space>
     }>
-      <WeekTimetable schedules={schedules} onClick={(id) => navigate(`/manager/classes/${id}`)} />
+      <WeekTimetable schedules={schedules} showCoach onClick={(id) => navigate(`/manager/classes/${id}`)} />
     </Page>
   );
 }

@@ -43,14 +43,15 @@ a { cursor: pointer; }
 .sc-stat > div:last-child { min-width: 0; flex: 1; }
 
 /* Timetable */
-.sc-tt-day { background: #fff; border: 1px solid var(--sc-border-soft); border-radius: 12px; padding: 10px; min-height: 240px; }
-.sc-tt-day-head { font-family: var(--sc-display); font-weight: 700; font-size: 14px; letter-spacing: .04em; text-transform: uppercase; text-align: center; padding: 4px 0 10px; color: #3d3b35; border-bottom: 1px dashed var(--sc-border); margin-bottom: 10px; }
-.sc-tt-day.today .sc-tt-day-head { color: var(--sc-primary); }
-.sc-tt-chip { border-radius: 10px; padding: 8px 10px; margin-bottom: 8px; border-left: 3px solid; font-size: 12px; transition: transform .15s; }
-.sc-tt-chip:hover { transform: translateX(2px); }
-.sc-tt-chip b { display: block; font-size: 12px; }
-.sc-tt-chip .name { font-weight: 600; color: var(--sc-ink); margin: 2px 0; font-size: 13px; }
-.sc-tt-chip .meta { color: var(--sc-muted); }
+.sc-tt-bar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; margin-bottom: 14px; }
+.sc-tt-nav { display: flex; gap: 4px; }
+.sc-tt-nav button { height: 32px; min-width: 32px; padding: 0 10px; border: 1px solid var(--sc-border); border-radius: 6px; background: #fff; font: inherit; font-size: 13px; color: var(--sc-ink); cursor: pointer; }
+.sc-tt-nav button:hover:not(:disabled) { border-color: var(--sc-ink); }
+.sc-tt-nav button.today { font-family: var(--sc-display); font-size: 13px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
+.sc-tt-nav button:disabled { color: var(--sc-muted); cursor: default; background: var(--sc-paper); }
+.sc-tt-bar h3 { margin: 0; font-family: var(--sc-display); font-size: 22px; font-weight: 800; text-transform: uppercase; line-height: 1; font-variant-numeric: tabular-nums; }
+.sc-tt-bar span { font-size: 12.5px; color: var(--sc-muted); margin-left: auto; }
+.sc-tt-empty { padding: 48px 0; text-align: center; color: var(--sc-muted); }
 
 /* Hóa đơn: tờ A4 trên màn hình, in chỉ phần hóa đơn */
 .sc-invoice-wrap { display: flex; justify-content: center; width: 100%; }

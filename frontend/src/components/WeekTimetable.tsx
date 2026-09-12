@@ -1,48 +1,49 @@
-import { Tooltip } from 'antd';
+import { useState } from 'react';
 import dayjs from 'dayjs';
-import { DAY_NAMES, useApp } from '../store/AppContext';
+import { useApp } from '../store/AppContext';
 import type { Schedule } from '../types';
+import WeekCalendar, { type CalEvent } from './WeekCalendar';
 
-const PALETTE = [
-  { bg: '#eff6ff', border: '#2563eb' }, { bg: '#f0fdf4', border: '#16a34a' }, { bg: '#faf5ff', border: '#9333ea' },
-  { bg: '#fff7ed', border: '#f97316' }, { bg: '#ecfeff', border: '#0891b2' }, { bg: '#fdf2f8', border: '#db2777' },
-  { bg: '#fefce8', border: '#ca8a04' }, { bg: '#f1f5f9', border: '#475569' },
-];
-
-export default function WeekTimetable({ schedules, onClick }: { schedules: Schedule[]; onClick?: (classId: string) => void }) {
+/**
+ * Thời khóa biểu tuần theo trục giờ (dùng chung WeekCalendar với lịch của thành viên).
+ * Có điều hướng tuần; ô lớp ghi phòng + sĩ số, trạng thái là số học viên.
+ */
+export default function WeekTimetable({ schedules, onClick, showCoach }: { schedules: Schedule[]; onClick?: (classId: string) => void; showCoach?: boolean }) {
   const { data, nameOf } = useApp();
-  const colorOf = (classId: string) => PALETTE[Math.max(0, data.classes.findIndex((c) => c.id === classId)) % PALETTE.length];
-  const today = ((dayjs().day() + 6) % 7) + 1;
-  const monday = dayjs().subtract(today - 1, 'day');
+  const [offset, setOffset] = useState(0);
+  const monday = dayjs().subtract((dayjs().day() + 6) % 7, 'day').startOf('day').add(offset, 'week');
+  const sunday = monday.add(6, 'day');
+
+  const events: CalEvent[] = schedules.flatMap((s) => {
+    const c = data.classes.find((x) => x.id === s.classId);
+    if (!c) return [];
+    const room = data.rooms.find((r) => r.id === c.roomId)?.name ?? '';
+    const n = data.enrollments.filter((e) => e.classId === c.id && e.status === 'ACTIVE').length;
+    return [{
+      id: `${s.id}-${offset}`, date: monday.add(s.dayOfWeek - 1, 'day').format('YYYY-MM-DD'), start: s.startTime, end: s.endTime,
+      title: c.name, kind: 'CLASS' as const,
+      sub: showCoach ? `${room} · HLV ${nameOf(c.coachId).split(' ').slice(-1)[0]}` : room,
+      status: { label: `${n}/${c.capacity} HV`, tone: n >= c.capacity ? 'warn' : 'muted' },
+      tooltip: `${c.name} · ${room} · HLV ${nameOf(c.coachId)} · ${n}/${c.capacity} học viên`,
+      onClick: onClick ? () => onClick(c.id) : undefined,
+    }];
+  });
+  const hours = events.reduce((t, e) => t + (dayjs(`2000-01-01 ${e.end}`).diff(dayjs(`2000-01-01 ${e.start}`), 'minute')) / 60, 0);
 
   return (
-    <div style={{ overflowX: 'auto' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, minmax(150px, 1fr))', gap: 10, minWidth: 1080 }}>
-        {[1, 2, 3, 4, 5, 6, 7].map((d) => {
-          const items = schedules.filter((s) => s.dayOfWeek === d).sort((a, b) => a.startTime.localeCompare(b.startTime));
-          return (
-            <div key={d} className={`sc-tt-day${d === today ? ' today' : ''}`}>
-              <div className="sc-tt-day-head">{DAY_NAMES[d]}<div style={{ fontWeight: 400, fontSize: 11, color: '#94a3b8' }}>{monday.add(d - 1, 'day').format('DD/MM')}</div></div>
-              {items.length === 0 && <div style={{ color: '#cbd5e1', textAlign: 'center', fontSize: 12, paddingTop: 20 }}>Trống</div>}
-              {items.map((s) => {
-                const c = data.classes.find((x) => x.id === s.classId);
-                if (!c) return null;
-                const room = data.rooms.find((r) => r.id === c.roomId)?.name;
-                const col = colorOf(c.id);
-                return (
-                  <Tooltip key={s.id} title={`${c.name} · ${room} · HLV ${nameOf(c.coachId)}`}>
-                    <div className="sc-tt-chip" style={{ background: col.bg, borderLeftColor: col.border, cursor: onClick ? 'pointer' : 'default' }} onClick={() => onClick?.(c.id)}>
-                      <b style={{ color: col.border }}>{s.startTime} – {s.endTime}</b>
-                      <div className="name">{c.name}</div>
-                      <div className="meta">{room}</div>
-                    </div>
-                  </Tooltip>
-                );
-              })}
-            </div>
-          );
-        })}
+    <div>
+      <div className="sc-tt-bar">
+        <div className="sc-tt-nav">
+          <button type="button" onClick={() => setOffset((o) => o - 1)} aria-label="Tuần trước">←</button>
+          <button type="button" className="today" onClick={() => setOffset(0)} disabled={offset === 0}>Tuần này</button>
+          <button type="button" onClick={() => setOffset((o) => o + 1)} aria-label="Tuần sau">→</button>
+        </div>
+        <h3>{monday.format('DD/MM')} – {sunday.format('DD/MM/YYYY')}</h3>
+        <span>{events.length} buổi · {Number.isInteger(hours) ? hours : hours.toFixed(1)} giờ</span>
       </div>
+      {events.length === 0
+        ? <div className="sc-tt-empty">Không có buổi nào trong tuần này.</div>
+        : <WeekCalendar weekStart={monday} events={events} hourHeight={56} />}
     </div>
   );
 }
