@@ -120,6 +120,35 @@ a { cursor: pointer; }
 .sc-nowrap { white-space: nowrap; }
 .ant-table-cell b { white-space: nowrap; }
 
+/* ===== Lịch tuần ===== */
+.sc-cal-head { display: grid; border-bottom: 1px solid var(--sc-border); }
+.sc-cal-day { text-align: center; padding: 10px 4px 12px; border-left: 1px solid var(--sc-border-soft); }
+.sc-cal-day small { display: block; font-family: var(--sc-display); font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--sc-muted); }
+.sc-cal-day b { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; margin-top: 4px; border-radius: 999px; font-family: var(--sc-display); font-size: 19px; font-weight: 800; color: var(--sc-ink); }
+.sc-cal-day.today small { color: var(--sc-ink); } .sc-cal-day.today b { background: var(--sc-ink); color: var(--sc-lime); }
+.sc-cal-day em { display: block; font-style: normal; font-size: 11px; color: var(--sc-muted2); margin-top: 2px; }
+.sc-cal-hour { position: absolute; right: 10px; font-family: var(--sc-display); font-size: 12px; font-weight: 700; letter-spacing: .04em; color: var(--sc-muted2); font-variant-numeric: tabular-nums; }
+.sc-cal-gap-label { position: absolute; right: 10px; display: flex; align-items: center; font-size: 10.5px; color: var(--sc-muted2); white-space: nowrap; }
+.sc-cal-col { position: relative; border-left: 1px solid var(--sc-border-soft); }
+.sc-cal-col.today { background: #faf9f6; }
+.sc-cal-line { position: absolute; left: 0; right: 0; border-top: 1px solid var(--sc-border-soft); }
+.sc-cal-gap { position: absolute; left: 0; right: 0; background: repeating-linear-gradient(135deg, transparent 0 6px, #f3f1ec 6px 7px); border-top: 1px solid var(--sc-border-soft); border-bottom: 1px solid var(--sc-border-soft); }
+.sc-cal-ev { position: absolute; right: 3px; box-sizing: border-box; border-radius: 4px; padding: 6px 9px; overflow: hidden; background: #fff; border: 1px solid var(--sc-border); border-left: 3px solid var(--sc-ink); transition: transform .15s, box-shadow .15s; }
+.sc-cal-ev.court { border-left-color: var(--sc-primary); border-style: dashed; border-left-style: solid; }
+.sc-cal-ev.clickable { cursor: pointer; }
+.sc-cal-ev:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(20,19,15,.14) !important; z-index: 9 !important; }
+.sc-cal-ev-top { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; line-height: 1.2; }
+.sc-cal-ev-time { font-family: var(--sc-display); font-weight: 700; letter-spacing: .03em; color: var(--sc-ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.sc-cal-ev-status { font-family: var(--sc-display); font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; white-space: nowrap; }
+.sc-cal-ev-title { font-weight: 600; color: var(--sc-ink); line-height: 1.2; margin-top: 2px; overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; }
+.sc-cal-ev-sub { color: var(--sc-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.sc-cal-now { position: absolute; left: 0; right: 0; height: 2px; background: var(--sc-accent); z-index: 2; }
+.sc-cal-now::before { content: ''; position: absolute; left: -4px; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--sc-accent); }
+.sc-cal-legend { display: flex; gap: 18px; margin-top: 10px; font-size: 12.5px; color: var(--sc-muted); flex-wrap: wrap; align-items: center; }
+.sc-cal-legend span { display: inline-flex; align-items: center; gap: 6px; }
+.sc-cal-legend i { width: 14px; height: 10px; border-radius: 2px; background: #fff; border: 1px solid var(--sc-border); border-left: 3px solid var(--sc-ink); }
+.sc-cal-legend i.court { border-style: dashed; border-left-style: solid; border-left-color: var(--sc-primary); }
+
 /* ===== Side navigation ===== */
 .sc-nav { width: 252px; height: 100vh; position: sticky; top: 0; z-index: 20; display: flex; flex-direction: column; background: var(--sc-ink); color: #d6d2c8; border-right: 1px solid rgba(255,255,255,.07); transition: width .2s ease; flex-shrink: 0; }
 .sc-nav.collapsed { width: 76px; }

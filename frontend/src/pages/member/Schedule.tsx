@@ -1,6 +1,6 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { useMemo, useState } from 'react';
 import { Button, Card, Col, Empty, Grid, Row, Segmented, Space, Tag } from 'antd';
-import { CalendarOutlined, CheckCircleFilled, ClockCircleOutlined, CloseCircleFilled, EnvironmentOutlined, FieldTimeOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
+import { CalendarOutlined, ClockCircleOutlined, EnvironmentOutlined, LeftOutlined, RightOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
@@ -53,10 +53,10 @@ export default function MySchedule() {
   }, [weekStart, enrolled, data, me]);
 
   const events: CalEvent[] = items.map((it) => ({
-    id: it.key, date: it.date, start: it.start, end: it.end, title: it.title, color: it.color, icon: it.icon,
+    id: it.key, date: it.date, start: it.start, end: it.end, title: it.title, kind: it.kind,
     sub: it.kind === 'CLASS' ? `${it.room} · HLV ${userById(it.coachId)?.fullName?.split(' ').slice(-1)[0] ?? '—'}` : it.room,
-    dashed: it.kind === 'COURT',
-    badge: it.att === 'PRESENT' || it.att === 'LATE' ? <CheckCircleFilled style={{ color: it.att === 'LATE' ? '#f59e0b' : '#16a34a', fontSize: 12 }} /> : it.att === 'ABSENT' ? <CloseCircleFilled style={{ color: '#dc2626', fontSize: 12 }} /> : it.kind === 'COURT' ? <FieldTimeOutlined style={{ color: it.color, fontSize: 11 }} /> : undefined,
+    status: it.att === 'PRESENT' ? { label: 'Có mặt', tone: 'ok' } : it.att === 'LATE' ? { label: 'Muộn', tone: 'warn' } : it.att === 'ABSENT' ? { label: 'Vắng', tone: 'bad' }
+      : it.kind === 'COURT' ? { label: it.status === 'CHECKED_IN' ? 'Đã nhận sân' : it.status === 'COMPLETED' ? 'Xong' : 'Đã đặt', tone: 'muted' } : undefined,
     onClick: it.kind === 'CLASS' ? () => navigate(`/member/classes/${it.classId}`) : () => navigate('/member/courts'),
   }));
 
@@ -139,7 +139,7 @@ export default function MySchedule() {
                               {it.status && it.kind === 'COURT' && <StatusTag value={it.status} />}
                             </span>
                           </div>
-                          <div style={{ fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.icon} {it.title} {it.kind === 'COURT' && <Tag color="cyan" style={{ marginLeft: 6 }}>Đặt sân</Tag>}</div>
+                          <div style={{ fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.title} {it.kind === 'COURT' && <Tag style={{ marginLeft: 6, background: '#e3efe8', color: '#0f4d34' }}>Sân đã đặt</Tag>}</div>
                           <div style={{ fontSize: 12, color: '#7a776f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}><EnvironmentOutlined /> {it.room}{it.coachId && <> · <UserOutlined /> HLV {userById(it.coachId)?.fullName}</>}</div>
                         </div>
                       ))}
@@ -149,11 +149,10 @@ export default function MySchedule() {
               </div>
             )}
           </Card>
-          <div style={{ display: 'flex', gap: 14, marginTop: 10, fontSize: 12, color: '#7a776f', flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 14, height: 10, borderRadius: 3, background: '#0f4d3422', borderLeft: '3px solid #0f4d34' }} />Buổi học lớp</span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span style={{ width: 14, height: 10, borderRadius: 3, border: '1px dashed #0891b2', borderLeft: '3px solid #0891b2' }} />Sân đã đặt</span>
-            <span><CheckCircleFilled style={{ color: '#16a34a' }} /> có mặt · <CheckCircleFilled style={{ color: '#f59e0b' }} /> muộn · <CloseCircleFilled style={{ color: '#dc2626' }} /> vắng</span>
-            <span style={{ marginLeft: 'auto' }}>Màu theo bộ môn: {enrolled.map((c) => <SportTag key={c.id} id={c.sportId} size="small" />).reduce<ReactNode[]>((acc, x, i) => [...acc, i ? ' ' : null, x], [])}</span>
+          <div className="sc-cal-legend">
+            <span><i className="class" />Buổi học</span>
+            <span><i className="court" />Sân đã đặt</span>
+            <span style={{ marginLeft: 'auto' }}>Điểm danh ghi ở góc ô: Có mặt · Muộn · Vắng. Khoảng giờ trống được thu gọn.</span>
           </div>
         </Col>
 

@@ -10,10 +10,10 @@ export interface CalEvent {
   end: string;
   title: string;
   sub?: string;
-  color: string;     // màu chủ đạo (border/tiêu đề)
-  icon?: ReactNode;
-  badge?: ReactNode; // góc phải: điểm danh / trạng thái
-  dashed?: boolean;  // sự kiện phụ (đặt sân, chưa xác nhận)
+  /** Loại ô: lớp học (mực) hay sân đã đặt (xanh sân, viền đứt). */
+  kind?: 'CLASS' | 'COURT';
+  /** Trạng thái ghi bằng chữ ở góc phải (Có mặt / Muộn / Vắng / Đã đặt…). */
+  status?: { label: string; tone: 'ok' | 'warn' | 'bad' | 'muted' };
   tooltip?: ReactNode;
   onClick?: () => void;
 }
@@ -24,15 +24,23 @@ interface Props {
   hourHeight?: number; dayCount?: number;
   fit?: boolean;                        // co trục giờ theo sự kiện đang hiển thị (mặc định bật), tối thiểu `minHours` giờ
   minHours?: number;
+  /** Gập những khoảng ≥ `collapseAfter` giờ liên tiếp không có buổi nào thành một dải mỏng. */
+  collapseAfter?: number;
 }
 
 const toMin = (t: string) => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5));
+const TONE = { ok: '#0f4d34', warn: '#b45309', bad: '#c94a1e', muted: '#7a776f' };
+const GAP_H = 34; // chiều cao dải giờ trống đã gập
 
-/** Lịch tuần dạng trục thời gian (giống Google Calendar): 7 cột ngày × khung giờ, sự kiện đặt theo giờ thực. */
-export default function WeekCalendar({ weekStart, events, hourFrom: boundFrom = 6, hourTo: boundTo = 22, hourHeight = 52, dayCount = 7, fit = true, minHours = 8 }: Props) {
+/**
+ * Lịch tuần dạng trục thời gian: 7 cột ngày × khung giờ, sự kiện đặt theo giờ thực.
+ * Khoảng giờ trống dài được gập lại để lịch không toàn ô trắng; ô sự kiện đơn sắc, trạng thái bằng chữ.
+ */
+export default function WeekCalendar({ weekStart, events, hourFrom: boundFrom = 6, hourTo: boundTo = 22, hourHeight = 56, dayCount = 7, fit = true, minHours = 6, collapseAfter = 3 }: Props) {
   const days = Array.from({ length: dayCount }).map((_, i) => weekStart.add(i, 'day'));
   const inView = events.filter((e) => days.some((d) => d.format('YYYY-MM-DD') === e.date));
-  // Trục giờ bám theo sự kiện: bắt đầu trước sự kiện sớm nhất 1 giờ, kết thúc sau sự kiện muộn nhất 1 giờ.
+
+  // 1) Trục giờ bám theo sự kiện
   let hourFrom = boundFrom, hourTo = boundTo;
   if (fit && inView.length) {
     const lo = Math.min(...inView.map((e) => toMin(e.start))), hi = Math.max(...inView.map((e) => toMin(e.end)));
@@ -40,17 +48,46 @@ export default function WeekCalendar({ weekStart, events, hourFrom: boundFrom = 
     hourTo = Math.min(boundTo, Math.ceil(hi / 60) + 1);
     if (hourTo - hourFrom < minHours) { hourTo = Math.min(boundTo, hourFrom + minHours); hourFrom = Math.max(boundFrom, hourTo - minHours); }
   }
+
+  // 2) Gập giờ trống: chia trục thành các đoạn {from,to,collapsed}; y(phút) tính từ tổng chiều cao các đoạn trước.
+  const busy = new Set<number>();
+  inView.forEach((e) => { for (let h = Math.floor(toMin(e.start) / 60); h < Math.ceil(toMin(e.end) / 60); h++) busy.add(h); });
+  type Seg = { from: number; to: number; collapsed: boolean; y: number; h: number };
+  const segs: Seg[] = [];
+  let y = 0;
+  for (let h = hourFrom; h < hourTo;) {
+    let run = h;
+    while (run < hourTo && !busy.has(run)) run++;
+    const empty = run - h;
+    if (empty >= collapseAfter && inView.length) {
+      segs.push({ from: h, to: run, collapsed: true, y, h: GAP_H }); y += GAP_H; h = run;
+    } else {
+      const end = empty > 0 ? run : h + 1;
+      const height = (end - h) * hourHeight;
+      segs.push({ from: h, to: end, collapsed: false, y, h: height }); y += height; h = end;
+    }
+  }
+  const total = y;
+  const yOf = (min: number) => {
+    const hr = min / 60;
+    for (const sg of segs) {
+      if (hr < sg.from) return sg.y;
+      if (hr < sg.to) return sg.collapsed ? sg.y + GAP_H / 2 : sg.y + (hr - sg.from) * hourHeight;
+    }
+    return total;
+  };
+
   const cols = `56px repeat(${dayCount}, 1fr)`;
   const today = dayjs().format('YYYY-MM-DD');
-  const total = (hourTo - hourFrom) * hourHeight;
   const now = dayjs();
-  const nowY = ((now.hour() * 60 + now.minute()) - hourFrom * 60) / 60 * hourHeight;
+  const nowMin = now.hour() * 60 + now.minute();
+  const nowY = nowMin >= hourFrom * 60 && nowMin <= hourTo * 60 ? yOf(nowMin) : -1;
 
-  // Xếp làn cho các sự kiện chồng giờ trong cùng ngày
+  // 3) Xếp làn cho sự kiện chồng giờ trong cùng ngày
   const laid = days.map((d) => {
     const ds = d.format('YYYY-MM-DD');
     const evs = events.filter((e) => e.date === ds).sort((a, b) => toMin(a.start) - toMin(b.start));
-    const lanes: number[] = []; // end minute của mỗi làn
+    const lanes: number[] = [];
     return evs.map((e) => {
       const s = toMin(e.start), en = toMin(e.end);
       let lane = lanes.findIndex((x) => x <= s);
@@ -59,68 +96,62 @@ export default function WeekCalendar({ weekStart, events, hourFrom: boundFrom = 
     });
   });
 
+  const wide = dayCount <= 3;
+  const hh = (h: number) => `${String(h).padStart(2, '0')}:00`;
+
   return (
     <div style={{ overflowX: 'auto' }}>
-      <div style={{ minWidth: dayCount >= 5 ? 760 : 0 }}>
+      <div className="sc-cal" style={{ minWidth: dayCount >= 5 ? 760 : 0 }}>
         {/* Header ngày */}
-        <div style={{ display: 'grid', gridTemplateColumns: cols, borderBottom: '1px solid #ece8df' }}>
+        <div className="sc-cal-head" style={{ gridTemplateColumns: cols }}>
           <div />
           {days.map((d, i) => {
             const isToday = d.format('YYYY-MM-DD') === today;
             const n = laid[i].length;
             return (
-              <div key={i} style={{ textAlign: 'center', padding: '8px 4px 10px', borderLeft: '1px solid #f3f1ec' }}>
-                <div style={{ fontSize: 12, color: isToday ? '#0f4d34' : '#9a968c', fontWeight: 700, textTransform: 'uppercase', letterSpacing: .6, fontFamily: "'Barlow Condensed', sans-serif" }}>{DAY_NAMES[d.day() === 0 ? 7 : d.day()]}</div>
-                <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: 32, height: 32, borderRadius: 999, marginTop: 2, fontWeight: 700, fontSize: 15, background: isToday ? '#0f4d34' : 'transparent', color: isToday ? '#fff' : '#14130f' }}>{d.format('DD')}</div>
-                <div style={{ fontSize: 10.5, color: n ? '#7a776f' : '#c5c1b6', marginTop: 2 }}>{n ? `${n} buổi` : 'Nghỉ'}</div>
+              <div key={i} className={`sc-cal-day ${isToday ? 'today' : ''}`}>
+                <small>{DAY_NAMES[d.day() === 0 ? 7 : d.day()]}</small>
+                <b>{d.format('DD')}</b>
+                <em>{n ? `${n} buổi` : 'Nghỉ'}</em>
               </div>
             );
           })}
         </div>
+
         {/* Lưới giờ */}
         <div style={{ display: 'grid', gridTemplateColumns: cols, position: 'relative', height: total }}>
+          {/* Cột nhãn giờ */}
           <div style={{ position: 'relative' }}>
-            {Array.from({ length: hourTo - hourFrom }).map((_, i) => (
-              <div key={i} style={{ position: 'absolute', top: i * hourHeight - 7, right: 10, fontSize: 11, color: '#9a968c', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{String(hourFrom + i).padStart(2, '0')}:00</div>
-            ))}
+            {segs.map((sg) => sg.collapsed
+              ? <div key={sg.from} className="sc-cal-gap-label" style={{ top: sg.y, height: sg.h }}>{hh(sg.from)}–{hh(sg.to)}</div>
+              : Array.from({ length: sg.to - sg.from }).map((_, i) => <div key={sg.from + i} className="sc-cal-hour" style={{ top: sg.y + i * hourHeight - 7 }}>{hh(sg.from + i)}</div>))}
           </div>
+
           {days.map((d, di) => {
             const isToday = d.format('YYYY-MM-DD') === today;
             return (
-              <div key={di} style={{ position: 'relative', borderLeft: '1px solid #f3f1ec', background: isToday ? 'rgba(15,77,52,.025)' : undefined }}>
-                {Array.from({ length: hourTo - hourFrom }).map((_, i) => (
-                  <div key={i} style={{ position: 'absolute', top: i * hourHeight, left: 0, right: 0, borderTop: '1px solid #ece8df' }} />
-                ))}
+              <div key={di} className={`sc-cal-col ${isToday ? 'today' : ''}`}>
+                {segs.map((sg) => sg.collapsed
+                  ? <div key={sg.from} className="sc-cal-gap" style={{ top: sg.y, height: sg.h }} />
+                  : Array.from({ length: sg.to - sg.from }).map((_, i) => <div key={sg.from + i} className="sc-cal-line" style={{ top: sg.y + i * hourHeight }} />))}
                 {laid[di].map(({ e, lane }) => {
-                  const top = (toMin(e.start) - hourFrom * 60) / 60 * hourHeight;
-                  const h = Math.max(30, (toMin(e.end) - toMin(e.start)) / 60 * hourHeight - 3);
-                  const shift = lane * 22; // sự kiện chồng giờ xếp lệch sang phải, đè lên nhau (kiểu Google Calendar)
-                  const compact = h < 50;
-                  const wide = dayCount <= 3;
+                  const top = yOf(toMin(e.start));
+                  const h = Math.max(34, yOf(toMin(e.end)) - top - 3);
+                  const compact = h < 54;
                   const node = (
-                    <div onClick={e.onClick} style={{
-                      position: 'absolute', top: top + 1, height: h, left: `calc(${shift}% + 3px)`, right: 3, zIndex: 1 + lane,
-                      background: e.dashed ? '#fff' : `color-mix(in srgb, ${e.color} 10%, #fff)`, border: `1px ${e.dashed ? 'dashed' : 'solid'} ${e.dashed ? e.color : `color-mix(in srgb, ${e.color} 28%, #fff)`}`, borderLeft: `3px solid ${e.color}`,
-                      boxShadow: lane ? '0 4px 14px rgba(20,19,15,.12)' : undefined,
-                      borderRadius: 6, padding: compact ? '3px 7px' : '5px 8px', overflow: 'hidden', cursor: e.onClick ? 'pointer' : 'default', transition: 'transform .12s, box-shadow .12s', boxSizing: 'border-box',
-                    }}
-                      onMouseEnter={(ev) => { ev.currentTarget.style.transform = 'scale(1.02)'; ev.currentTarget.style.boxShadow = '0 10px 24px rgba(20,19,15,.16)'; ev.currentTarget.style.zIndex = '9'; }}
-                      onMouseLeave={(ev) => { ev.currentTarget.style.transform = 'none'; ev.currentTarget.style.boxShadow = lane ? '0 4px 14px rgba(20,19,15,.12)' : 'none'; ev.currentTarget.style.zIndex = String(1 + lane); }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 4, lineHeight: 1.2 }}>
-                        <span style={{ fontSize: wide ? 12 : 11, fontWeight: 700, color: e.color, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{e.start}–{e.end}</span>
-                        {e.badge}
+                    <div onClick={e.onClick} className={`sc-cal-ev ${e.kind === 'COURT' ? 'court' : 'class'} ${e.onClick ? 'clickable' : ''}`}
+                      style={{ top: top + 1, height: h, left: `calc(${lane * 22}% + 3px)`, zIndex: 1 + lane, boxShadow: lane ? '0 4px 14px rgba(20,19,15,.12)' : undefined }}>
+                      <div className="sc-cal-ev-top">
+                        <span className="sc-cal-ev-time" style={{ fontSize: wide ? 13 : 12 }}>{e.start}–{e.end}</span>
+                        {e.status && <span className="sc-cal-ev-status" style={{ color: TONE[e.status.tone] }}>{e.status.label}</span>}
                       </div>
-                      <div style={{ fontSize: wide ? 14 : 13, fontWeight: 600, color: '#14130f', lineHeight: 1.2, marginTop: 1, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: compact ? 1 : 2, WebkitBoxOrient: 'vertical' }}>{e.icon && <span style={{ marginRight: 4 }}>{e.icon}</span>}{e.title}</div>
-                      {!compact && h >= 68 && e.sub && <div style={{ fontSize: wide ? 12.5 : 11, color: '#7a776f', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 2 }}>{e.sub}</div>}
+                      <div className="sc-cal-ev-title" style={{ fontSize: wide ? 14.5 : 13.5, WebkitLineClamp: compact ? 1 : 2 }}>{e.title}</div>
+                      {!compact && h >= 72 && e.sub && <div className="sc-cal-ev-sub" style={{ fontSize: wide ? 12.5 : 11.5 }}>{e.sub}</div>}
                     </div>
                   );
                   return <Tooltip key={e.id} title={e.tooltip ?? `${e.title} · ${e.start}–${e.end}${e.sub ? ` · ${e.sub}` : ''}`} mouseEnterDelay={0.25}>{node}</Tooltip>;
                 })}
-                {isToday && nowY >= 0 && nowY <= total && (
-                  <div style={{ position: 'absolute', top: nowY, left: 0, right: 0, height: 2, background: '#dc2626', zIndex: 2 }}>
-                    <span style={{ position: 'absolute', left: -5, top: -4, width: 10, height: 10, borderRadius: 999, background: '#dc2626' }} />
-                  </div>
-                )}
+                {isToday && nowY >= 0 && <div className="sc-cal-now" style={{ top: nowY }} />}
               </div>
             );
           })}
