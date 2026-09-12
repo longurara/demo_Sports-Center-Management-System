@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Avatar, Button, Card, Col, Form, Input, List, Modal, Row, Segmented, Space, Statistic, Table, Tabs, Tag, Typography, message } from 'antd';
-import SportTag from '../../components/SportTag';
+import { Button, Card, Col, Form, Input, List, Modal, Row, Space, Statistic, Table, Tabs, Tag, message } from 'antd';
 import { MessageOutlined, PrinterOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -8,38 +7,47 @@ import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
 import SupportThread from '../../components/SupportThread';
 import { fmtMoney, useApp } from '../../store/AppContext';
+import { COACH_PHOTOS } from '../../components/coachPhotos';
 
 export function Coaches() {
   const { data } = useApp();
+  const navigate = useNavigate();
   const [sport, setSport] = useState<string>('ALL');
   const coaches = data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE').filter((u) => sport === 'ALL' || u.sportIds?.includes(sport));
+  const sportName = (id: string) => data.sports.find((s) => s.id === id)?.name ?? '';
   return (
-    <Page title="Huấn luyện viên" subtitle={`${coaches.length} HLV · ${data.sports.length} bộ môn`} noCard>
-      <div style={{ overflowX: 'auto' }}>
-        <Segmented value={sport} onChange={(v) => setSport(v as string)} options={[{ value: 'ALL', label: 'Tất cả' }, ...data.sports.map((s) => ({ value: s.id, label: `${s.icon} ${s.name}` }))]} />
-      </div>
-      <Row gutter={[16, 16]}>
-        {coaches.map((c) => (
-          <Col xs={24} md={12} xl={8} key={c.id}>
-            <div className="sc-coach">
-              <div className="sc-coach-cover" style={{ background: `linear-gradient(135deg, ${data.sports.find((s) => s.id === c.sportIds?.[0])?.color ?? '#0f4d34'}, #14130f)`, position: 'relative' }}>
-                <div style={{ position: 'absolute', right: 16, top: 14, fontSize: 30, opacity: .9 }}>{(c.sportIds ?? []).map((id) => data.sports.find((s) => s.id === id)?.icon).join(' ')}</div>
-              </div>
-              <div style={{ padding: '0 20px 20px', marginTop: -32 }}>
-                <Avatar size={64} style={{ background: '#fff', color: '#14130f', fontSize: 22, fontWeight: 700, border: '3px solid #fff', boxShadow: '0 6px 16px rgba(15,23,42,.15)' }}>{c.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</Avatar>
-                <div style={{ marginTop: 10 }}>
-                  <b style={{ fontSize: 16 }}>{c.fullName}</b>
-                  <div style={{ fontSize: 12, color: '#7a776f' }}>{c.specialty}</div>
-                </div>
-                <Space wrap size={[4, 4]} style={{ marginTop: 8 }}>{(c.sportIds ?? []).map((id) => <SportTag key={id} id={id} size="small" />)}</Space>
-                <Typography.Paragraph type="secondary" style={{ margin: '8px 0 12px', minHeight: 44 }}>{c.bio}</Typography.Paragraph>
-                <div style={{ fontSize: 12, color: '#7a776f' }}>Lớp đang dạy</div>
-                <Space wrap size={4} style={{ marginTop: 4 }}>{data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN').map((x) => <Tag key={x.id} style={{ background: '#f3f1ec', color: '#3d3b35' }}>{x.name}</Tag>)}</Space>
-              </div>
-            </div>
-          </Col>
+    <Page title="Huấn luyện viên" subtitle="Chứng chỉ đúng bộ môn, ghi kết quả từng buổi và theo bạn suốt lộ trình." noCard>
+      {/* Bộ lọc dạng chữ, gạch chân — không icon */}
+      <div className="sc-filter">
+        {[{ id: 'ALL', name: 'Tất cả' }, ...data.sports].map((s) => (
+          <button key={s.id} type="button" className={`sc-filter-btn ${sport === s.id ? 'on' : ''}`} onClick={() => setSport(s.id)}>{s.name}</button>
         ))}
-      </Row>
+      </div>
+      <div className="sc-coach-grid">
+        {coaches.map((c) => {
+          const photo = COACH_PHOTOS[c.id];
+          const classes = data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN');
+          return (
+            <article key={c.id} className="sc-coach-card">
+              <div className="sc-coach-photo">
+                {photo ? <img src={photo} alt={c.fullName} loading="lazy" /> : <span className="sc-coach-initials">{c.fullName.split(' ').slice(-2).map((w) => w[0]).join('')}</span>}
+                <div className="sc-coach-sports">{(c.sportIds ?? []).map(sportName).join(' · ')}</div>
+              </div>
+              <div className="sc-coach-body">
+                <h3>{c.fullName}</h3>
+                <div className="sc-coach-spec">{c.specialty}</div>
+                <p>{c.bio}</p>
+                {classes.length > 0 && (
+                  <div className="sc-coach-classes">
+                    <small>Lớp đang dạy</small>
+                    {classes.map((x) => <a key={x.id} onClick={() => navigate(`/member/classes/${x.id}`)}>{x.name}</a>)}
+                  </div>
+                )}
+              </div>
+            </article>
+          );
+        })}
+      </div>
     </Page>
   );
 }
