@@ -101,7 +101,7 @@ export function Footer() {
   const cols = [
     { t: 'Trang', l: [['Bộ môn', '#sports'], ['Đặt sân & lớp học', '#features'], ['Quyền lợi thành viên', '#benefits'], ['Bảng giá', '#pricing'], ['Giờ mở cửa', '#info']] },
     { t: 'Tài khoản', l: [['Đăng nhập', links.login], ['Đăng ký thành viên', links.register], ['Quên mật khẩu', links.forgot]] },
-    { t: 'Cơ sở', l: FOOTER.extra.map(([l]) => [l, '']) },
+    { t: 'Liên hệ', l: [[`Hotline ${CONTACT.phone}`, `tel:${CONTACT.phone.replace(/\s/g, '')}`], [CONTACT.email, `mailto:${CONTACT.email}`], ['Mở cửa 06:00 – 22:00, 7 ngày/tuần', ''], ['Chỉ đường & gửi xe', '#info']] },
   ];
   return (
     <footer className="lp-footer">
@@ -111,7 +111,7 @@ export function Footer() {
           <p>{FOOTER.blurb}</p>
         </div>
         {cols.map((c) => (
-          <div key={c.t}><b>{c.t}</b>{c.l.map(([l, h]) => !h ? <span key={l}>{l}</span> : h.startsWith('#') ? <a key={l} href={h}>{l}</a> : <Link key={l} to={h}>{l}</Link>)}</div>
+          <div key={c.t}><b>{c.t}</b>{c.l.map(([l, h]) => !h ? <span key={l}>{l}</span> : h.startsWith('/') ? <Link key={l} to={h}>{l}</Link> : <a key={l} href={h}>{l}</a>)}</div>
         ))}
       </div>
       <div className="lp-container lp-footer-bottom"><span>{FOOTER.copyright}</span><span>{CONTACT.phone} · {CONTACT.email}</span></div>

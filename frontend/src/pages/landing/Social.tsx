@@ -116,7 +116,7 @@ export function Footer() {
   const cols = [
     { t: 'Trang', l: [['Bộ môn', '#sports'], ['Đặt sân & lớp học', '#features'], ['Quyền lợi thành viên', '#benefits'], ['Bảng giá', '#pricing'], ['Giờ mở cửa', '#info']] },
     { t: 'Tài khoản', l: [['Đăng nhập', '/login'], ['Đăng ký thành viên', '/register'], ['Quên mật khẩu', '/forgot-password']] },
-    { t: 'Dự án', l: [['SWP391 · FA26', ''], ['React + Vite + Ant Design', ''], ['Dữ liệu giả lập trong trình duyệt', '']] },
+    { t: 'Liên hệ', l: [['Hotline 0901 000 002', 'tel:0901000002'], ['hello@sc.vn', 'mailto:hello@sc.vn'], ['Mở cửa 06:00 – 22:00, 7 ngày/tuần', ''], ['Chỉ đường & gửi xe', '#info']] },
   ];
   return (
     <footer className="lp-footer">
