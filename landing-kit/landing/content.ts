@@ -83,7 +83,7 @@ export const CONTACT = {
 export const CTA = { image: tennis, title: 'Tối nay', titleEm: 'sân còn trống?', lead: 'Đăng nhập, chọn sân, chọn giờ. Hệ thống báo ngay nếu trùng lớp hoặc đã có người đặt.' };
 
 export const FOOTER = {
-  blurb: 'Trung tâm thể thao đa bộ môn: sân thuê theo giờ, lớp có HLV, hồ bơi.',
+  blurb: 'Không chỉ là một phòng gym. Chơi hết mình, mỗi ngày — 10 bộ môn dưới một mái nhà, mở cửa từ 6 giờ sáng.',
   copyright: `© ${new Date().getFullYear()} ${BRAND_NAME}`,
   extra: [['Sân thuê theo giờ'], ['Lớp có HLV'], ['Hồ bơi 25m']],
 };

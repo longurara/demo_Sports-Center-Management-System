@@ -327,7 +327,8 @@
 .lp-footer-grid { display: grid; grid-template-columns: 1.6fr repeat(3, 1fr); gap: 40px; }
 .lp-footer-grid p { font-size: 14.5px; line-height: 1.6; max-width: 34ch; margin-top: 16px; }
 .lp-footer-grid b { display: block; color: #fff; margin-bottom: 14px; font-family: var(--display); font-size: 17px; text-transform: uppercase; letter-spacing: .06em; }
-.lp-footer-grid a:not(.lp-brand), .lp-footer-grid span { display: block; color: rgba(255,255,255,.6); text-decoration: none; font-size: 15px; margin-bottom: 9px; transition: color .2s; } .lp-footer-grid a:not(.lp-brand):hover { color: var(--lime); }
+.lp-footer-grid a:not(.lp-brand), .lp-footer-grid > div > span { display: block; color: rgba(255,255,255,.6); text-decoration: none; font-size: 15px; margin-bottom: 9px; transition: color .2s; }
+.lp-footer .lp-brand { color: #fff; } .lp-footer-grid a:not(.lp-brand):hover { color: var(--lime); }
 .lp-footer-mark { font-family: var(--display); font-size: clamp(64px, 15.5vw, 240px); font-weight: 800; text-transform: uppercase; line-height: .78; letter-spacing: -.01em; text-align: center; color: rgba(255,255,255,.06); margin: 48px 0 -.12em; white-space: nowrap; overflow: hidden; user-select: none; }
 .lp-footer { overflow: hidden; }
 .lp-footer-bottom { display: flex; justify-content: space-between; margin-top: 48px; padding-top: 22px; border-top: 1px solid rgba(255,255,255,.12); font-size: 13px; color: rgba(255,255,255,.4); }

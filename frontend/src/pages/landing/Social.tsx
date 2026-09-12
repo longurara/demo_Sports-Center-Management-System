@@ -123,7 +123,7 @@ export function Footer() {
       <div className="lp-container lp-footer-grid">
         <div>
           <Link to="/" className="lp-brand"><span className="lp-brand-logo"><ThunderboltFilled /></span>Sports Center</Link>
-          <p>Trung tâm thể thao đa bộ môn: sân thuê theo giờ, lớp có HLV, hồ bơi. Bản prototype giao diện cho môn SWP391 — dữ liệu giả lập.</p>
+          <p>Không chỉ là một phòng gym. Chơi hết mình, mỗi ngày — 10 bộ môn dưới một mái nhà, mở cửa từ 6 giờ sáng.</p>
         </div>
         {cols.map((c) => (
           <div key={c.t}><b>{c.t}</b>{c.l.map(([l, h]) => !h ? <span key={l}>{l}</span> : h.startsWith('/') ? <Link key={l} to={h}>{l}</Link> : <a key={l} href={h}>{l}</a>)}</div>
