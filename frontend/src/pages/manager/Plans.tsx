@@ -24,7 +24,7 @@ export default function Plans() {
 
   return (
     <Page title="Gói thành viên" subtitle="Không cần gói vẫn đặt sân / đăng ký lớp được. Gói chỉ thêm quyền lợi: vào gym, giảm giá đặt sân, giảm học phí, slot sân miễn phí mỗi tháng." extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Tạo gói</Button>}>
-      <Table rowKey="id" dataSource={rows} pagination={false} columns={[
+      <Table rowKey="id" dataSource={rows} pagination={false} scroll={{ x: 'max-content' }} columns={[
         { title: 'Tên gói', render: (_, r) => <><b>{r.name}</b><div style={{ fontSize: 12.5, color: '#7a776f', maxWidth: 320 }}>{r.description}</div></> },
         { title: 'Giá', dataIndex: 'price', align: 'right', render: (v) => <b className="sc-nowrap">{fmtMoney(v)}</b> },
         { title: 'Thời hạn', dataIndex: 'durationDays', render: (v) => <span className="sc-nowrap">{v} ngày</span> },

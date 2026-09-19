@@ -60,7 +60,7 @@ export default function StaffPage({ role }: { role: Extract<Role, 'COACH' | 'REC
   };
 
   const list = (
-    <Table rowKey="id" dataSource={rows} columns={[
+    <Table rowKey="id" dataSource={rows} scroll={{ x: 'max-content' }} columns={[
       { title: title, dataIndex: 'fullName', render: (_, r) => <UserCell user={r} /> },
       { title: 'SĐT', dataIndex: 'phone' },
       ...(isCoach ? [

@@ -98,7 +98,7 @@ export default function CourtBookings({ manager }: { manager?: boolean }) {
         )}
       </Row>
       <Card title={`Lượt đặt ngày ${dayjs(date).format('DD/MM')} (${dayBookings.length})`}>
-        <Table size="small" rowKey="id" pagination={{ pageSize: 8 }} dataSource={dayBookings} columns={[
+        <Table size="small" rowKey="id" pagination={{ pageSize: 8 }} dataSource={dayBookings} scroll={{ x: 'max-content' }} columns={[
           { title: 'Giờ', render: (_, b) => <b className="sc-nowrap">{b.startTime}–{b.endTime}</b> },
           { title: 'Facility', render: (_, b) => { const r = data.rooms.find((x) => x.id === b.roomId); return <><b>{r?.name}</b> <Space size={[2, 2]}>{r?.sportIds.map((id) => <SportTag key={id} id={id} size="small" />)}</Space></>; } },
           { title: 'Khách', render: (_, b) => b.memberId ? <UserCell id={b.memberId} size={28} /> : <span><Tag color="gold" style={{ margin: 0 }}>Guest</Tag> {b.guestName} · {b.guestPhone}</span> },

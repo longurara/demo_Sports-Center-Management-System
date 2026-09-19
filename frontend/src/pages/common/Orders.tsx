@@ -48,7 +48,7 @@ export default function OrdersPage() {
         <Select placeholder="Loại dịch vụ" allowClear style={{ width: 180 }} onChange={setType} options={['MEMBERSHIP', 'FACILITY_BOOKING', 'FACILITY_PACKAGE', 'COURSE_ENROLLMENT'].map((s) => ({ value: s, label: <StatusTag value={s} /> }))} />
         <DatePicker.RangePicker onChange={(v) => setRange(v as [dayjs.Dayjs, dayjs.Dayjs] | null)} />
       </Space>
-      <Table rowKey="id" dataSource={rows} pagination={{ pageSize: 10 }}
+      <Table rowKey="id" dataSource={rows} pagination={{ pageSize: 10 }} scroll={{ x: 'max-content' }}
         expandable={{ expandedRowRender: (o) => (
           <Table size="small" rowKey="id" pagination={false} dataSource={itemsOf(o.id)} columns={[
             { title: '#', dataIndex: 'lineNumber', width: 40 },

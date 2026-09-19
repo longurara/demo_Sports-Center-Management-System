@@ -38,7 +38,7 @@ export default function Coupons() {
 
   return (
     <Page title="Coupon" subtitle="Mã giảm giá nhập khi thanh toán · 1 mã / 1 đơn · không áp cho nạp ví · quota đếm theo đơn" extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Tạo coupon</Button>}>
-      <Table rowKey="id" dataSource={rows} pagination={false} columns={[
+      <Table rowKey="id" dataSource={rows} pagination={false} scroll={{ x: 'max-content' }} columns={[
         { title: 'Mã', dataIndex: 'code', render: (v, c) => <><b style={{ fontFamily: 'ui-monospace, monospace', fontSize: 14 }}>{v}</b><div><Tag color={STATE[state(c)].color} style={{ margin: '4px 0 0' }}>{STATE[state(c)].label}</Tag></div></> },
         { title: 'Giảm', render: (_, c) => <span className="sc-nowrap"><StatusTag value={c.discountType} /> <b>{c.discountType === 'PERCENT' ? `${c.discountValue}%` : fmtMoney(c.discountValue)}</b>{c.maxDiscount ? <div style={{ fontSize: 12, color: '#7a776f' }}>tối đa {fmtMoney(c.maxDiscount)}</div> : null}</span> },
         { title: 'Hiệu lực', render: (_, c) => <span className="sc-nowrap">{dayjs(c.validFrom).format('DD/MM')} → {dayjs(c.validTo).format('DD/MM/YYYY')}</span> },

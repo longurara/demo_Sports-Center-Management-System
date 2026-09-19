@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Segmented, Select, Space, Table, Tag, TimePicker, message } from 'antd';
+import { Alert, Button, DatePicker, Form, Input, InputNumber, Modal, Popconfirm, Segmented, Select, Space, Table, TimePicker, message } from 'antd';
 import { MinusCircleOutlined, PlusOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
@@ -7,7 +7,7 @@ import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
 import SportTag from '../../components/SportTag';
 import { DAY_NAMES, fmtMoney, useApp } from '../../store/AppContext';
-import { classPhase, classSessions, enrolledCount, generateSessions, sessionsFacilityConflict } from '../../utils/classes';
+import { DAY_SHORT, classPhase, classSessions, enrolledCount, generateSessions, sessionsFacilityConflict } from '../../utils/classes';
 import { bookableRooms, onGrid } from '../../utils/slots';
 
 /** Lớp học (UC_2.12/2.15/2.18): tạo từ Course, sinh session từ lịch tuần, giữ slot từ DRAFT; duyệt mở lớp khi có HLV. */
@@ -59,17 +59,17 @@ export default function Classes() {
   return (
     <Page title="Lớp học" subtitle="Lớp = section của khóa học. Sinh buổi học từ lịch tuần, giữ slot facility từ DRAFT, cần HLV + duyệt để OPEN."
       extra={<Space wrap><Segmented value={filter} onChange={(v) => setFilter(v as string)} options={[{ value: 'ALL', label: 'Tất cả' }, { value: 'PENDING', label: `Chờ duyệt (${data.classes.filter((c) => c.status === 'PENDING_APPROVAL').length})` }, { value: 'NEED_COACH', label: 'Cần HLV' }, { value: 'OPEN', label: 'Đang mở' }, { value: 'ONGOING', label: 'Đang học' }, { value: 'COMPLETED', label: 'Kết thúc' }, { value: 'CANCELLED', label: 'Đã hủy' }]} /><Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); form.setFieldsValue({ minStudents: 4, capacity: 12, schedule: [{ dayOfWeek: 1 }], startDate: dayjs().add(7, 'day') }); setWarn(null); setOpen(true); }}>Tạo lớp học</Button></Space>}>
-      <Table rowKey="id" dataSource={rows} pagination={{ pageSize: 10 }} columns={[
-        { title: 'Tên lớp', dataIndex: 'name', render: (v, r) => <><a onClick={() => navigate(`/manager/classes/${r.id}`)}><b>{v}</b></a><div style={{ fontSize: 12, color: '#7a776f' }}>{data.courses.find((c) => c.id === r.courseId)?.name} · {fmtMoney(data.courses.find((c) => c.id === r.courseId)?.price ?? 0)}</div></> },
+      <Table rowKey="id" size="middle" dataSource={rows} pagination={{ pageSize: 10 }} scroll={{ x: 1000 }} columns={[
+        { title: 'Tên lớp', dataIndex: 'name', width: 220, render: (v, r) => <><a onClick={() => navigate(`/manager/classes/${r.id}`)}><b>{v}</b></a><div style={{ fontSize: 12, color: '#7a776f' }}>{data.courses.find((c) => c.id === r.courseId)?.name} · {fmtMoney(data.courses.find((c) => c.id === r.courseId)?.price ?? 0)}</div></> },
         { title: 'Bộ môn', render: (_, r) => <SportTag id={r.sportId} /> },
-        { title: 'Facility', render: (_, r) => data.rooms.find((s) => s.id === r.roomId)?.name },
-        { title: 'HLV', render: (_, r) => r.coachId ? nameOf(r.coachId) : <span style={{ color: '#fa8c16' }}>Chưa có · {data.coachRegistrations.filter((x) => x.classId === r.id && x.status === 'PENDING').length} đăng ký</span> },
-        { title: 'Sĩ số', render: (_, r) => <span className="sc-nowrap">{enrolledCount(data, r.id)}/{r.capacity} <small style={{ color: '#9a968c' }}>(min {r.minStudents}{r.minStudentsOverride ? ', override' : ''})</small></span> },
-        { title: 'Lịch', render: (_, r) => <Space wrap size={[4, 4]}>{data.schedules.filter((s) => s.classId === r.id).map((s) => <Tag key={s.id} style={{ margin: 0 }}>{DAY_NAMES[s.dayOfWeek].replace('Thứ ', 'T')} {s.startTime}</Tag>)}</Space> },
-        { title: 'Thời gian', render: (_, r) => <span className="sc-nowrap">{dayjs(r.startDate).format('DD/MM')} → {dayjs(r.endDate).format('DD/MM/YY')} · {classSessions(data, r.id).length} buổi</span> },
+        { title: 'Facility', width: 120, render: (_, r) => data.rooms.find((s) => s.id === r.roomId)?.name },
+        { title: 'HLV', width: 150, render: (_, r) => r.coachId ? <span className="sc-nowrap">{nameOf(r.coachId)}</span> : <span className="sc-nowrap" style={{ color: '#fa8c16' }}>Chưa có · {data.coachRegistrations.filter((x) => x.classId === r.id && x.status === 'PENDING').length} đăng ký</span> },
+        { title: 'Sĩ số', width: 90, render: (_, r) => <div style={{ lineHeight: 1.4 }}><b>{enrolledCount(data, r.id)}/{r.capacity}</b><div style={{ fontSize: 11.5, color: '#9a968c' }}>min {r.minStudents}{r.minStudentsOverride ? ' · override' : ''}</div></div> },
+        { title: 'Lịch', width: 130, render: (_, r) => { const g = new Map<string, number[]>(); data.schedules.filter((s) => s.classId === r.id).sort((a, b) => a.dayOfWeek - b.dayOfWeek).forEach((s) => g.set(`${s.startTime}–${s.endTime}`, [...(g.get(`${s.startTime}–${s.endTime}`) ?? []), s.dayOfWeek])); return <div style={{ lineHeight: 1.5 }}>{Array.from(g.entries()).map(([t, ds]) => <div key={t} className="sc-nowrap" style={{ fontSize: 12.5 }}><b>{ds.map((d) => DAY_SHORT[d]).join('·')}</b> {t}</div>)}</div>; } },
+        { title: 'Thời gian', width: 120, render: (_, r) => <div style={{ fontSize: 12.5, lineHeight: 1.5 }}><div className="sc-nowrap">{dayjs(r.startDate).format('DD/MM')} → {dayjs(r.endDate).format('DD/MM/YY')}</div><div style={{ color: '#7a776f' }}>{classSessions(data, r.id).length} buổi</div></div> },
         { title: 'Trạng thái', dataIndex: 'phase', render: (v) => <StatusTag value={v} /> },
-        { title: '', render: (_, r) => (
-          <Space>
+        { title: '', width: 190, render: (_, r) => (
+          <Space size={4} wrap>
             {r.status === 'PENDING_APPROVAL' && <><Button size="small" type="primary" onClick={() => approve(r.id)}>Duyệt mở</Button><Popconfirm title="Từ chối → về DRAFT?" onConfirm={() => reject(r.id)}><Button size="small">Từ chối</Button></Popconfirm></>}
             {(r.status === 'DRAFT' || r.status === 'OPEN' || r.status === 'PENDING_APPROVAL') && r.phase !== 'COMPLETED' && (
               <Popconfirm title="Hủy lớp? Học viên được hoàn theo BR_2.7b và nhận thông báo." onConfirm={() => { const res = cancelClass(r.id, 'Manager hủy lớp'); message.success(`Đã hủy lớp, hoàn ${fmtMoney(res.refunded)} cho ${res.members} HV`); }}><Button size="small" danger>Hủy</Button></Popconfirm>

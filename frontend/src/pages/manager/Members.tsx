@@ -36,7 +36,7 @@ export default function Members() {
           options={[{ value: 'ACTIVE', label: 'Còn hạn' }, { value: 'EXPIRING', label: 'Sắp hết hạn' }, { value: 'EXPIRED', label: 'Hết hạn' }, { value: 'NONE', label: 'Chưa có gói' }]} />
         <Select placeholder="Tài khoản" allowClear style={{ width: 160 }} onChange={setAcc} options={['ACTIVE', 'INACTIVE', 'BANNED'].map((s) => ({ value: s, label: <StatusTag value={s} /> }))} />
       </Space>
-      <Table rowKey="id" dataSource={rows} pagination={{ pageSize: 8 }} columns={[
+      <Table rowKey="id" dataSource={rows} pagination={{ pageSize: 8 }} scroll={{ x: 'max-content' }} columns={[
         { title: 'Thành viên', dataIndex: 'fullName', sorter: (a, b) => a.fullName.localeCompare(b.fullName), render: (_, r) => <UserCell user={r} /> },
         { title: 'SĐT', dataIndex: 'phone' },
         { title: 'Ví', dataIndex: 'walletBalance', align: 'right', render: (v) => <span className="sc-nowrap">{fmtMoney(v ?? 0)}</span> },

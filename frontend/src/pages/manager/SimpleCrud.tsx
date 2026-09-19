@@ -100,7 +100,7 @@ export function Rooms() {
   return (
     <Page title="Cơ sở vật chất (Facility)" subtitle="Phòng/sân gộp chung; capacity = số booking đồng thời mỗi slot (gym 20, sân cầu lông 1). Facility đa năng gắn nhiều bộ môn."
       extra={<Space><Segmented value={filter} onChange={(v) => setFilter(v as typeof filter)} options={[{ value: 'ALL', label: 'Tất cả' }, { value: 'GYM', label: 'Gym' }, { value: 'COURT', label: 'Sân' }, { value: 'ROOM', label: 'Phòng' }, { value: 'FIELD', label: 'Sân ngoài trời' }]} /><Button type="primary" icon={<PlusOutlined />} onClick={() => openModal()}>Thêm facility</Button></Space>}>
-      <Table rowKey="id" dataSource={rows} pagination={false} columns={[
+      <Table rowKey="id" dataSource={rows} pagination={false} scroll={{ x: 'max-content' }} columns={[
         { title: 'Tên', dataIndex: 'name', render: (v, r) => <><b>{v}</b><div style={{ fontSize: 12, color: '#64748b' }}>{r.location}</div></> },
         { title: 'Loại', dataIndex: 'type', render: (v) => <StatusTag value={v} /> },
         { title: 'Bộ môn', render: (_, r) => <Space wrap size={[4, 4]}>{r.sportIds.map((id) => <SportTag key={id} id={id} size="small" />)}</Space> },
