@@ -1,30 +1,31 @@
 import { useState } from 'react';
 import dayjs from 'dayjs';
 import { useApp } from '../store/AppContext';
-import type { Schedule } from '../types';
+import type { Session } from '../types';
 import WeekCalendar, { type CalEvent } from './WeekCalendar';
 
 /**
- * Thời khóa biểu tuần theo trục giờ (dùng chung WeekCalendar với lịch của thành viên).
- * Có điều hướng tuần; ô lớp ghi phòng + sĩ số, trạng thái là số học viên.
+ * Thời khóa biểu tuần theo trục giờ, lấy từ class_sessions thật (buổi đã sinh, có dời/hủy).
+ * Có điều hướng tuần; ô lớp ghi facility + sĩ số.
  */
-export default function WeekTimetable({ schedules, onClick, showCoach }: { schedules: Schedule[]; onClick?: (classId: string) => void; showCoach?: boolean }) {
+export default function WeekTimetable({ sessions, onClick, showCoach }: { sessions: Session[]; onClick?: (classId: string) => void; showCoach?: boolean }) {
   const { data, nameOf } = useApp();
   const [offset, setOffset] = useState(0);
   const monday = dayjs().subtract((dayjs().day() + 6) % 7, 'day').startOf('day').add(offset, 'week');
   const sunday = monday.add(6, 'day');
+  const from = monday.format('YYYY-MM-DD'), to = sunday.format('YYYY-MM-DD');
 
-  const events: CalEvent[] = schedules.flatMap((s) => {
+  const events: CalEvent[] = sessions.filter((s) => s.date >= from && s.date <= to && s.status === 'SCHEDULED').flatMap((s) => {
     const c = data.classes.find((x) => x.id === s.classId);
     if (!c) return [];
-    const room = data.rooms.find((r) => r.id === c.roomId)?.name ?? '';
-    const n = data.enrollments.filter((e) => e.classId === c.id && e.status === 'ACTIVE').length;
+    const room = data.rooms.find((r) => r.id === s.roomId)?.name ?? '';
+    const n = data.enrollments.filter((e) => e.classId === c.id && e.status === 'ENROLLED').length;
     return [{
-      id: `${s.id}-${offset}`, date: monday.add(s.dayOfWeek - 1, 'day').format('YYYY-MM-DD'), start: s.startTime, end: s.endTime,
+      id: s.id, date: s.date, start: s.startTime, end: s.endTime,
       title: c.name, kind: 'CLASS' as const,
       sub: showCoach ? `${room} · HLV ${nameOf(c.coachId).split(' ').slice(-1)[0]}` : room,
       status: { label: `${n}/${c.capacity} HV`, tone: n >= c.capacity ? 'warn' : 'muted' },
-      tooltip: `${c.name} · ${room} · HLV ${nameOf(c.coachId)} · ${n}/${c.capacity} học viên`,
+      tooltip: `${c.name} · ${room} · HLV ${nameOf(c.coachId)} · ${n}/${c.capacity} học viên${s.note ? ` · ${s.note}` : ''}`,
       onClick: onClick ? () => onClick(c.id) : undefined,
     }];
   });

@@ -8,6 +8,7 @@ import StatusTag from '../../components/StatusTag';
 import UserCell from '../../components/UserCell';
 import BodyMetricsChart from '../../components/BodyMetricsChart';
 import { useApp } from '../../store/AppContext';
+import { coachSportIds } from '../../utils/classes';
 import { FOCUS_LABEL, generatePlan, inferFocus, planToText, type AiPlan, type Focus, type PlanInput } from '../../utils/aiPlan';
 
 const STEPS = ['Đọc hồ sơ & mục tiêu', 'Đối chiếu lịch sử tập luyện', 'Chọn bài tập phù hợp', 'Kiểm tra an toàn & cân bằng nhóm cơ'];
@@ -18,21 +19,21 @@ export default function AiSuggest() {
   const [params] = useSearchParams();
   const myClasses = data.classes.filter((c) => c.coachId === currentUser!.id && c.status === 'OPEN');
   const myIds = myClasses.map((c) => c.id);
-  const students = Array.from(new Set(data.enrollments.filter((e) => myIds.includes(e.classId) && e.status === 'ACTIVE').map((e) => e.memberId))).map((id) => data.users.find((u) => u.id === id)!);
+  const students = Array.from(new Set(data.enrollments.filter((e) => myIds.includes(e.classId) && e.status === 'ENROLLED').map((e) => e.memberId))).map((id) => data.users.find((u) => u.id === id)!);
 
   const [memberId, setMemberId] = useState<string | undefined>(params.get('member') ?? undefined);
   const u = students.find((s) => s.id === memberId);
   const [input, setInput] = useState<PlanInput>({ weeks: 4, sessionsPerWeek: 3, focus: [], equipment: 'FULL_GYM', minutes: 60, note: '' });
   // Bộ môn của các lớp học viên đang theo với HLV này (mặc định lấy lớp đầu tiên)
-  const studentSports = u ? Array.from(new Set(data.enrollments.filter((e) => e.memberId === u.id && e.status === 'ACTIVE' && myIds.includes(e.classId)).map((e) => data.classes.find((c) => c.id === e.classId)!.sportId))) : [];
-  const sportOptions = Array.from(new Set([...studentSports, ...(currentUser!.sportIds ?? [])])).map((id) => data.sports.find((s) => s.id === id)!).filter(Boolean);
+  const studentSports = u ? Array.from(new Set(data.enrollments.filter((e) => e.memberId === u.id && e.status === 'ENROLLED' && myIds.includes(e.classId)).map((e) => data.classes.find((c) => c.id === e.classId)!.sportId))) : [];
+  const sportOptions = Array.from(new Set([...studentSports, ...coachSportIds(data, currentUser!.id)])).map((id) => data.sports.find((s) => s.id === id)!).filter(Boolean);
   const [step, setStep] = useState(-1);          // -1 idle, 0..3 đang phân tích, 4 xong
   const [plan, setPlan] = useState<AiPlan | null>(null);
   const [activeWeek, setActiveWeek] = useState('1');
 
   useEffect(() => {
     if (u) {
-      const sid = studentSports[0] ?? currentUser!.sportIds?.[0];
+      const sid = studentSports[0] ?? coachSportIds(data, currentUser!.id)[0];
       const sp = data.sports.find((s) => s.id === sid);
       setInput((i) => ({ ...i, focus: inferFocus(u), sportId: sp?.id, sportName: sp?.name, equipment: sp && !/gym/i.test(sp.name) ? 'BASIC' : i.equipment }));
     }
@@ -45,7 +46,7 @@ export default function AiSuggest() {
     const rate = att.length ? Math.round(att.filter((a) => a.status !== 'ABSENT').length / att.length * 100) : 0;
     const results = data.trainingResults.filter((r) => r.memberId === u.id).map((r) => ({ ...r, s: data.sessions.find((s) => s.id === r.sessionId)! })).sort((a, b) => b.s.date.localeCompare(a.s.date));
     const bm = data.bodyMetrics.filter((m) => m.memberId === u.id).sort((a, b) => a.date.localeCompare(b.date));
-    const cls = data.enrollments.filter((e) => e.memberId === u.id && e.status === 'ACTIVE').map((e) => data.classes.find((c) => c.id === e.classId)?.name).filter(Boolean);
+    const cls = data.enrollments.filter((e) => e.memberId === u.id && e.status === 'ENROLLED').map((e) => data.classes.find((c) => c.id === e.classId)?.name).filter(Boolean);
     const aiPlans = data.trainingPlans.filter((p) => p.memberId === u.id && p.source === 'AI').sort((a, b) => b.createdAt.localeCompare(a.createdAt));
     return { att, rate, results, bm, cls, aiPlans };
   }, [u, data]);
@@ -75,7 +76,7 @@ export default function AiSuggest() {
     const content = planToText(plan);
     if (toClass) {
       add('trainingPlans', { coachId: currentUser!.id, classId: toClass, title: plan.title, content, createdAt: dayjs().format('YYYY-MM-DD HH:mm'), source: 'AI' });
-      data.enrollments.filter((e) => e.classId === toClass && e.status === 'ACTIVE').forEach((e) => notify(e.memberId, 'Giáo án mới cho lớp', `HLV ${currentUser!.fullName} đã gửi: ${plan.title}`));
+      data.enrollments.filter((e) => e.classId === toClass && e.status === 'ENROLLED').forEach((e) => notify(e.memberId, 'Giáo án mới cho lớp', `HLV ${currentUser!.fullName} đã gửi: ${plan.title}`));
       message.success('Đã lưu giáo án cho cả lớp');
     } else {
       const p = add('trainingPlans', { coachId: currentUser!.id, memberId: u.id, title: plan.title, content, createdAt: dayjs().format('YYYY-MM-DD HH:mm'), source: 'AI' });

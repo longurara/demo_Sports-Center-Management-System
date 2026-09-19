@@ -6,11 +6,12 @@ import { navByRole, type Badge } from '../routes';
 import { useApp } from '../store/AppContext';
 import { labelOf } from './StatusTag';
 import { initialsOf } from './UserCell';
+import { coachSportIds } from '../utils/classes';
 
 const ROLE_COLOR: Record<string, string> = { MANAGER: '#e07a4f', COACH: '#5cbf8a', MEMBER: '#38bdf8', RECEPTIONIST: '#eab308' };
 
 export default function SideNav({ collapsed, onToggle, mobile, onNavigate }: { collapsed: boolean; onToggle: () => void; mobile?: boolean; onNavigate?: () => void }) {
-  const { data, currentUser, logout, membershipStatus } = useApp();
+  const { data, currentUser, logout, membershipStatus, cart } = useApp();
   const { pathname } = useLocation();
   const navigate = useNavigate();
   if (!currentUser) return null;
@@ -21,11 +22,15 @@ export default function SideNav({ collapsed, onToggle, mobile, onNavigate }: { c
   // Số liệu cho badge — tính nhẹ, chỉ khi cần
   const badgeValue = (b?: Badge): number => {
     if (!b) return 0;
-    if (b === 'support') return data.supportRequests.filter((r) => { if (r.status === 'RESOLVED') return false; const m = data.supportMessages.filter((x) => x.requestId === r.id).sort((a, c) => a.createdAt.localeCompare(c.createdAt)); const last = m[m.length - 1]; return !last || last.senderId === r.memberId; }).length;
-    if (b === 'supportReply') return data.supportRequests.filter((r) => r.memberId === currentUser.id && r.status !== 'RESOLVED').filter((r) => { const m = data.supportMessages.filter((x) => x.requestId === r.id).sort((a, c) => a.createdAt.localeCompare(c.createdAt)); const last = m[m.length - 1]; return last && last.senderId !== currentUser.id; }).length;
+    if (b === 'support') return data.supportRequests.filter((r) => { if (r.status === 'RESOLVED' || r.status === 'CLOSED') return false; const m = data.supportMessages.filter((x) => x.requestId === r.id).sort((a, c) => a.createdAt.localeCompare(c.createdAt)); const last = m[m.length - 1]; return !last || last.senderId === r.memberId; }).length;
+    if (b === 'supportReply') return data.supportRequests.filter((r) => r.memberId === currentUser.id && r.status !== 'RESOLVED' && r.status !== 'CLOSED').filter((r) => { const m = data.supportMessages.filter((x) => x.requestId === r.id).sort((a, c) => a.createdAt.localeCompare(c.createdAt)); const last = m[m.length - 1]; return last && last.senderId !== currentUser.id; }).length;
     if (b === 'expiring') return data.users.filter((u) => u.role === 'MEMBER' && membershipStatus(u.id) === 'EXPIRING').length;
-    if (b === 'courtsToday') return data.courtBookings.filter((x) => x.date === dayjs().format('YYYY-MM-DD') && x.status === 'BOOKED').length;
-    if (b === 'todaySessions') { const dow = ((dayjs().day() + 6) % 7) + 1; const ids = data.classes.filter((c) => c.coachId === currentUser.id && c.status === 'OPEN').map((c) => c.id); return data.schedules.filter((s) => ids.includes(s.classId) && s.dayOfWeek === dow).length; }
+    if (b === 'courtsToday') return data.bookings.filter((x) => x.date === dayjs().format('YYYY-MM-DD') && x.status === 'CONFIRMED' && data.rooms.find((r) => r.id === x.roomId)?.type !== 'GYM').length;
+    if (b === 'todaySessions') return data.sessions.filter((s) => s.date === dayjs().format('YYYY-MM-DD') && s.status === 'SCHEDULED' && data.classes.some((c) => c.id === s.classId && c.coachId === currentUser.id && c.status === 'OPEN')).length;
+    if (b === 'pendingClasses') return data.classes.filter((c) => c.status === 'PENDING_APPROVAL').length;
+    if (b === 'pendingSpecs') return data.coachSpecializations.filter((s) => s.status === 'PENDING').length;
+    if (b === 'openForCoach') { const mine = coachSportIds(data, currentUser.id); return data.classes.filter((c) => !c.coachId && (c.status === 'DRAFT' || c.status === 'PENDING_APPROVAL') && mine.includes(c.sportId) && !data.coachRegistrations.some((r) => r.classId === c.id && r.coachId === currentUser.id && r.status === 'PENDING')).length; }
+    if (b === 'cart') return cart.lines.length;
     return 0;
   };
   const isActive = (key: string) => { const base = `/${role.toLowerCase()}`; return key === base ? pathname === base : pathname === key || pathname.startsWith(key + '/'); };

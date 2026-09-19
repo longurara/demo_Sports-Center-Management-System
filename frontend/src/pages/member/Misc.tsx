@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { Button, Card, Col, Form, Input, List, Row, Space, Statistic, Table, Tabs, Tag, message } from 'antd';
-import { PrinterOutlined } from '@ant-design/icons';
+import { Button, Card, Col, Form, Input, List, Row, Select, Space, Statistic, Table, Tabs, Tag, message } from 'antd';
 import { Link, useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
 import SupportThread from '../../components/SupportThread';
-import { fmtMoney, useApp } from '../../store/AppContext';
+import { useApp } from '../../store/AppContext';
+import { activeCoachClasses, coachSportIds } from '../../utils/classes';
+import type { SupportType } from '../../types';
 
 export function Coaches() {
   const { data } = useApp();
   const navigate = useNavigate();
   const [sport, setSport] = useState<string>('ALL');
-  const coaches = data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE').filter((u) => sport === 'ALL' || u.sportIds?.includes(sport));
+  const coaches = data.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE').filter((u) => sport === 'ALL' || coachSportIds(data, u.id).includes(sport));
   const sportName = (id: string) => data.sports.find((s) => s.id === id)?.name ?? '';
   return (
     <Page title="Huấn luyện viên" subtitle="Chứng chỉ đúng bộ môn, ghi kết quả từng buổi và theo bạn suốt lộ trình." noCard>
@@ -25,13 +26,13 @@ export function Coaches() {
       {/* Danh sách kiểu "roster": số thứ tự, tên condensed, chuyên môn, lớp — không ảnh, không icon */}
       <div className="sc-roster">
         {coaches.map((c, i) => {
-          const classes = data.classes.filter((x) => x.coachId === c.id && x.status === 'OPEN');
+          const classes = activeCoachClasses(data, c.id);
           return (
             <article key={c.id} className="sc-roster-row">
               <div className="sc-roster-idx">{String(i + 1).padStart(2, '0')}</div>
               <div className="sc-roster-main">
                 <h3>{c.fullName}</h3>
-                <div className="sc-roster-meta"><span>{(c.sportIds ?? []).map(sportName).join(' · ')}</span>{c.specialty && <><i /><span>{c.specialty}</span></>}</div>
+                <div className="sc-roster-meta"><span>{coachSportIds(data, c.id).map(sportName).join(' · ')}</span>{c.specialty && <><i /><span>{c.specialty}</span></>}</div>
                 <p>{c.bio}</p>
               </div>
               <div className="sc-roster-side">
@@ -43,22 +44,6 @@ export function Coaches() {
         })}
         {coaches.length === 0 && <div className="sc-roster-none" style={{ padding: '32px 0' }}>Chưa có HLV cho bộ môn này.</div>}
       </div>
-    </Page>
-  );
-}
-
-export function PaymentHistory() {
-  const { data, currentUser } = useApp();
-  const navigate = useNavigate();
-  const rows = data.payments.filter((p) => p.memberId === currentUser!.id).sort((a, b) => b.paidAt.localeCompare(a.paidAt));
-  return (
-    <Page title="Lịch sử thanh toán" subtitle={`Tổng đã thanh toán: ${fmtMoney(rows.reduce((s, p) => s + p.amount, 0))}`}>
-      <Table rowKey="id" dataSource={rows} columns={[
-        { title: 'Số HĐ', dataIndex: 'invoiceNo', render: (v) => <span className="sc-nowrap" style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 600 }}>{v}</span> }, { title: 'Ngày', dataIndex: 'paidAt', render: (v) => <span className="sc-nowrap">{v}</span> },
-        { title: 'Loại', dataIndex: 'type', render: (v) => <StatusTag value={v} /> }, { title: 'Nội dung', dataIndex: 'refName' },
-        { title: 'Số tiền', dataIndex: 'amount', render: fmtMoney }, { title: 'PT', dataIndex: 'method', render: (v) => <StatusTag value={v} /> },
-        { title: '', render: (_, r) => <Button size="small" icon={<PrinterOutlined />} onClick={() => navigate(`/member/payments/${r.id}`)}>Hóa đơn</Button> },
-      ]} />
     </Page>
   );
 }
@@ -89,7 +74,7 @@ export function MyAttendance() {
 export function MyTrainingPlan() {
   const { data, currentUser, nameOf } = useApp();
   const me = currentUser!.id;
-  const myClassIds = data.enrollments.filter((e) => e.memberId === me && e.status === 'ACTIVE').map((e) => e.classId);
+  const myClassIds = data.enrollments.filter((e) => e.memberId === me && e.status === 'ENROLLED').map((e) => e.classId);
   const plans = data.trainingPlans.filter((p) => p.memberId === me || (p.classId && myClassIds.includes(p.classId)));
   const hws = data.homeworks.filter((h) => myClassIds.includes(h.classId)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   return (
@@ -126,17 +111,17 @@ export function MySupport() {
     const last = msgs[msgs.length - 1];
     return { ...r, msgs, last, lastAt: last?.createdAt ?? r.createdAt, hasReply: !!last && last.senderId !== me.id };
   }).sort((a, b) => b.lastAt.localeCompare(a.lastAt));
-  const openCount = rows.filter((r) => r.status !== 'RESOLVED').length;
+  const openCount = rows.filter((r) => r.status !== 'RESOLVED' && r.status !== 'CLOSED').length;
 
-  const send = (v: { title: string; content: string }) => {
-    const r = add('supportRequests', { ...v, memberId: me.id, status: 'OPEN', createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
+  const send = (v: { title: string; content: string; type: SupportType }) => {
+    const r = add('supportRequests', { ...v, type: v.type ?? 'OTHER', memberId: me.id, status: 'OPEN', createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
     data.users.filter((u) => u.role === 'RECEPTIONIST' && u.status === 'ACTIVE').forEach((u) => notify(u.id, `Yêu cầu hỗ trợ mới: ${v.title}`, `${me.fullName}: ${v.content}`));
     message.success('Đã gửi yêu cầu, lễ tân sẽ phản hồi sớm'); form.resetFields();
     setActive(r.id);
   };
 
-  const STATUS: Record<string, string> = { OPEN: 'Đang chờ', IN_PROGRESS: 'Đang xử lý', RESOLVED: 'Đã xong' };
-  const TOPICS = ['Đổi lịch lớp', 'Gói & thanh toán', 'Sân & thiết bị', 'Tủ đồ, tài sản', 'Hóa đơn VAT', 'Khác'];
+  const STATUS: Record<string, string> = { OPEN: 'Đang chờ', IN_PROGRESS: 'Đang xử lý', RESOLVED: 'Đã xong', CLOSED: 'Đã đóng' };
+  const TOPICS: [string, SupportType][] = [['Đổi lịch lớp', 'SCHEDULE'], ['Gói & thanh toán', 'PAYMENT'], ['Sân & thiết bị', 'FACILITY'], ['Tài khoản', 'ACCOUNT'], ['Hóa đơn VAT', 'PAYMENT'], ['Khác', 'OTHER']];
 
   return (
     <Page title="Yêu cầu hỗ trợ" subtitle={openCount ? `${openCount} yêu cầu đang chờ lễ tân · phản hồi trong vòng 24 giờ` : 'Gửi yêu cầu và trao đổi trực tiếp với lễ tân · phản hồi trong vòng 24 giờ'} noCard>
@@ -146,14 +131,14 @@ export function MySupport() {
           <div className="sc-sup-list-head"><small>Yêu cầu của bạn</small><span>{rows.length} yêu cầu</span></div>
           {rows.length === 0 && <div className="sc-sup-empty">Bạn chưa gửi yêu cầu nào.<br />Điền vào ô bên phải — lễ tân trả lời trong vòng 24 giờ.</div>}
           {rows.map((r, i) => (
-            <button type="button" key={r.id} className={`sc-sup-row ${r.status === 'RESOLVED' ? 'done' : ''}`} onClick={() => setActive(r.id)}>
+            <button type="button" key={r.id} className={`sc-sup-row ${r.status === 'RESOLVED' || r.status === 'CLOSED' ? 'done' : ''}`} onClick={() => setActive(r.id)}>
               <span className="sc-sup-idx">{String(rows.length - i).padStart(2, '0')}</span>
               <span className="sc-sup-main">
                 <span className="sc-sup-title">{r.title}</span>
                 <span className="sc-sup-last">{r.last ? <><b>{r.last.senderId === me.id ? 'Bạn' : nameOf(r.last.senderId).split(' ').slice(-1)[0]}:</b> {r.last.content}</> : r.content}</span>
                 <span className="sc-sup-meta">#{r.id.toUpperCase()} · {r.msgs.length ? `${r.msgs.length} trao đổi` : 'Chưa có phản hồi'} · {dayjs(r.lastAt).fromNow()}{r.handledBy ? ` · ${nameOf(r.handledBy)}` : ''}</span>
               </span>
-              <span className={`sc-sup-status ${r.status.toLowerCase()} ${r.hasReply && r.status !== 'RESOLVED' ? 'new' : ''}`}>{r.hasReply && r.status !== 'RESOLVED' ? 'Có phản hồi' : STATUS[r.status]}</span>
+              <span className={`sc-sup-status ${r.status.toLowerCase()} ${r.hasReply && r.status !== 'RESOLVED' && r.status !== 'CLOSED' ? 'new' : ''}`}>{r.hasReply && r.status !== 'RESOLVED' && r.status !== 'CLOSED' ? 'Có phản hồi' : STATUS[r.status]}</span>
             </button>
           ))}
         </div>
@@ -162,8 +147,9 @@ export function MySupport() {
         <aside className="sc-sup-side">
           <div className="sc-sup-panel">
             <small>Gửi yêu cầu mới</small>
-            <div className="sc-sup-topics">{TOPICS.map((t) => <button type="button" key={t} onClick={() => form.setFieldsValue({ title: t === 'Khác' ? '' : t })}>{t}</button>)}</div>
-            <Form form={form} layout="vertical" onFinish={send} requiredMark={false}>
+            <div className="sc-sup-topics">{TOPICS.map(([t, ty]) => <button type="button" key={t} onClick={() => form.setFieldsValue({ title: t === 'Khác' ? '' : t, type: ty })}>{t}</button>)}</div>
+            <Form form={form} layout="vertical" onFinish={send} requiredMark={false} initialValues={{ type: 'OTHER' }}>
+              <Form.Item name="type" label="Loại"><Select options={[{ value: 'SCHEDULE', label: 'Lịch học / sân' }, { value: 'PAYMENT', label: 'Thanh toán' }, { value: 'FACILITY', label: 'Cơ sở vật chất' }, { value: 'ACCOUNT', label: 'Tài khoản / gói' }, { value: 'OTHER', label: 'Khác' }]} /></Form.Item>
               <Form.Item name="title" label="Tiêu đề" rules={[{ required: true, message: 'Nhập tiêu đề' }]}><Input placeholder="VD: Đổi lịch lớp Yoga sang ca chiều" /></Form.Item>
               <Form.Item name="content" label="Nội dung" rules={[{ required: true, message: 'Mô tả yêu cầu của bạn' }]}><Input.TextArea rows={4} placeholder="Bạn cần gì, khi nào, ở lớp/sân nào…" /></Form.Item>
               <Button type="primary" htmlType="submit" block size="large">Gửi cho lễ tân</Button>
@@ -181,7 +167,7 @@ export function MySupport() {
               <Link to="/member/schedule">Xem lịch tập tuần này</Link>
               <Link to="/member/plans">Gia hạn hoặc nâng gói</Link>
               <Link to="/member/courts">Đặt hoặc hủy sân</Link>
-              <Link to="/member/payments">Tải hóa đơn đã thanh toán</Link>
+              <Link to="/member/orders">Tải hóa đơn đã thanh toán</Link>
             </div>
           </div>
         </aside>

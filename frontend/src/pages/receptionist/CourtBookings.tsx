@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Alert, Button, Card, Col, DatePicker, Descriptions, Drawer, Form, Input, InputNumber, Modal, Popconfirm, Radio, Row, Segmented, Select, Space, Table, Tag, message } from 'antd';
-import { CalendarOutlined, DollarOutlined, LeftOutlined, PercentageOutlined, PrinterOutlined, RightOutlined, ScheduleOutlined } from '@ant-design/icons';
+import { Alert, Button, Card, Col, DatePicker, Drawer, Descriptions, Input, Popconfirm, Radio, Row, Segmented, Select, Space, Table, Tag, message } from 'antd';
+import { CalendarOutlined, DollarOutlined, LeftOutlined, PercentageOutlined, RightOutlined, ScheduleOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import Page from '../../components/Page';
@@ -10,133 +10,114 @@ import SportTag from '../../components/SportTag';
 import UserCell from '../../components/UserCell';
 import CourtGrid, { type Selection } from '../../components/CourtGrid';
 import { fmtMoney, useApp } from '../../store/AppContext';
-import { nextInvoiceNo } from '../../utils/invoice';
-import { HOURS, courtConflict, courtPrice, hh } from '../../utils/sports';
-import type { CourtBooking } from '../../types';
+import { bookableRooms, slotsOf } from '../../utils/slots';
+import { quoteCart } from '../../utils/pricing';
+import type { Booking } from '../../types';
 
-/** Trang quản lý đặt sân — dùng chung cho Lễ tân và Quản lý. */
+/** Lịch facility theo ngày (UC_2.10) + đặt sân tại quầy cho member/guest (UC_2.7) — dùng chung Lễ tân / Manager. */
 export default function CourtBookings({ manager }: { manager?: boolean }) {
-  const { data, add, update, log, notify, nameOf, currentUser } = useApp();
+  const { data, cart, setCartBuyer, addToCart, nameOf, cancelBooking } = useApp();
   const navigate = useNavigate();
   const [date, setDate] = useState(dayjs().format('YYYY-MM-DD'));
   const [sport, setSport] = useState<string>('ALL');
   const [sel, setSel] = useState<Selection | null>(null);
-  const [view, setView] = useState<CourtBooking | null>(null);
-  const [form] = Form.useForm();
-  const memberId = Form.useWatch('memberId', form);
-  const hours = Form.useWatch('hours', form) ?? 1;
+  const [view, setView] = useState<Booking[] | null>(null);
+  const [kind, setKind] = useState<'MEMBER' | 'GUEST'>(cart.buyer?.kind ?? 'MEMBER');
+  const [memberId, setMemberId] = useState<string | undefined>(cart.buyer?.kind === 'MEMBER' ? cart.buyer.memberId : undefined);
+  const [guest, setGuest] = useState({ name: '', phone: '' });
+  const slots = slotsOf(data.settings);
 
-  const courts = data.rooms.filter((r) => r.type === 'COURT' && (sport === 'ALL' || r.sportId === sport));
-  const court = data.rooms.find((r) => r.id === sel?.courtId);
-  const quote = court && sel ? courtPrice(data, memberId, court, hours) : null;
-  const conflict = court && sel ? courtConflict(data, court.id, date, hh(sel.start), hh(sel.start + hours)) : null;
+  const rooms = bookableRooms(data).filter((r) => sport === 'ALL' || r.sportIds.includes(sport));
+  const room = data.rooms.find((r) => r.id === sel?.roomId);
+  const start = sel ? slots[sel.start].start : '', end = sel ? slots[sel.start + sel.slots - 1].end : '';
+  const buyer = kind === 'MEMBER' ? (memberId ? { kind: 'MEMBER' as const, memberId } : null) : (guest.name && guest.phone ? { kind: 'GUEST' as const, name: guest.name, phone: guest.phone } : null);
+  const line = room && sel ? { key: 'preview', type: 'FACILITY_BOOKING' as const, roomId: room.id, date, startTime: start, endTime: end, name: `Đặt ${room.name}`, detail: `${dayjs(date).format('DD/MM/YYYY')} · ${start}–${end} · ${sel.slots} slot` } : null;
+  const preview = line ? quoteCart(data, buyer, [line]).lines[0] : null;
 
-  const dayBookings = data.courtBookings.filter((b) => b.date === date && courts.some((c) => c.id === b.courtId)).sort((a, b) => a.startTime.localeCompare(b.startTime));
-  const active = dayBookings.filter((b) => b.status !== 'CANCELLED');
+  const dayBookings = data.bookings.filter((b) => b.date === date && rooms.some((c) => c.id === b.roomId)).sort((a, b) => a.startTime.localeCompare(b.startTime));
+  const active = dayBookings.filter((b) => b.status === 'CONFIRMED');
   const revenue = active.reduce((s, b) => s + b.price, 0);
-  const bookedHours = active.reduce((s, b) => s + (Number(b.endTime.slice(0, 2)) - Number(b.startTime.slice(0, 2))), 0);
-  const occupancy = courts.length ? Math.round(bookedHours / (courts.length * HOURS.length) * 100) : 0;
   const base = manager ? '/manager' : '/receptionist';
 
-  const book = (v: { memberId: string; hours: number; method: 'CASH' | 'BANK' | 'VNPAY' | 'MOMO'; note?: string }) => {
-    if (!court || !sel || !quote) return;
-    const start = hh(sel.start), end = hh(sel.start + v.hours);
-    const cf = courtConflict(data, court.id, date, start, end);
-    if (cf) { message.error(cf); return; }
-    const b = add('courtBookings', { courtId: court.id, memberId: v.memberId, date, startTime: start, endTime: end, price: quote.price, status: 'BOOKED', createdAt: dayjs().format('YYYY-MM-DD HH:mm'), createdBy: currentUser!.id, note: v.note });
-    add('payments', { invoiceNo: nextInvoiceNo(data.payments), memberId: v.memberId, amount: quote.price, method: v.method, type: 'COURT', refName: `${court.name} · ${dayjs(date).format('DD/MM')} ${start}–${end}`, paidAt: dayjs().format('YYYY-MM-DD HH:mm'), createdBy: currentUser!.id });
-    log('BOOK_COURT', 'CourtBooking', b.id, `Đặt ${court.name} ${dayjs(date).format('DD/MM')} ${start}–${end} cho ${nameOf(v.memberId)} - thu ${fmtMoney(quote.price)}`);
-    notify(v.memberId, 'Đặt sân thành công', `${court.name} ngày ${dayjs(date).format('DD/MM')} lúc ${start}–${end}.`);
-    message.success('Đã đặt sân và tạo hóa đơn'); setSel(null); form.resetFields();
+  const addLine = () => {
+    if (!line || !buyer) return;
+    if (!cart.buyer || JSON.stringify(cart.buyer) !== JSON.stringify(buyer)) setCartBuyer(buyer);
+    addToCart({ ...line });
+    message.success('Đã thêm vào đơn tại quầy'); setSel(null);
+    navigate('/receptionist/counter');
   };
-
-  const setStatus = (b: CourtBooking, status: CourtBooking['status']) => {
-    update('courtBookings', b.id, { status });
-    const c = data.rooms.find((r) => r.id === b.courtId);
-    log(status === 'CANCELLED' ? 'CANCEL_COURT' : status === 'CHECKED_IN' ? 'COURT_CHECKIN' : 'COURT_DONE', 'CourtBooking', b.id, `${status === 'CANCELLED' ? 'Hủy' : status === 'CHECKED_IN' ? 'Nhận sân' : 'Hoàn tất'} ${c?.name} ${dayjs(b.date).format('DD/MM')} ${b.startTime} - ${nameOf(b.memberId)}`);
-    if (status === 'CANCELLED') notify(b.memberId, 'Lượt đặt sân đã hủy', `${c?.name} ${dayjs(b.date).format('DD/MM')} ${b.startTime}–${b.endTime} đã được hủy. Tiền sẽ hoàn theo chính sách.`);
-    message.success('Đã cập nhật'); setView(null);
-  };
-  const paymentOf = (b: CourtBooking) => data.payments.find((p) => p.type === 'COURT' && p.memberId === b.memberId && p.refName.startsWith(data.rooms.find((r) => r.id === b.courtId)?.name ?? '#') && p.refName.includes(`${dayjs(b.date).format('DD/MM')} ${b.startTime}`));
 
   return (
-    <Page title="Đặt sân & lịch sân" subtitle="Click ô trống để đặt sân tại quầy; click ô đã đặt để nhận sân / hủy. Ô xám là lớp học đang dùng sân." noCard
-      extra={<Space>
-        <Button icon={<LeftOutlined />} onClick={() => setDate(dayjs(date).subtract(1, 'day').format('YYYY-MM-DD'))} />
-        <DatePicker value={dayjs(date)} onChange={(v) => v && setDate(v.format('YYYY-MM-DD'))} allowClear={false} format="dddd, DD/MM/YYYY" style={{ width: 200 }} />
-        <Button icon={<RightOutlined />} onClick={() => setDate(dayjs(date).add(1, 'day').format('YYYY-MM-DD'))} />
-        <Button onClick={() => setDate(dayjs().format('YYYY-MM-DD'))}>Hôm nay</Button>
-      </Space>}>
+    <Page title={manager ? 'Lịch đặt sân / phòng' : 'Đặt sân tại quầy'} subtitle="Slot có buổi học / bảo trì bị khóa; gym hiển thị số chỗ x/N; sân capacity 1 là ô đơn" noCard extra={
+      <Space wrap>
+        <Segmented value={sport} onChange={(v) => { setSport(v as string); setSel(null); }} options={[{ value: 'ALL', label: 'Tất cả' }, ...data.sports.filter((s) => !s.deletedAt && bookableRooms(data).some((r) => r.sportIds.includes(s.id))).map((s) => ({ value: s.id, label: s.name }))]} />
+        <Space.Compact>
+          <Button icon={<LeftOutlined />} onClick={() => setDate(dayjs(date).subtract(1, 'day').format('YYYY-MM-DD'))} />
+          <DatePicker value={dayjs(date)} onChange={(v) => v && setDate(v.format('YYYY-MM-DD'))} allowClear={false} format="DD/MM/YYYY" />
+          <Button icon={<RightOutlined />} onClick={() => setDate(dayjs(date).add(1, 'day').format('YYYY-MM-DD'))} />
+        </Space.Compact>
+      </Space>
+    }>
       <Row gutter={[16, 16]}>
-        <Col xs={12} xl={6}><StatCard title="Lượt đặt trong ngày" value={active.length} icon={<CalendarOutlined />} color="#0f4d34" hint={`${dayBookings.filter((b) => b.status === 'CANCELLED').length} đã hủy`} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Doanh thu sân" value={fmtMoney(revenue)} icon={<DollarOutlined />} color="#16a34a" hint={`${bookedHours} giờ sân`} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Công suất sân" value={`${occupancy}%`} icon={<PercentageOutlined />} color="#c94a1e" hint={`${courts.length} sân · ${HOURS.length}h/ngày`} /></Col>
-        <Col xs={12} xl={6}><StatCard title="Chờ nhận sân" value={active.filter((b) => b.status === 'BOOKED').length} icon={<ScheduleOutlined />} color="#9333ea" hint={`${active.filter((b) => b.status === 'CHECKED_IN').length} đang chơi`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Lượt đặt trong ngày" value={active.length} icon={<CalendarOutlined />} color="#0f4d34" hint={`${active.filter((b) => !b.memberId).length} guest · ${active.filter((b) => b.packageId).length} từ gói định kỳ`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Doanh thu booking" value={fmtMoney(revenue)} icon={<DollarOutlined />} color="#c94a1e" hint={`${active.filter((b) => b.price === 0).length} lượt miễn phí theo gói`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Đã hủy" value={dayBookings.filter((b) => b.status === 'CANCELLED').length} icon={<ScheduleOutlined />} color="#7a776f" hint={`hoàn ${fmtMoney(dayBookings.reduce((s, b) => s + b.refundedAmount, 0))}`} /></Col>
+        <Col xs={12} xl={6}><StatCard title="Bảo trì hôm nay" value={data.maintenances.filter((m) => !m.deletedAt && m.from.slice(0, 10) <= date && m.to.slice(0, 10) >= date).length} icon={<PercentageOutlined />} color="#f59e0b" hint="facility không nhận booking" /></Col>
       </Row>
-
-      <Card size="small" title={<div style={{ overflowX: 'auto' }}><Segmented value={sport} onChange={(v) => { setSport(v as string); setSel(null); }} options={[{ value: 'ALL', label: 'Tất cả sân' }, ...data.sports.filter((s) => data.rooms.some((r) => r.type === 'COURT' && r.sportId === s.id)).map((s) => ({ value: s.id, label: s.name }))]} /></div>}>
-        <CourtGrid courts={courts} date={date} selection={sel} maxHours={1} onSelect={(s) => { setSel(s); if (s) form.setFieldsValue({ hours: 1, method: 'CASH' }); }} onBookingClick={setView} onClassClick={(c) => manager ? navigate(`/manager/classes/${c.id}`) : message.info(`Lớp ${c.name} đang dùng sân khung giờ này`)} />
-      </Card>
-
-      <Card size="small" title={`Danh sách đặt sân ngày ${dayjs(date).format('DD/MM/YYYY')}`}>
-        <Table size="small" rowKey="id" dataSource={dayBookings} pagination={{ pageSize: 8 }} columns={[
-          { title: 'Giờ', render: (_, r) => <b className="sc-nowrap">{r.startTime}–{r.endTime}</b> },
-          { title: 'Sân', render: (_, r) => { const c = data.rooms.find((x) => x.id === r.courtId); return <Space size={6}><SportTag id={c?.sportId} size="small" />{c?.name}</Space>; } },
-          { title: 'Thành viên', render: (_, r) => <UserCell id={r.memberId} size={28} /> },
-          { title: 'Giá', dataIndex: 'price', align: 'right', render: (v) => <b className="sc-nowrap">{fmtMoney(v)}</b> },
-          { title: 'Trạng thái', dataIndex: 'status', render: (v) => <StatusTag value={v} /> },
-          { title: 'Tạo bởi', render: (_, r) => <span style={{ fontSize: 12, color: '#7a776f' }}>{r.createdBy === r.memberId ? 'Online' : nameOf(r.createdBy)}</span> },
-          { title: '', render: (_, r) => <Button size="small" onClick={() => setView(r)}>Chi tiết</Button> },
+      <Row gutter={[16, 16]}>
+        <Col xs={24} xl={manager ? 24 : 17}>
+          <Card title={`Lưới facility · ${dayjs(date).format('dddd, DD/MM/YYYY')}`}>
+            <CourtGrid rooms={rooms} date={date} selection={sel} maxSlots={3} onSelect={manager ? undefined : setSel} onBookingClick={(b) => setView(b)} onClassClick={(c) => navigate(`${base === '/manager' ? '/manager' : '/receptionist'}${manager ? `/classes/${c.id}` : '/enrollments'}`)} />
+          </Card>
+        </Col>
+        {!manager && (
+          <Col xs={24} xl={7}>
+            <Card title="Đặt tại quầy" style={{ position: 'sticky', top: 80 }}>
+              <Radio.Group value={kind} onChange={(e) => setKind(e.target.value)} optionType="button" buttonStyle="solid" size="small" options={[{ value: 'MEMBER', label: 'Thành viên' }, { value: 'GUEST', label: 'Guest' }]} style={{ marginBottom: 10 }} />
+              {kind === 'MEMBER'
+                ? <Select showSearch optionFilterProp="label" placeholder="Tìm thành viên" style={{ width: '100%' }} value={memberId} onChange={setMemberId} options={data.users.filter((u) => u.role === 'MEMBER' && u.status === 'ACTIVE').map((u) => ({ value: u.id, label: `${u.fullName} - ${u.phone}` }))} />
+                : <Space orientation="vertical" style={{ width: '100%' }} size={6}><Input placeholder="Tên khách" value={guest.name} onChange={(e) => setGuest({ ...guest, name: e.target.value })} /><Input placeholder="SĐT" value={guest.phone} onChange={(e) => setGuest({ ...guest, phone: e.target.value })} /></Space>}
+              {!sel || !room ? <div style={{ color: '#9a968c', fontSize: 13, marginTop: 14 }}>Bấm một ô trống trên lưới để chọn slot; bấm ô kề để kéo dài (tối đa 3 slot).</div> : (
+                <div style={{ marginTop: 14 }}>
+                  <Descriptions column={1} size="small" bordered>
+                    <Descriptions.Item label="Facility">{room.name}</Descriptions.Item>
+                    <Descriptions.Item label="Thời gian">{dayjs(date).format('DD/MM')} · {start}–{end} ({sel.slots} slot)</Descriptions.Item>
+                    <Descriptions.Item label="Giá gốc">{fmtMoney((preview?.unitPrice) ?? 0)}</Descriptions.Item>
+                    {preview && preview.membershipDiscount > 0 && <Descriptions.Item label="Ưu đãi gói"><span style={{ color: '#16a34a' }}>−{fmtMoney(preview.membershipDiscount)} <StatusTag value={preview.benefitKind} /></span></Descriptions.Item>}
+                    <Descriptions.Item label="Tạm tính"><b>{fmtMoney(preview?.total ?? 0)}</b></Descriptions.Item>
+                  </Descriptions>
+                  {!buyer && <Alert type="warning" showIcon title={kind === 'MEMBER' ? 'Chọn thành viên' : 'Nhập tên + SĐT khách (bắt buộc)'} style={{ marginTop: 10 }} />}
+                  {preview?.error && <Alert type="error" showIcon title={preview.error} style={{ marginTop: 10 }} />}
+                  <Button type="primary" block size="large" style={{ marginTop: 12 }} disabled={!buyer || !!preview?.error} onClick={addLine}>Thêm vào đơn tại quầy</Button>
+                  <Button block style={{ marginTop: 8 }} onClick={() => setSel(null)}>Bỏ chọn</Button>
+                  {kind === 'GUEST' && <div style={{ fontSize: 12, color: '#9a968c', marginTop: 8 }}>Guest: thanh toán tại quầy, không quyền lợi, không hoàn tiền.</div>}
+                </div>
+              )}
+            </Card>
+          </Col>
+        )}
+      </Row>
+      <Card title={`Lượt đặt ngày ${dayjs(date).format('DD/MM')} (${dayBookings.length})`}>
+        <Table size="small" rowKey="id" pagination={{ pageSize: 8 }} dataSource={dayBookings} columns={[
+          { title: 'Giờ', render: (_, b) => <b className="sc-nowrap">{b.startTime}–{b.endTime}</b> },
+          { title: 'Facility', render: (_, b) => { const r = data.rooms.find((x) => x.id === b.roomId); return <><b>{r?.name}</b> <Space size={[2, 2]}>{r?.sportIds.map((id) => <SportTag key={id} id={id} size="small" />)}</Space></>; } },
+          { title: 'Khách', render: (_, b) => b.memberId ? <UserCell id={b.memberId} size={28} /> : <span><Tag color="gold" style={{ margin: 0 }}>Guest</Tag> {b.guestName} · {b.guestPhone}</span> },
+          { title: 'Giá', dataIndex: 'price', align: 'right', render: (v, b) => <span className="sc-nowrap"><b>{fmtMoney(v)}</b> {b.benefitKind && <StatusTag value={b.benefitKind} />}{b.packageId && <Tag style={{ margin: 0 }}>gói</Tag>}</span> },
+          { title: 'Trạng thái', dataIndex: 'status', render: (v, b) => <span className="sc-nowrap"><StatusTag value={v} />{b.refundedAmount > 0 && <small style={{ color: '#dc2626' }}>hoàn {fmtMoney(b.refundedAmount)}</small>}</span> },
+          { title: 'Đặt lúc', dataIndex: 'createdAt', render: (v, b) => <span style={{ fontSize: 12 }}>{v} · {b.createdBy === b.memberId ? 'online' : nameOf(b.createdBy)}</span> },
+          { title: '', render: (_, b) => b.status === 'CONFIRMED' && `${b.date} ${b.startTime}` > dayjs().format('YYYY-MM-DD HH:mm') && (() => { const ok = dayjs(`${b.date} ${b.startTime}`).diff(dayjs(), 'hour', true) >= data.settings.bookingCancelDeadlineHours; return (
+            <Popconfirm title={b.memberId ? (ok ? `Hủy và hoàn ${fmtMoney(b.price - b.refundedAmount)} về ví?` : 'Quá deadline — hủy không hoàn tiền?') : 'Hủy booking guest (không hoàn)?'} onConfirm={() => { const r = cancelBooking(b.id, 'STAFF'); message.success(`Đã hủy, hoàn ${fmtMoney(r.refunded)}`); }}><Button size="small" danger>Hủy</Button></Popconfirm>
+          ); })() },
         ]} />
       </Card>
-
-      <Modal title="Đặt sân tại quầy" open={!!sel} onCancel={() => setSel(null)} onOk={() => form.submit()} okText="Đặt sân & thu tiền" okButtonProps={{ disabled: !!conflict }}>
-        {court && sel && (
-          <Form form={form} layout="vertical" onFinish={book} initialValues={{ hours: 1, method: 'CASH' }}>
-            <Alert type="info" showIcon style={{ marginBottom: 12 }} title={<span><b>{court.name}</b> · {dayjs(date).format('DD/MM/YYYY')} · bắt đầu {hh(sel.start)} · {fmtMoney(court.hourlyRate ?? 0)}/giờ</span>} />
-            <Form.Item name="memberId" label="Thành viên" rules={[{ required: true }]}><Select showSearch optionFilterProp="label" placeholder="Tên / SĐT" options={data.users.filter((u) => u.role === 'MEMBER' && u.status === 'ACTIVE').map((u) => ({ value: u.id, label: `${u.fullName} - ${u.phone}` }))} /></Form.Item>
-            <Form.Item name="hours" label="Số giờ"><InputNumber min={1} max={Math.min(3, 22 - sel.start)} style={{ width: '100%' }} /></Form.Item>
-            {conflict && <Alert type="error" showIcon title={conflict} style={{ marginBottom: 12 }} />}
-            {quote && (
-              <div style={{ background: '#f7f5f0', borderRadius: 10, padding: 12, marginBottom: 12 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13 }}><span>{hours} giờ × {fmtMoney(court.hourlyRate ?? 0)}</span><span>{fmtMoney(quote.base)}</span></div>
-                {quote.discount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 13, color: '#16a34a' }}><span>Ưu đãi gói {quote.plan?.name}</span><span>−{quote.discount}%</span></div>}
-                {memberId && quote.discount === 0 && <div style={{ fontSize: 12, color: '#9a968c' }}>Thành viên chưa có gói ưu đãi sân — tính giá niêm yết.</div>}
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: 16, marginTop: 6 }}><span>Thu</span><span>{fmtMoney(quote.price)}</span></div>
-              </div>
-            )}
-            <Form.Item name="method" label="Phương thức"><Radio.Group options={[{ value: 'CASH', label: 'Tiền mặt' }, { value: 'BANK', label: 'Chuyển khoản' }, { value: 'VNPAY', label: 'VNPay' }, { value: 'MOMO', label: 'MoMo' }]} /></Form.Item>
-            <Form.Item name="note" label="Ghi chú"><Input placeholder="VD: mượn 2 vợt, 1 ống cầu" /></Form.Item>
-          </Form>
-        )}
-      </Modal>
-
-      <Drawer title="Chi tiết đặt sân" open={!!view} onClose={() => setView(null)} width={420}>
-        {view && (() => {
-          const c = data.rooms.find((r) => r.id === view.courtId);
-          const pay = paymentOf(view);
-          const isToday = view.date === dayjs().format('YYYY-MM-DD');
-          return (
-            <Space orientation="vertical" size={16} style={{ width: '100%' }}>
-              <UserCell id={view.memberId} size={44} />
-              <Descriptions column={1} bordered size="small">
-                <Descriptions.Item label="Sân"><Space size={6}><SportTag id={c?.sportId} size="small" />{c?.name}</Space></Descriptions.Item>
-                <Descriptions.Item label="Thời gian">{dayjs(view.date).format('DD/MM/YYYY')} · {view.startTime}–{view.endTime}</Descriptions.Item>
-                <Descriptions.Item label="Giá"><b>{fmtMoney(view.price)}</b></Descriptions.Item>
-                <Descriptions.Item label="Trạng thái"><StatusTag value={view.status} /></Descriptions.Item>
-                <Descriptions.Item label="Đặt lúc">{view.createdAt} · {view.createdBy === view.memberId ? <Tag color="cyan" style={{ margin: 0 }}>Online</Tag> : nameOf(view.createdBy)}</Descriptions.Item>
-                {view.note && <Descriptions.Item label="Ghi chú">{view.note}</Descriptions.Item>}
-              </Descriptions>
-              <Space wrap>
-                {view.status === 'BOOKED' && <Button type="primary" disabled={!isToday} onClick={() => setStatus(view, 'CHECKED_IN')}>Nhận sân</Button>}
-                {view.status === 'CHECKED_IN' && <Button type="primary" onClick={() => setStatus(view, 'COMPLETED')}>Hoàn tất</Button>}
-                {(view.status === 'BOOKED' || view.status === 'CHECKED_IN') && <Popconfirm title="Hủy lượt đặt này?" description="Hoàn tiền theo chính sách (trước 2h: 100%)." onConfirm={() => setStatus(view, 'CANCELLED')}><Button danger>Hủy đặt</Button></Popconfirm>}
-                {pay && <Button icon={<PrinterOutlined />} onClick={() => navigate(`${base}/payments/${pay.id}`)}>Hóa đơn {pay.invoiceNo}</Button>}
-              </Space>
-              {view.status === 'BOOKED' && !isToday && <div style={{ fontSize: 12, color: '#9a968c' }}>Chỉ nhận sân trong ngày diễn ra.</div>}
-            </Space>
-          );
-        })()}
+      <Drawer open={!!view} onClose={() => setView(null)} title="Booking trong slot" width={420}>
+        {view?.map((b) => (
+          <Card key={b.id} size="small" style={{ marginBottom: 10 }}>
+            <div>{b.memberId ? <UserCell id={b.memberId} size={28} /> : <span><Tag color="gold">Guest</Tag> {b.guestName} · {b.guestPhone}</span>}</div>
+            <div style={{ fontSize: 12.5, marginTop: 6 }}>{data.rooms.find((r) => r.id === b.roomId)?.name} · {b.startTime}–{b.endTime} · {fmtMoney(b.price)} {b.benefitKind && <StatusTag value={b.benefitKind} />}</div>
+            <div style={{ fontSize: 12, color: '#7a776f' }}>Đặt lúc {b.createdAt} · {b.createdBy === b.memberId ? 'online' : nameOf(b.createdBy)}{b.orderItemId && <> · <a onClick={() => navigate(`${base}/orders/${data.orderItems.find((it) => it.id === b.orderItemId)?.orderId}`)}>hóa đơn</a></>}</div>
+          </Card>
+        ))}
       </Drawer>
     </Page>
   );

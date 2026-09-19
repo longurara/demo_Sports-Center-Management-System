@@ -10,16 +10,14 @@ import { Item, Reveal, SplitWords, Stagger } from './ui';
 const FEATURED = ['p1', 'p3', 'p5'];
 const money = (n: number) => n.toLocaleString('vi-VN') + 'đ';
 /** Tách chuỗi quyền lợi theo dấu phẩy (bỏ qua dấu phẩy trong ngoặc); bỏ dòng "giảm % thuê sân" vì đã hiển thị riêng. */
-const benefitsOf = (text: string) => text.split(/,(?![^(]*\))/).map((b) => b.trim()).filter((b) => b && !/thuê sân/i.test(b)).map((b) => b.charAt(0).toUpperCase() + b.slice(1));
 
 export function Pricing() {
   const plans = FEATURED.map((id) => initialData.plans.find((p) => p.id === id)!);
   // Gói "được chọn nhiều nhất" tính theo số đăng ký trong mock data — trùng với trang Gói thành viên trong app.
   const count = (id: string) => initialData.subscriptions.filter((s) => s.planId === id).length;
   const hotId = plans.reduce((best, p) => (count(p.id) > count(best.id) ? p : best), plans[1]).id;
-  const sportName = (ids: string[]) => ids.length === 0 ? 'Mọi bộ môn' : ids.map((id) => initialData.sports.find((s) => s.id === id)?.name).join(', ');
   const courts = initialData.rooms.filter((r) => r.type === 'COURT');
-  const minRate = Math.min(...courts.map((c) => c.hourlyRate ?? Infinity));
+  const minRate = Math.min(...courts.map((c) => c.pricePerSlot));
   return (
     <section className="lp-section" id="pricing">
       <div className="lp-container">
@@ -32,11 +30,13 @@ export function Pricing() {
               <div className={`lp-plan ${p.id === hotId ? 'hot' : ''}`}>
                 {p.id === hotId && <span className="lp-plan-badge">Được chọn nhiều nhất</span>}
                 <div className="lp-plan-name">{p.name}</div>
-                <div className="lp-plan-scope">{sportName(p.sportIds)} · {p.durationDays} ngày</div>
+                <div className="lp-plan-scope">{p.durationDays} ngày · {p.gymAccess ? 'Gym miễn phí' : 'Không gym'}</div>
                 <div className="lp-plan-price">{money(p.price)}<small>/{p.durationDays >= 365 ? 'năm' : p.durationDays >= 90 ? `${p.durationDays / 30} tháng` : 'tháng'}</small></div>
                 <ul>
-                  {benefitsOf(p.benefits).map((b) => <li key={b}><CheckOutlined /> {b}</li>)}
-                  {p.courtDiscount > 0 && <li className="hl"><CheckOutlined /> Giảm {p.courtDiscount}% giá thuê sân</li>}
+                  <li><CheckOutlined /> {p.description}</li>
+                  {p.bookingDiscountPct > 0 && <li className="hl"><CheckOutlined /> Giảm {p.bookingDiscountPct}% đặt sân</li>}
+                  {p.classDiscountPct > 0 && <li><CheckOutlined /> Giảm {p.classDiscountPct}% học phí lớp</li>}
+                  {p.freeBookingSlotsPerMonth > 0 && <li><CheckOutlined /> {p.freeBookingSlotsPerMonth} slot sân miễn phí / tháng</li>}
                 </ul>
                 <Link to="/register" className={`lp-btn ${p.id === hotId ? 'lp-btn-primary' : 'lp-btn-ghost'}`} style={{ width: '100%' }}>Đăng ký gói này</Link>
               </div>

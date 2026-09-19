@@ -9,8 +9,8 @@ import poolImg from '../../assets/sports/swim.jpg';
 // Số liệu lấy thẳng từ mock data để không lệch khi dữ liệu đổi.
 const STATS = [
   { v: initialData.sports.length, label: 'Bộ môn', hint: initialData.sports.map((s) => s.name).join(', ') },
-  { v: initialData.rooms.filter((r) => r.type === 'COURT').length, label: 'Sân thuê theo giờ', hint: '06:00 – 22:00, khung 1 giờ' },
-  { v: initialData.rooms.filter((r) => r.type === 'ROOM').length, label: 'Phòng tập & hồ bơi', hint: 'Học theo lớp, có HLV' },
+  { v: initialData.rooms.filter((r) => !r.deletedAt && (r.type === 'COURT' || r.type === 'FIELD')).length, label: 'Sân thuê theo giờ', hint: '06:00 – 22:00, khung 1 giờ' },
+  { v: initialData.rooms.filter((r) => !r.deletedAt && (r.type === 'ROOM' || r.type === 'GYM')).length, label: 'Phòng tập & hồ bơi', hint: 'Học theo lớp, có HLV' },
   { v: initialData.users.filter((u) => u.role === 'COACH' && u.status === 'ACTIVE').length, label: 'Huấn luyện viên', hint: 'Chứng chỉ NASM, RYT-500, ITF… đúng bộ môn' },
 ];
 
@@ -82,10 +82,10 @@ export function Sports() {
 
 function SportCard({ sport, index }: { sport: (typeof initialData.sports)[number]; index: number }) {
   const px = useHoverParallax(12);
-  const rooms = initialData.rooms.filter((r) => r.sportId === sport.id);
+  const rooms = initialData.rooms.filter((r) => !r.deletedAt && r.sportIds.includes(sport.id));
   const classes = initialData.classes.filter((c) => c.sportId === sport.id && c.status === 'OPEN').length;
-  const coaches = initialData.users.filter((u) => u.role === 'COACH' && u.sportIds?.includes(sport.id)).length;
-  const isCourt = rooms[0]?.type === 'COURT';
+  const coaches = initialData.coachSpecializations.filter((s) => s.sportId === sport.id && s.status === 'APPROVED').length;
+  const isCourt = rooms[0]?.type === 'COURT' || rooms[0]?.type === 'FIELD';
   return (
     <div className="lp-sport" onMouseMove={px.onMouseMove} onMouseLeave={px.onMouseLeave}>
       <motion.img className="lp-sport-img" src={SPORT_IMAGES[sport.id]} alt={sport.name} loading="lazy" style={{ x: px.x, y: px.y }} />
@@ -96,7 +96,7 @@ function SportCard({ sport, index }: { sport: (typeof initialData.sports)[number
         <div className="lp-sport-name">{sport.name}</div>
         <div className="lp-sport-desc">{sport.description}</div>
         <div className="lp-sport-meta">
-          {rooms.length > 0 && <span>{rooms.length} {isCourt ? 'sân' : 'phòng'}{isCourt ? ` · từ ${Math.min(...rooms.map((r) => r.hourlyRate ?? Infinity)) / 1000}k/giờ` : ''}</span>}
+          {rooms.length > 0 && <span>{rooms.length} {isCourt ? 'sân' : 'phòng'}{isCourt ? ` · từ ${Math.min(...rooms.map((r) => r.pricePerSlot)) / 1000}k/giờ` : ''}</span>}
           {classes > 0 && <span>{classes} lớp đang mở</span>}
           {coaches > 0 && <span>{coaches} HLV</span>}
         </div>

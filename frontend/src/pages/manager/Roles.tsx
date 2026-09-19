@@ -1,65 +1,50 @@
-import { Card, Checkbox, Col, Row, Select, Table, Typography, message } from 'antd';
+import { Alert, Card, Col, Row, Table, Tag } from 'antd';
+import { CheckOutlined } from '@ant-design/icons';
 import Page from '../../components/Page';
 import StatusTag from '../../components/StatusTag';
 import { useApp } from '../../store/AppContext';
 import type { Role } from '../../types';
 
-const PERMISSIONS = [
-  'Quản lý người dùng', 'Quản lý gói thành viên', 'Quản lý lớp học & lịch', 'Phân công HLV', 'Xem báo cáo',
-  'Ghi nhận thanh toán', 'Xuất hóa đơn', 'Check-in thành viên', 'Điểm danh lớp', 'Tạo kế hoạch tập luyện',
-  'Đăng ký lớp học', 'Gửi yêu cầu hỗ trợ', 'Xem lịch sử thao tác', 'Sử dụng AI gợi ý',
+/** RBAC cố định (BR_1.2): 4 role, quyền hardcode, không đổi role qua UI. Trang chỉ để tra cứu. */
+const PERMISSIONS: [string, Role[]][] = [
+  ['Tạo/quản lý Coach, Receptionist; xem/vô hiệu hóa Member', ['MANAGER']],
+  ['CRUD bộ môn, facility, lịch bảo trì, System Settings', ['MANAGER']],
+  ['CRUD khóa học, lớp; phân công HLV; duyệt mở lớp', ['MANAGER']],
+  ['Duyệt chuyên môn HLV', ['MANAGER']],
+  ['CRUD gói thành viên, coupon', ['MANAGER']],
+  ['Overview, báo cáo, audit log', ['MANAGER']],
+  ['Đăng ký chuyên môn, đăng ký dạy lớp, rút khỏi lớp OPEN', ['COACH']],
+  ['Điểm danh, session notes, đánh giá học viên', ['COACH', 'MANAGER']],
+  ['Xem member trong lớp mình', ['COACH']],
+  ['Check-in, tra cứu thành viên, nạp ví tại quầy', ['RECEPTIONIST']],
+  ['Đặt sân tại quầy (member + guest), ghi nhận thanh toán, xuất hóa đơn, hoàn tiền', ['RECEPTIONIST']],
+  ['Xử lý yêu cầu hỗ trợ', ['RECEPTIONIST']],
+  ['Mua gói, đặt sân online, đăng ký lớp, nạp ví, yêu cầu hỗ trợ', ['MEMBER']],
+  ['Cập nhật hồ sơ cá nhân, đổi mật khẩu', ['MANAGER', 'COACH', 'MEMBER', 'RECEPTIONIST']],
 ];
 
-const MATRIX: Record<Role, boolean[]> = {
-  MANAGER:      [true, true, true, true, true, false, false, false, false, false, false, false, true, false],
-  RECEPTIONIST: [false, false, false, false, false, true, true, true, false, false, true, false, false, false],
-  COACH:        [false, false, false, false, false, false, false, false, true, true, false, false, false, true],
-  MEMBER:       [false, false, false, false, false, false, false, false, false, false, true, true, false, true],
-};
-
 export default function Roles() {
-  const { data, update, log, currentUser } = useApp();
-  const users = data.users.filter((u) => u.id !== currentUser?.id);
-
+  const { data } = useApp();
+  const ROLES: Role[] = ['MANAGER', 'RECEPTIONIST', 'COACH', 'MEMBER'];
   return (
-    <Page title="Phân quyền truy cập" subtitle="Gán vai trò cho tài khoản và xem ma trận quyền của từng vai trò" noCard>
+    <Page title="Phân quyền (cố định)" subtitle="4 vai trò với quyền hardcode; Manager đầu tiên tạo bằng seed. Không có thao tác đổi role — thay role cần xử lý profile/ví ngoài workflow." noCard>
+      <Alert type="info" showIcon style={{ marginBottom: 16 }} title="Mỗi account có đúng một profile theo role (member_profile / coach_profile / receptionist_profile / manager_profile), tạo cùng transaction." />
       <Row gutter={[16, 16]}>
-        <Col xs={24} xl={12}>
-          <Card title="Vai trò của tài khoản">
-            <Table
-              rowKey="id"
-              size="small"
-              dataSource={users}
-              pagination={{ pageSize: 8 }}
-              columns={[
-                { title: 'Họ tên', dataIndex: 'fullName' },
-                { title: 'Email', dataIndex: 'email' },
-                {
-                  title: 'Vai trò', dataIndex: 'role', render: (v, r) => (
-                    <Select size="small" value={v} style={{ width: 160 }} onChange={(role: Role) => { update('users', r.id, { role }); log('CHANGE_ROLE', 'User', r.id, `Đổi vai trò ${r.fullName} → ${role}`); message.success('Đã cập nhật vai trò'); }}
-                      options={(['MANAGER', 'RECEPTIONIST', 'COACH', 'MEMBER'] as Role[]).map((x) => ({ value: x, label: <StatusTag value={x} /> }))} />
-                  ),
-                },
-              ]}
-            />
+        <Col xs={24} xl={9}>
+          <Card title="Số tài khoản theo vai trò">
+            <Table size="small" pagination={false} rowKey="role" dataSource={ROLES.map((r) => ({ role: r, total: data.users.filter((u) => u.role === r).length, active: data.users.filter((u) => u.role === r && u.status === 'ACTIVE').length }))} columns={[
+              { title: 'Vai trò', dataIndex: 'role', render: (v) => <StatusTag value={v} /> },
+              { title: 'Tổng', dataIndex: 'total', align: 'center' },
+              { title: 'Đang hoạt động', dataIndex: 'active', align: 'center' },
+            ]} />
           </Card>
         </Col>
-        <Col xs={24} xl={12}>
-          <Card title="Ma trận quyền theo vai trò">
-            <Typography.Paragraph type="secondary">Prototype: ma trận cố định, bản chính thức lưu trong DB.</Typography.Paragraph>
-            <Table
-              size="small"
-              pagination={false}
-              rowKey="perm"
-              dataSource={PERMISSIONS.map((perm, i) => ({ perm, i }))}
-              columns={[
-                { title: 'Quyền', dataIndex: 'perm' },
-                ...(['MANAGER', 'RECEPTIONIST', 'COACH', 'MEMBER'] as Role[]).map((role) => ({
-                  title: <StatusTag value={role} />, align: 'center' as const,
-                  render: (_: unknown, r: { i: number }) => <Checkbox defaultChecked={MATRIX[role][r.i]} />,
-                })),
-              ]}
-            />
+        <Col xs={24} xl={15}>
+          <Card title="Ma trận quyền">
+            <Table size="small" pagination={false} rowKey="perm" dataSource={PERMISSIONS.map(([perm, roles]) => ({ perm, roles }))} columns={[
+              { title: 'Quyền', dataIndex: 'perm' },
+              ...ROLES.map((role) => ({ title: <StatusTag value={role} />, align: 'center' as const, render: (_: unknown, r: { roles: Role[] }) => r.roles.includes(role) ? <Tag color="green" style={{ margin: 0 }}><CheckOutlined /></Tag> : <span style={{ color: '#d9d4c8' }}>—</span> })),
+            ]} />
           </Card>
         </Col>
       </Row>

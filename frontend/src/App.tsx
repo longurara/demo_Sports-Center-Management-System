@@ -15,6 +15,7 @@ import Notifications from './pages/common/Notifications';
 import MemberDetail from './components/MemberDetail';
 import SupportRequests from './components/SupportRequests';
 import Invoice from './components/Invoice';
+import OrdersPage from './pages/common/Orders';
 
 import ManagerDashboard from './pages/manager/Dashboard';
 import Members from './pages/manager/Members';
@@ -22,6 +23,10 @@ import StaffPage from './pages/manager/StaffPage';
 import Roles from './pages/manager/Roles';
 import Plans from './pages/manager/Plans';
 import { Rooms, Sports } from './pages/manager/SimpleCrud';
+import Courses from './pages/manager/Courses';
+import Coupons from './pages/manager/Coupons';
+import Maintenance from './pages/manager/Maintenance';
+import Settings from './pages/manager/Settings';
 import Classes from './pages/manager/Classes';
 import ClassDetail from './pages/manager/ClassDetail';
 import ManagerSchedule from './pages/manager/Schedule';
@@ -34,23 +39,26 @@ import RegisterMember from './pages/receptionist/RegisterMember';
 import Subscriptions from './pages/receptionist/Subscriptions';
 import CheckIn from './pages/receptionist/CheckIn';
 import Enrollments from './pages/receptionist/Enrollments';
-import Payments from './pages/receptionist/Payments';
 import CourtBookings from './pages/receptionist/CourtBookings';
+import Counter from './pages/receptionist/Counter';
+import WalletCounter from './pages/receptionist/WalletCounter';
 
 import MemberHome from './pages/member/Home';
 import MemberPlans from './pages/member/Plans';
 import Checkout from './pages/member/Checkout';
 import Membership from './pages/member/Membership';
+import Wallet from './pages/member/Wallet';
 import MemberClasses from './pages/member/Classes';
 import Courts from './pages/member/Courts';
 import MemberClassDetail from './pages/member/ClassDetail';
-import { Coaches, MyAttendance, MySupport, MyTrainingPlan, PaymentHistory } from './pages/member/Misc';
+import { Coaches, MyAttendance, MySupport, MyTrainingPlan } from './pages/member/Misc';
 import MyResults from './pages/member/Results';
 import MySchedule from './pages/member/Schedule';
 import AiChat from './pages/member/AiChat';
 
 import CoachDashboard from './pages/coach/Dashboard';
-import { CoachClassDetail, CoachClasses, CoachSchedule, StudentDetail } from './pages/coach/ClassPages';
+import { CoachClassDetail, CoachClasses, CoachSchedule, OpenClasses, StudentDetail } from './pages/coach/ClassPages';
+import Specializations from './pages/coach/Specializations';
 import Attendance from './pages/coach/Attendance';
 import { Announcements, Progress, TrainingPlans, TrainingResults } from './pages/coach/Training';
 import AiSuggest from './pages/coach/AiSuggest';
@@ -71,6 +79,7 @@ const common = (
   <>
     <Route path="profile" element={<Profile />} />
     <Route path="notifications" element={<Notifications />} />
+    <Route path="orders/:id" element={<Invoice />} />
   </>
 );
 
@@ -93,16 +102,21 @@ export default function App() {
               <Route path="staff" element={<StaffPage role="RECEPTIONIST" />} />
               <Route path="roles" element={<Roles />} />
               <Route path="plans" element={<Plans />} />
+              <Route path="courses" element={<Courses />} />
+              <Route path="coupons" element={<Coupons />} />
               <Route path="sports" element={<Sports />} />
               <Route path="rooms" element={<Rooms />} />
+              <Route path="maintenance" element={<Maintenance />} />
               <Route path="classes" element={<Classes />} />
               <Route path="classes/:id" element={<ClassDetail />} />
               <Route path="schedule" element={<ManagerSchedule />} />
               <Route path="courts" element={<CourtBookings manager />} />
-              <Route path="payments/:id" element={<Invoice />} />
+              <Route path="attendance" element={<Attendance manager />} />
+              <Route path="orders" element={<OrdersPage />} />
               <Route path="reports" element={<Reports />} />
               <Route path="support" element={<SupportRequests />} />
               <Route path="audit-log" element={<AuditLogPage />} />
+              <Route path="settings" element={<Settings />} />
               {common}
             </Route>
 
@@ -111,28 +125,29 @@ export default function App() {
               <Route path="members" element={<MemberLookup />} />
               <Route path="members/:id" element={<MemberDetail receptionist />} />
               <Route path="register-member" element={<RegisterMember />} />
+              <Route path="wallet" element={<WalletCounter />} />
+              <Route path="counter" element={<Counter />} />
               <Route path="subscriptions" element={<Subscriptions />} />
               <Route path="check-in" element={<CheckIn />} />
               <Route path="enrollments" element={<Enrollments />} />
               <Route path="courts" element={<CourtBookings />} />
-              <Route path="payments" element={<Payments />} />
-              <Route path="payments/:id" element={<Invoice />} />
+              <Route path="orders" element={<OrdersPage />} />
               <Route path="support" element={<SupportRequests />} />
               {common}
             </Route>
 
             <Route path="/member" element={<RequireRole role="MEMBER" />}>
               <Route index element={<MemberHome />} />
+              <Route path="wallet" element={<Wallet />} />
               <Route path="plans" element={<MemberPlans />} />
-              <Route path="checkout/:kind/:id" element={<Checkout />} />
+              <Route path="checkout" element={<Checkout />} />
               <Route path="membership" element={<Membership />} />
               <Route path="classes" element={<MemberClasses />} />
               <Route path="classes/:id" element={<MemberClassDetail />} />
               <Route path="courts" element={<Courts />} />
               <Route path="schedule" element={<MySchedule />} />
               <Route path="coaches" element={<Coaches />} />
-              <Route path="payments" element={<PaymentHistory />} />
-              <Route path="payments/:id" element={<Invoice />} />
+              <Route path="orders" element={<OrdersPage />} />
               <Route path="attendance" element={<MyAttendance />} />
               <Route path="results" element={<MyResults />} />
               <Route path="training-plan" element={<MyTrainingPlan />} />
@@ -146,6 +161,8 @@ export default function App() {
               <Route path="schedule" element={<CoachSchedule />} />
               <Route path="classes" element={<CoachClasses />} />
               <Route path="classes/:id" element={<CoachClassDetail />} />
+              <Route path="open-classes" element={<OpenClasses />} />
+              <Route path="specializations" element={<Specializations />} />
               <Route path="students/:id" element={<StudentDetail />} />
               <Route path="attendance" element={<Attendance />} />
               <Route path="training-plans" element={<TrainingPlans />} />

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Avatar, Badge, Button, Drawer, Dropdown, Grid, Layout, Popover, Space, Tooltip } from 'antd';
-import { AppstoreOutlined, BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, ReloadOutlined, SearchOutlined, ThunderboltFilled, UserOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, BellOutlined, LogoutOutlined, MenuFoldOutlined, MenuOutlined, MenuUnfoldOutlined, ReloadOutlined, SearchOutlined, ShoppingCartOutlined, ThunderboltFilled, UserOutlined } from '@ant-design/icons';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { flatNav, mobileTabs } from '../routes';
 import dayjs from 'dayjs';
@@ -14,7 +14,7 @@ const { Header, Content } = Layout;
 const ROLE_COLOR: Record<string, string> = { MANAGER: '#c94a1e', COACH: '#0f4d34', MEMBER: '#0891b2', RECEPTIONIST: '#d9a400' };
 
 export default function AppLayout() {
-  const { currentUser, logout, myNotifications, resetData, update } = useApp();
+  const { currentUser, logout, myNotifications, resetData, update, cart } = useApp();
   const [collapsed, setCollapsed] = useState(() => { try { return localStorage.getItem('sc_nav_collapsed') === '1'; } catch { return false; } });
   const [searchOpen, setSearchOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
@@ -72,6 +72,9 @@ export default function AppLayout() {
           )}
           <Space size={isMobile ? 0 : 4}>
             {isMobile && <Button type="text" icon={<SearchOutlined style={{ fontSize: 17 }} />} onClick={() => setSearchOpen(true)} />}
+            {(currentUser.role === 'MEMBER' || currentUser.role === 'RECEPTIONIST') && (
+              <Tooltip title={currentUser.role === 'MEMBER' ? 'Đơn đang soạn' : 'Đơn tại quầy'}><Badge count={cart.lines.length} size="small" offset={[-4, 4]}><Button type="text" icon={<ShoppingCartOutlined style={{ fontSize: 17 }} />} onClick={() => navigate(currentUser.role === 'MEMBER' ? '/member/checkout' : '/receptionist/counter')} /></Badge></Tooltip>
+            )}
             {!isMobile && <Tooltip title="Reset dữ liệu demo"><Button type="text" icon={<ReloadOutlined />} onClick={resetData} /></Tooltip>}
             {isMobile ? (
               <Badge count={unread} size="small" offset={[-4, 4]}>
@@ -129,6 +132,7 @@ export default function AppLayout() {
         </Header>
         <Content style={{ padding: isMobile ? '14px 12px 84px' : '24px 28px 40px', maxWidth: 1440, width: '100%', margin: '0 auto', minWidth: 0 }}>
           <Outlet />
+          <div style={{ marginTop: 32, paddingTop: 14, borderTop: '1px solid #ece8df', fontSize: 12, color: '#9a968c', display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}><span>© Sports Center Management System · SWP391 FA26</span><span>Giờ hoạt động 06:00–22:00 · Hỗ trợ 1900 1234</span></div>
         </Content>
         {isMobile && (
           <nav className="sc-tabbar">

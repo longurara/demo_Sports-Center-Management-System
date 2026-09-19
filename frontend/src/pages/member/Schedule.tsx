@@ -25,29 +25,22 @@ export default function MySchedule() {
   const today = dayjs().format('YYYY-MM-DD');
   const effView = isMobile && view === 'week' ? 'day' : view; // mobile không dùng lưới 7 cột
 
-  const enrolled = data.enrollments.filter((e) => e.memberId === me && e.status === 'ACTIVE').map((e) => data.classes.find((c) => c.id === e.classId)!).filter((c) => c && c.status === 'OPEN');
+  const enrolled = data.enrollments.filter((e) => e.memberId === me && e.status === 'ENROLLED').map((e) => data.classes.find((c) => c.id === e.classId)!).filter((c) => c && c.status === 'OPEN');
 
-  /** Sinh danh sách hoạt động trong tuần: buổi học theo lịch lớp + lượt đặt sân. */
+  /** Sinh danh sách hoạt động trong tuần: buổi học thật (class_sessions) + lượt đặt facility. */
   const items = useMemo<Item[]>(() => {
     const out: Item[] = [];
-    for (let i = 0; i < 7; i++) {
-      const d = weekStart.add(i, 'day');
-      const ds = d.format('YYYY-MM-DD');
-      const dow = i + 1;
-      for (const c of enrolled) {
-        if (ds < c.startDate || ds > c.endDate) continue;
-        const sport = data.sports.find((s) => s.id === c.sportId);
-        for (const sc of data.schedules.filter((s) => s.classId === c.id && s.dayOfWeek === dow)) {
-          const session = data.sessions.find((s) => s.classId === c.id && s.date === ds);
-          const att = session ? data.attendances.find((a) => a.sessionId === session.id && a.memberId === me)?.status : undefined;
-          out.push({ key: `${sc.id}_${ds}`, date: ds, start: sc.startTime, end: sc.endTime, kind: 'CLASS', title: c.name, sportId: c.sportId, room: data.rooms.find((r) => r.id === c.roomId)?.name, coachId: c.coachId, classId: c.id, att, color: sport?.color ?? '#0f4d34', icon: sport?.icon });
-        }
-      }
-      for (const b of data.courtBookings.filter((x) => x.memberId === me && x.date === ds && x.status !== 'CANCELLED')) {
-        const court = data.rooms.find((r) => r.id === b.courtId);
-        const sport = data.sports.find((s) => s.id === court?.sportId);
-        out.push({ key: b.id, date: ds, start: b.startTime, end: b.endTime, kind: 'COURT', title: court?.name ?? 'Sân', sportId: court?.sportId, room: court?.location, status: b.status, color: sport?.color ?? '#0891b2', icon: sport?.icon });
-      }
+    const from = weekStart.format('YYYY-MM-DD'), to = weekStart.add(6, 'day').format('YYYY-MM-DD');
+    for (const s of data.sessions.filter((x) => x.status === 'SCHEDULED' && x.date >= from && x.date <= to && enrolled.some((c) => c.id === x.classId))) {
+      const c = enrolled.find((x) => x.id === s.classId)!;
+      const sport = data.sports.find((x) => x.id === c.sportId);
+      const att = data.attendances.find((a) => a.sessionId === s.id && a.memberId === me)?.status;
+      out.push({ key: s.id, date: s.date, start: s.startTime, end: s.endTime, kind: 'CLASS', title: c.name, sportId: c.sportId, room: data.rooms.find((r) => r.id === s.roomId)?.name, coachId: c.coachId, classId: c.id, att, color: sport?.color ?? '#0f4d34', icon: sport?.icon });
+    }
+    for (const b of data.bookings.filter((x) => x.memberId === me && x.date >= from && x.date <= to && x.status === 'CONFIRMED')) {
+      const room = data.rooms.find((r) => r.id === b.roomId);
+      const sport = data.sports.find((s) => s.id === room?.sportIds[0]);
+      out.push({ key: b.id, date: b.date, start: b.startTime, end: b.endTime, kind: 'COURT', title: room?.name ?? 'Sân', sportId: room?.sportIds[0], room: room?.location, status: b.packageId ? 'PACKAGE' : 'CONFIRMED', color: sport?.color ?? '#0891b2', icon: sport?.icon });
     }
     return out.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
   }, [weekStart, enrolled, data, me]);
@@ -56,22 +49,19 @@ export default function MySchedule() {
     id: it.key, date: it.date, start: it.start, end: it.end, title: it.title, kind: it.kind,
     sub: it.kind === 'CLASS' ? `${it.room} · HLV ${userById(it.coachId)?.fullName?.split(' ').slice(-1)[0] ?? '—'}` : it.room,
     status: it.att === 'PRESENT' ? { label: 'Có mặt', tone: 'ok' } : it.att === 'LATE' ? { label: 'Muộn', tone: 'warn' } : it.att === 'ABSENT' ? { label: 'Vắng', tone: 'bad' }
-      : it.kind === 'COURT' ? { label: it.status === 'CHECKED_IN' ? 'Đã nhận sân' : it.status === 'COMPLETED' ? 'Xong' : 'Đã đặt', tone: 'muted' } : undefined,
+      : it.kind === 'COURT' ? { label: it.status === 'PACKAGE' ? 'Gói định kỳ' : 'Đã đặt', tone: 'muted' } : undefined,
     onClick: it.kind === 'CLASS' ? () => navigate(`/member/classes/${it.classId}`) : () => navigate('/member/courts'),
   }));
 
   // Buổi tiếp theo (tính từ hiện tại, không phụ thuộc tuần đang xem)
   const next = useMemo(() => {
-    const now = dayjs();
-    for (let i = 0; i < 14; i++) {
-      const d = now.add(i, 'day'); const ds = d.format('YYYY-MM-DD'); const dow = ((d.day() + 6) % 7) + 1;
-      const cands: { start: string; end: string; title: string; classId?: string; room?: string; coachId?: string; sportId?: string; kind: 'CLASS' | 'COURT' }[] = [];
-      for (const c of enrolled) if (ds >= c.startDate && ds <= c.endDate) for (const sc of data.schedules.filter((s) => s.classId === c.id && s.dayOfWeek === dow)) cands.push({ start: sc.startTime, end: sc.endTime, title: c.name, classId: c.id, room: data.rooms.find((r) => r.id === c.roomId)?.name, coachId: c.coachId, sportId: c.sportId, kind: 'CLASS' });
-      for (const b of data.courtBookings.filter((x) => x.memberId === me && x.date === ds && x.status === 'BOOKED')) { const court = data.rooms.find((r) => r.id === b.courtId); cands.push({ start: b.startTime, end: b.endTime, title: court?.name ?? 'Sân', room: court?.location, sportId: court?.sportId, kind: 'COURT' }); }
-      const hit = cands.filter((x) => dayjs(`${ds} ${x.end}`).isAfter(now)).sort((a, b) => a.start.localeCompare(b.start))[0];
-      if (hit) return { ...hit, date: ds, at: dayjs(`${ds} ${hit.start}`) };
-    }
-    return null;
+    const nowS = dayjs().format('YYYY-MM-DD HH:mm');
+    const cands = [
+      ...data.sessions.filter((s) => s.status === 'SCHEDULED' && enrolled.some((c) => c.id === s.classId) && `${s.date} ${s.endTime}` > nowS).map((s) => { const c = enrolled.find((x) => x.id === s.classId)!; return { date: s.date, start: s.startTime, end: s.endTime, title: c.name, classId: c.id, room: data.rooms.find((r) => r.id === s.roomId)?.name, coachId: c.coachId, sportId: c.sportId, kind: 'CLASS' as const }; }),
+      ...data.bookings.filter((b) => b.memberId === me && b.status === 'CONFIRMED' && `${b.date} ${b.endTime}` > nowS).map((b) => { const room = data.rooms.find((r) => r.id === b.roomId); return { date: b.date, start: b.startTime, end: b.endTime, title: room?.name ?? 'Sân', classId: undefined as string | undefined, room: room?.location, coachId: undefined as string | undefined, sportId: room?.sportIds[0], kind: 'COURT' as const }; }),
+    ].sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start));
+    const hit = cands[0];
+    return hit ? { ...hit, at: dayjs(`${hit.date} ${hit.start}`) } : null;
   }, [enrolled, data, me]);
 
   const weekClasses = items.filter((i) => i.kind === 'CLASS');
@@ -136,7 +126,7 @@ export default function MySchedule() {
                             <span style={{ marginLeft: 'auto', display: 'flex', gap: 6, alignItems: 'center' }}>
                               <SportTag id={it.sportId} size="small" />
                               {it.att && <StatusTag value={it.att} />}
-                              {it.status && it.kind === 'COURT' && <StatusTag value={it.status} />}
+                              {it.kind === 'COURT' && <Tag style={{ margin: 0 }}>{it.status === 'PACKAGE' ? 'Gói định kỳ' : 'Đã đặt'}</Tag>}
                             </span>
                           </div>
                           <div style={{ fontWeight: 600, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{it.title} {it.kind === 'COURT' && <Tag style={{ marginLeft: 6, background: '#e3efe8', color: '#0f4d34' }}>Sân đã đặt</Tag>}</div>

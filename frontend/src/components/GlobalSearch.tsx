@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Empty, Input, Modal, Tag } from 'antd';
 import { BookOutlined, FileTextOutlined, SearchOutlined, UserOutlined } from '@ant-design/icons';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../store/AppContext';
+import { fmtMoney, useApp } from '../store/AppContext';
 import { flatNav } from '../routes';
 import UserCell from './UserCell';
 
@@ -38,8 +38,8 @@ export default function GlobalSearch({ open, onClose }: { open: boolean; onClose
     }
     // Hóa đơn
     if (role === 'RECEPTIONIST' || role === 'MANAGER' || role === 'MEMBER') {
-      for (const p of data.payments.filter((p) => p.invoiceNo.toLowerCase().includes(s) && (role !== 'MEMBER' || p.memberId === currentUser.id)).slice(0, 5)) {
-        out.push({ key: p.id, kind: 'invoice', title: p.invoiceNo, sub: `${nameOf(p.memberId)} · ${p.refName}`, to: role === 'MEMBER' ? `/member/payments/${p.id}` : `/receptionist/payments/${p.id}` });
+      for (const p of data.orders.filter((p) => p.orderNumber.toLowerCase().includes(s) && (role !== 'MEMBER' || p.buyerId === currentUser.id)).slice(0, 5)) {
+        out.push({ key: p.id, kind: 'invoice', title: p.orderNumber, sub: `${p.buyerId ? nameOf(p.buyerId) : p.guestName} · ${fmtMoney(p.total)}`, to: `${base}/orders/${p.id}` });
       }
     }
     return out.slice(0, 12);

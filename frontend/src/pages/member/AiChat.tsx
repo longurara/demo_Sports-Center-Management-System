@@ -5,6 +5,7 @@ import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
 import Page from '../../components/Page';
 import { DAY_NAMES, fmtMoney, useApp } from '../../store/AppContext';
+import { classPrice, enrollable } from '../../utils/classes';
 
 interface Msg { role: 'user' | 'ai'; text: string; at: string }
 
@@ -41,7 +42,7 @@ export default function AiChat() {
   useEffect(() => { bottom.current?.scrollIntoView({ behavior: 'smooth', block: 'end' }); }, [msgs, typing]);
 
   // Ngữ cảnh trợ lý đang dùng — hiện ở cột phải để người dùng biết câu trả lời dựa trên gì
-  const myClassIds = data.enrollments.filter((e) => e.memberId === me.id && e.status === 'ACTIVE').map((e) => e.classId);
+  const myClassIds = data.enrollments.filter((e) => e.memberId === me.id && e.status === 'ENROLLED').map((e) => e.classId);
   const sub = activeSubscription(me.id);
   const plan = sub ? data.plans.find((p) => p.id === sub.planId) : undefined;
   const hwCount = data.homeworks.filter((h) => myClassIds.includes(h.classId)).length;
@@ -68,18 +69,18 @@ export default function AiChat() {
     }
     if (s.includes('gói') && (s.includes('tôi') || s.includes('còn') || s.includes('hạn'))) {
       if (!sub || !plan) return 'Bạn chưa có gói thành viên còn hiệu lực. Bạn có thể đăng ký tại mục "Gói thành viên".';
-      return `Bạn đang dùng ${plan.name}, hết hạn ngày ${dayjs(sub.endDate).format('DD/MM/YYYY')} (còn ${dayjs(sub.endDate).diff(dayjs(), 'day')} ngày).\nQuyền lợi: ${plan.benefits}.`;
+      return `Bạn đang dùng ${plan.name}, hết hạn ngày ${dayjs(sub.endDate).format('DD/MM/YYYY')} (còn ${dayjs(sub.endDate).diff(dayjs(), 'day')} ngày).\nQuyền lợi: ${plan.gymAccess ? 'gym miễn phí, ' : ''}giảm ${plan.bookingDiscountPct}% đặt sân, giảm ${plan.classDiscountPct}% học phí, ${plan.freeBookingSlotsPerMonth} slot miễn phí/tháng. Ví: ${fmtMoney(me.walletBalance ?? 0)}.`;
     }
-    if (s.includes('gói')) return 'Các gói hiện có:\n' + data.plans.filter((p) => p.active).map((p) => `• ${p.name} — ${fmtMoney(p.price)} / ${p.durationDays} ngày. ${p.benefits}`).join('\n');
+    if (s.includes('gói')) return 'Các gói hiện có:\n' + data.plans.filter((p) => p.active).map((p) => `• ${p.name} — ${fmtMoney(p.price)} / ${p.durationDays} ngày. ${p.description}`).join('\n');
     if (s.includes('bài tập')) {
       const hw = data.homeworks.filter((h) => myClassIds.includes(h.classId));
       return hw.length ? 'Bài tập về nhà của bạn:\n' + hw.map((h) => `• ${h.title} — ${h.content}`).join('\n') : 'Hiện chưa có bài tập về nhà nào.';
     }
     if (s.includes('lớp')) {
       const sport = data.sports.find((sp) => s.includes(sp.name.toLowerCase()));
-      const list = data.classes.filter((c) => c.status === 'OPEN' && (!sport || c.sportId === sport.id)).map((c) => ({ c, left: c.capacity - data.enrollments.filter((e) => e.classId === c.id && e.status === 'ACTIVE').length }));
+      const list = data.classes.filter((c) => enrollable(data, c) && (!sport || c.sportId === sport.id)).map((c) => ({ c, left: c.capacity - data.enrollments.filter((e) => e.classId === c.id && e.status === 'ENROLLED').length }));
       if (!list.length) return `Hiện chưa có lớp${sport ? ' ' + sport.name : ''} nào đang mở.`;
-      return `Các lớp${sport ? ' ' + sport.name : ''} đang mở:\n` + list.map(({ c, left }) => `• ${c.name} — HLV ${nameOf(c.coachId)} · còn ${left} chỗ · ${fmtMoney(c.price)}`).join('\n');
+      return `Các lớp${sport ? ' ' + sport.name : ''} đang mở:\n` + list.map(({ c, left }) => `• ${c.name} — HLV ${nameOf(c.coachId)} · còn ${left} chỗ · ${fmtMoney(classPrice(data, c))}`).join('\n');
     }
     if (s.includes('giờ') || s.includes('mở cửa')) return 'Trung tâm mở cửa 06:00 – 22:00, 7 ngày trong tuần. Lễ Tết mở 08:00 – 20:00.';
     return 'Tôi có thể trả lời về lịch tập, gói thành viên, lớp còn chỗ, bài tập về nhà và giờ mở cửa. Bạn muốn hỏi gì?';

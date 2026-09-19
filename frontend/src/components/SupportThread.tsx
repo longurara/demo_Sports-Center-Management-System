@@ -4,7 +4,7 @@ import { ArrowUpOutlined } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import { useApp } from '../store/AppContext';
 
-const STATUS: Record<string, string> = { OPEN: 'Đang chờ', IN_PROGRESS: 'Đang xử lý', RESOLVED: 'Đã xong' };
+const STATUS: Record<string, string> = { OPEN: 'Đang chờ', IN_PROGRESS: 'Đang xử lý', RESOLVED: 'Đã xong', CLOSED: 'Đã đóng' };
 const ROLE: Record<string, string> = { RECEPTIONIST: 'Lễ tân', MANAGER: 'Quản lý', COACH: 'HLV', MEMBER: 'Thành viên' };
 
 /**
@@ -47,7 +47,7 @@ export default function SupportThread({ requestId, onClose }: { requestId: strin
     setText('');
   };
 
-  const setStatus = (st: 'IN_PROGRESS' | 'RESOLVED' | 'OPEN') => {
+  const setStatus = (st: 'IN_PROGRESS' | 'RESOLVED' | 'OPEN' | 'CLOSED') => {
     update('supportRequests', req.id, { status: st, handledBy: st === 'OPEN' ? req.handledBy : (req.handledBy ?? me.id) });
     if (st === 'RESOLVED') {
       add('supportMessages', { requestId: req.id, senderId: me.id, content: 'Yêu cầu đã được xử lý xong. Nếu cần thêm hỗ trợ, bạn chỉ cần trả lời tại đây.', createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
@@ -59,7 +59,7 @@ export default function SupportThread({ requestId, onClose }: { requestId: strin
   };
 
   // Tiến trình 3 bước: Đã gửi → Đã tiếp nhận → Đã xong
-  const step = req.status === 'RESOLVED' ? 3 : req.status === 'IN_PROGRESS' || req.handledBy || firstStaffReply ? 2 : 1;
+  const step = req.status === 'RESOLVED' || req.status === 'CLOSED' ? 3 : req.status === 'IN_PROGRESS' || req.handledBy || firstStaffReply ? 2 : 1;
   const steps = [
     { label: 'Đã gửi', sub: dayjs(req.createdAt).format('HH:mm DD/MM') },
     { label: 'Đã tiếp nhận', sub: step >= 2 ? (req.handledBy ? nameOf(req.handledBy) : firstStaffReply ? nameOf(firstStaffReply.senderId) : '') : 'Lễ tân đang xem' },
@@ -78,11 +78,13 @@ export default function SupportThread({ requestId, onClose }: { requestId: strin
         <ol className="sc-thread-steps">
           {steps.map((s, i) => <li key={s.label} className={i + 1 < step ? 'done' : i + 1 === step ? 'now' : ''}><b>{s.label}</b><em>{s.sub}</em></li>)}
         </ol>
-        {(isStaff || req.status === 'RESOLVED') && (
+        {(isStaff || req.status === 'RESOLVED' || req.status === 'CLOSED') && (
           <div className="sc-thread-actions">
             {isStaff && req.status === 'OPEN' && <Button size="small" onClick={() => setStatus('IN_PROGRESS')}>Tiếp nhận xử lý</Button>}
-            {isStaff && req.status !== 'RESOLVED' && <Popconfirm title="Đánh dấu đã xử lý xong?" onConfirm={() => setStatus('RESOLVED')}><Button size="small" type="primary">Hoàn tất</Button></Popconfirm>}
+            {isStaff && req.status !== 'RESOLVED' && req.status !== 'CLOSED' && <Popconfirm title="Đánh dấu đã xử lý xong?" onConfirm={() => setStatus('RESOLVED')}><Button size="small" type="primary">Hoàn tất</Button></Popconfirm>}
+            {isStaff && req.status === 'RESOLVED' && <Popconfirm title="Đóng yêu cầu (kết thúc luồng OPEN → IN_PROGRESS → RESOLVED → CLOSED)?" onConfirm={() => setStatus('CLOSED')}><Button size="small">Đóng</Button></Popconfirm>}
             {req.status === 'RESOLVED' && <Button size="small" onClick={() => setStatus('OPEN')}>Mở lại yêu cầu</Button>}
+            {req.status === 'CLOSED' && <span style={{ fontSize: 12, color: '#9a968c' }}>Đã đóng — tạo yêu cầu mới nếu cần.</span>}
           </div>
         )}
         <button type="button" className="sc-thread-close" onClick={onClose} aria-label="Đóng">×</button>

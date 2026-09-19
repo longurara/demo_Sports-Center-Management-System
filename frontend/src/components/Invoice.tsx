@@ -8,6 +8,7 @@ import Page from './Page';
 import { labelOf } from './StatusTag';
 import { fmtMoney, useApp } from '../store/AppContext';
 import { readMoney } from '../utils/money';
+import { ITEM_TYPE_LABEL } from '../utils/pricing';
 
 const VAT = 0.08;
 export const COMPANY = {
@@ -18,15 +19,14 @@ export const COMPANY = {
   phone: '1900 1234',
   email: 'billing@sportscenter.vn',
   bank: 'Vietcombank – CN Thủ Đức · STK 0071 000 123 456',
-  invoiceSymbol: `1C${dayjs().format('YY')}TSC`, // ký hiệu hóa đơn điện tử: 1 = HĐ GTGT, C = có mã CQT
+  invoiceSymbol: `1C${dayjs().format('YY')}TSC`,
 };
 
-/** Bản thể hiện hóa đơn điện tử — bố cục theo mẫu hóa đơn GTGT (NĐ 123/2020), in được trên A4. */
+/** Bản thể hiện hóa đơn = Order (đầu hóa đơn) + order_items (dòng dịch vụ), số liệu lấy từ snapshot đã chốt (UC_3.6, BR_3.4). */
 export default function Invoice() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { data, userById, nameOf, currentUser } = useApp();
-  // Tờ A4 (794px) thu nhỏ theo bề rộng màn hình — điện thoại vẫn xem đúng bố cục bản in
   const wrapRef = useRef<HTMLDivElement>(null);
   const sheetRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -39,52 +39,29 @@ export default function Invoice() {
     window.addEventListener('resize', calc);
     return () => { window.removeEventListener('resize', calc); ro?.disconnect(); };
   }, [id]);
-  const p = data.payments.find((x) => x.id === id);
-  // Thành viên chỉ xem được hóa đơn của chính mình
-  if (!p || (currentUser?.role === 'MEMBER' && p.memberId !== currentUser.id)) return <Page title="Không tìm thấy hóa đơn"><Button onClick={() => navigate(-1)}>Quay lại</Button></Page>;
-  const m = userById(p.memberId);
-  const seq = p.invoiceNo.split('-')[2] ?? '0000';
-  const taxCode = `M1-${dayjs(p.paidAt).format('YY')}-${(p.id + p.invoiceNo).split('').reduce((s, c) => (s * 31 + c.charCodeAt(0)) >>> 0, 7).toString(16).toUpperCase().padStart(8, '0').slice(0, 8)}-${seq.padStart(11, '0')}`;
+  const o = data.orders.find((x) => x.id === id);
+  if (!o || (currentUser?.role === 'MEMBER' && o.buyerId !== currentUser.id)) return <Page title="Không tìm thấy hóa đơn"><Button onClick={() => navigate(-1)}>Quay lại</Button></Page>;
+  const items = data.orderItems.filter((it) => it.orderId === o.id).sort((a, b) => a.lineNumber - b.lineNumber);
+  const m = userById(o.buyerId);
+  const seq = o.orderNumber.split('-')[2] ?? '0000';
+  const taxCode = `M1-${dayjs(o.paidAt).format('YY')}-${(o.id + o.orderNumber).split('').reduce((s, c) => (s * 31 + c.charCodeAt(0)) >>> 0, 7).toString(16).toUpperCase().padStart(8, '0').slice(0, 8)}-${seq.padStart(11, '0')}`;
   const lookupUrl = `https://hoadon.sportscenter.vn/tra-cuu?ma=${taxCode}`;
-
-  // Dòng hàng hóa: đơn vị tính, số lượng và đơn giá (chưa VAT). Số tiền lưu trong hệ thống là giá đã gồm VAT.
-  const total = p.amount;
-  const net = Math.round(total / (1 + VAT));
-  const vat = total - net;
-  let unit = 'Gói', qty = 1, listNet = net, desc = p.refName, note = '';
-  if (p.type === 'PLAN') {
-    const pl = data.plans.find((x) => x.name === p.refName);
-    note = pl ? `Thời hạn ${pl.durationDays} ngày · ${pl.sportIds.length === 0 ? 'All-access (mọi bộ môn)' : pl.sportIds.map((s) => data.sports.find((x) => x.id === s)?.name).join(', ')}` : '';
-    desc = `Gói thành viên ${p.refName}`;
-  } else if (p.type === 'CLASS') {
-    const c = data.classes.find((x) => x.name === p.refName);
-    unit = 'Khóa';
-    note = c ? `${data.sports.find((s) => s.id === c.sportId)?.name} · HLV ${nameOf(c.coachId)} · ${dayjs(c.startDate).format('DD/MM/YYYY')} → ${dayjs(c.endDate).format('DD/MM/YYYY')}` : '';
-    desc = `Học phí lớp ${p.refName}`;
-  } else {
-    const r = data.rooms.find((x) => p.refName.startsWith(x.name));
-    const tm = p.refName.match(/(\d{2}):00[–-](\d{2}):00/);
-    unit = 'Giờ';
-    qty = tm ? Math.max(1, Number(tm[2]) - Number(tm[1])) : 1;
-    listNet = r ? Math.round((r.hourlyRate ?? 0) * qty / (1 + VAT)) : net;
-    note = r ? `${r.location} · ${data.sports.find((s) => s.id === r.sportId)?.name}` : '';
-    desc = `Thuê ${p.refName}`;
-  }
-  const discount = Math.max(0, listNet - net);
-  const unitPrice = Math.round(listNet / qty);
-  const online = p.createdBy === p.memberId;
+  const net = Math.round(o.total / (1 + VAT));
+  const vat = o.total - net;
+  const online = o.paymentMethod === 'WALLET';
   const base = `/${(currentUser?.role ?? 'member').toLowerCase()}`;
+  const unitOf = (t: string) => t === 'MEMBERSHIP' ? 'Kỳ' : t === 'COURSE_ENROLLMENT' ? 'Khóa' : t === 'FACILITY_PACKAGE' ? 'Gói' : 'Lượt';
 
-  const cell = { padding: '8px 10px', borderBottom: '1px solid #e2ddd2', fontSize: 13 } as const;
-  const head = { ...cell, background: '#f3f1ec', fontWeight: 700, fontSize: 12, color: '#3d3b35', borderBottom: '1px solid #cbd5e1', borderTop: '1px solid #cbd5e1' } as const;
+  const cell = { padding: '7px 10px', borderBottom: '1px solid #e2ddd2', fontSize: 12.5 } as const;
+  const head = { ...cell, background: '#f3f1ec', fontWeight: 700, fontSize: 11.5, color: '#3d3b35', borderBottom: '1px solid #cbd5e1', borderTop: '1px solid #cbd5e1' } as const;
   const label = { fontSize: 12.5, color: '#7a776f', width: 150, flexShrink: 0 } as const;
   const row = { display: 'flex', gap: 8, padding: '3px 0', fontSize: 13 } as const;
 
   return (
-    <Page title={`Hóa đơn ${p.invoiceNo}`} subtitle={`Phát hành ${dayjs(p.paidAt).format('HH:mm DD/MM/YYYY')} · ${labelOf(p.method)} · Mã CQT ${taxCode}`} extra={
+    <Page title={`Hóa đơn ${o.orderNumber}`} subtitle={`Phát hành ${dayjs(o.paidAt).format('HH:mm DD/MM/YYYY')} · ${labelOf(o.paymentMethod)} · ${labelOf(o.status)}${o.refundedAmount ? ` (đã hoàn ${fmtMoney(o.refundedAmount)})` : ''}`} extra={
       <Space className="sc-no-print">
         <Button onClick={() => navigate(-1)}>Quay lại</Button>
-        <Button icon={<MailOutlined />} onClick={() => message.success(`Đã gửi bản thể hiện hóa đơn tới ${m?.email} (giả lập)`)}>Gửi email</Button>
+        <Button icon={<MailOutlined />} onClick={() => message.success(`Đã gửi bản thể hiện hóa đơn tới ${m?.email ?? o.guestPhone} (giả lập)`)}>Gửi email</Button>
         <Button icon={<DownloadOutlined />} onClick={() => { message.info('Chọn "Save as PDF" trong hộp thoại in để tải file PDF', 3); setTimeout(() => window.print(), 300); }}>Tải PDF</Button>
         <Button type="primary" icon={<PrinterOutlined />} onClick={() => window.print()}>In hóa đơn</Button>
       </Space>
@@ -92,7 +69,6 @@ export default function Invoice() {
       <div className="sc-invoice-wrap" ref={wrapRef}>
         <div className="sc-invoice-scaler" style={{ width: 794 * scale, height: sheetH * scale }}>
         <div className="sc-invoice" id="invoice" ref={sheetRef} style={{ transform: `scale(${scale})` }}>
-          {/* ===== Header: đơn vị bán + số hóa đơn ===== */}
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 24 }}>
             <div style={{ display: 'flex', gap: 12 }}>
               <div style={{ width: 52, height: 52, borderRadius: 12, background: '#d6f24b', color: '#14130f', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, flexShrink: 0 }}><ThunderboltFilled /></div>
@@ -108,93 +84,85 @@ export default function Invoice() {
               <div style={{ color: '#7a776f' }}>Mẫu số: <b style={{ color: '#14130f' }}>01GTKT0/001</b></div>
               <div style={{ color: '#7a776f' }}>Ký hiệu: <b style={{ color: '#14130f' }}>{COMPANY.invoiceSymbol}</b></div>
               <div style={{ color: '#7a776f' }}>Số: <b style={{ color: '#dc2626', fontFamily: 'ui-monospace, monospace', fontSize: 16 }}>{seq.padStart(8, '0')}</b></div>
-              <Tag color="green" icon={<CheckCircleFilled />} style={{ marginTop: 4, marginRight: 0 }}>ĐÃ THANH TOÁN</Tag>
+              <Tag color={o.status === 'PAID' ? 'green' : o.status === 'REFUNDED' ? 'red' : 'orange'} icon={<CheckCircleFilled />} style={{ marginTop: 4, marginRight: 0 }}>{o.status === 'PAID' ? 'ĐÃ THANH TOÁN' : o.status === 'REFUNDED' ? 'ĐÃ HOÀN TOÀN BỘ' : 'HOÀN MỘT PHẦN'}</Tag>
             </div>
           </div>
 
-          {/* ===== Title ===== */}
-          <div style={{ textAlign: 'center', margin: '22px 0 16px' }}>
+          <div style={{ textAlign: 'center', margin: '20px 0 14px' }}>
             <div style={{ fontSize: 22, fontWeight: 800, letterSpacing: 1, color: '#14130f' }}>HÓA ĐƠN GIÁ TRỊ GIA TĂNG</div>
             <div style={{ fontSize: 12, color: '#7a776f', fontStyle: 'italic' }}>(VAT INVOICE) · Bản thể hiện của hóa đơn điện tử</div>
-            <div style={{ fontSize: 13, marginTop: 4 }}>Ngày <b>{dayjs(p.paidAt).format('DD')}</b> tháng <b>{dayjs(p.paidAt).format('MM')}</b> năm <b>{dayjs(p.paidAt).format('YYYY')}</b></div>
+            <div style={{ fontSize: 13, marginTop: 4 }}>Ngày <b>{dayjs(o.paidAt).format('DD')}</b> tháng <b>{dayjs(o.paidAt).format('MM')}</b> năm <b>{dayjs(o.paidAt).format('YYYY')}</b></div>
             <div style={{ fontSize: 12, color: '#3d3b35', marginTop: 2 }}>Mã của Cơ quan Thuế: <span style={{ fontFamily: 'ui-monospace, monospace', fontWeight: 600, color: '#14130f' }}>{taxCode}</span></div>
           </div>
 
-          {/* ===== Buyer ===== */}
           <div style={{ border: '1px solid #e2ddd2', borderRadius: 8, padding: '10px 14px', display: 'grid', gridTemplateColumns: '1.3fr 1fr', gap: '0 24px' }}>
             <div>
-              <div style={row}><span style={label}>Họ tên người mua hàng</span><b>{m?.fullName}</b></div>
-              <div style={row}><span style={label}>Tên đơn vị</span><span>Khách hàng cá nhân</span></div>
+              <div style={row}><span style={label}>Họ tên người mua hàng</span><b>{m?.fullName ?? o.guestName}</b></div>
+              <div style={row}><span style={label}>Tên đơn vị</span><span>{m ? 'Khách hàng cá nhân' : 'Khách vãng lai (guest)'}</span></div>
               <div style={row}><span style={label}>Mã số thuế</span><span style={{ color: '#9a968c' }}>—</span></div>
-              <div style={row}><span style={label}>Địa chỉ</span><span style={{ color: '#9a968c' }}>—</span></div>
+              <div style={row}><span style={label}>Địa chỉ</span><span>{m?.address ?? <span style={{ color: '#9a968c' }}>—</span>}</span></div>
             </div>
             <div>
-              <div style={row}><span style={label}>Mã thành viên</span><b style={{ fontFamily: 'ui-monospace, monospace' }}>{p.memberId.toUpperCase()}</b></div>
-              <div style={row}><span style={label}>Điện thoại / Email</span><span>{m?.phone} · {m?.email}</span></div>
-              <div style={row}><span style={label}>Hình thức thanh toán</span><b>{labelOf(p.method)}{online ? ' (online)' : ''}</b></div>
-              <div style={row}><span style={label}>Số hóa đơn nội bộ</span><span style={{ fontFamily: 'ui-monospace, monospace' }}>{p.invoiceNo}</span></div>
+              <div style={row}><span style={label}>Mã thành viên</span><b style={{ fontFamily: 'ui-monospace, monospace' }}>{o.buyerId?.toUpperCase() ?? '—'}</b></div>
+              <div style={row}><span style={label}>Điện thoại / Email</span><span>{m ? `${m.phone} · ${m.email}` : o.guestPhone}</span></div>
+              <div style={row}><span style={label}>Hình thức thanh toán</span><b>{labelOf(o.paymentMethod)}{online ? ' (online)' : ' (tại quầy)'}</b></div>
+              <div style={row}><span style={label}>Số hóa đơn nội bộ</span><span style={{ fontFamily: 'ui-monospace, monospace' }}>{o.orderNumber}{o.couponCode ? ` · coupon ${o.couponCode}` : ''}</span></div>
             </div>
           </div>
 
-          {/* ===== Items ===== */}
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 14 }}>
             <thead>
               <tr>
-                <th style={{ ...head, width: 44, textAlign: 'center' }}>STT</th>
+                <th style={{ ...head, width: 36, textAlign: 'center' }}>STT</th>
                 <th style={{ ...head, textAlign: 'left' }}>Tên hàng hóa, dịch vụ</th>
-                <th style={{ ...head, width: 64, textAlign: 'center' }}>ĐVT</th>
-                <th style={{ ...head, width: 70, textAlign: 'center' }}>Số lượng</th>
-                <th style={{ ...head, width: 130, textAlign: 'right' }}>Đơn giá</th>
-                <th style={{ ...head, width: 140, textAlign: 'right' }}>Thành tiền</th>
+                <th style={{ ...head, width: 50, textAlign: 'center' }}>ĐVT</th>
+                <th style={{ ...head, width: 110, textAlign: 'right' }}>Đơn giá</th>
+                <th style={{ ...head, width: 100, textAlign: 'right' }}>Ưu đãi gói</th>
+                <th style={{ ...head, width: 90, textAlign: 'right' }}>Coupon</th>
+                <th style={{ ...head, width: 120, textAlign: 'right' }}>Thành tiền</th>
               </tr>
             </thead>
             <tbody>
-              <tr>
-                <td style={{ ...cell, textAlign: 'center' }}>1</td>
-                <td style={cell}><b>{desc}</b>{note && <div style={{ fontSize: 12, color: '#7a776f' }}>{note}</div>}</td>
-                <td style={{ ...cell, textAlign: 'center' }}>{unit}</td>
-                <td style={{ ...cell, textAlign: 'center' }}>{qty}</td>
-                <td style={{ ...cell, textAlign: 'right' }} className="sc-nowrap">{fmtMoney(unitPrice)}</td>
-                <td style={{ ...cell, textAlign: 'right' }} className="sc-nowrap">{fmtMoney(listNet)}</td>
-              </tr>
-              {discount > 0 && (
-                <tr>
-                  <td style={{ ...cell, textAlign: 'center' }}>2</td>
-                  <td style={cell}>Chiết khấu thành viên<div style={{ fontSize: 12, color: '#7a776f' }}>Ưu đãi gói thành viên áp dụng cho thuê sân</div></td>
-                  <td style={{ ...cell, textAlign: 'center' }}>—</td>
-                  <td style={{ ...cell, textAlign: 'center' }}>1</td>
-                  <td style={{ ...cell, textAlign: 'right' }} className="sc-nowrap">−{fmtMoney(discount)}</td>
-                  <td style={{ ...cell, textAlign: 'right', color: '#16a34a' }} className="sc-nowrap">−{fmtMoney(discount)}</td>
+              {items.map((it) => (
+                <tr key={it.id}>
+                  <td style={{ ...cell, textAlign: 'center' }}>{it.lineNumber}</td>
+                  <td style={cell}><b>{it.name}</b><div style={{ fontSize: 11.5, color: '#7a776f' }}>{ITEM_TYPE_LABEL[it.type]} · {it.detail}{it.refundedAmount > 0 && <span style={{ color: '#dc2626' }}> · đã hoàn {fmtMoney(it.refundedAmount)}</span>}</div></td>
+                  <td style={{ ...cell, textAlign: 'center' }}>{unitOf(it.type)}</td>
+                  <td style={{ ...cell, textAlign: 'right' }} className="sc-nowrap">{fmtMoney(it.unitPrice)}</td>
+                  <td style={{ ...cell, textAlign: 'right', color: '#16a34a' }} className="sc-nowrap">{it.membershipDiscount ? `−${fmtMoney(it.membershipDiscount)}` : '—'}</td>
+                  <td style={{ ...cell, textAlign: 'right', color: '#16a34a' }} className="sc-nowrap">{it.couponDiscount ? `−${fmtMoney(it.couponDiscount)}` : '—'}</td>
+                  <td style={{ ...cell, textAlign: 'right', fontWeight: 600 }} className="sc-nowrap">{fmtMoney(it.total)}</td>
                 </tr>
-              )}
-              {Array.from({ length: discount > 0 ? 1 : 2 }).map((_, i) => <tr key={i}><td style={{ ...cell, height: 34 }} colSpan={6} /></tr>)}
+              ))}
+              {Array.from({ length: Math.max(0, 3 - items.length) }).map((_, i) => <tr key={i}><td style={{ ...cell, height: 30 }} colSpan={7} /></tr>)}
             </tbody>
           </table>
 
-          {/* ===== Totals ===== */}
           <div style={{ display: 'flex', justifyContent: 'space-between', gap: 24, marginTop: 12 }}>
             <div style={{ fontSize: 12, color: '#7a776f', lineHeight: 1.7, maxWidth: 380 }}>
               <b style={{ color: '#14130f' }}>Ghi chú</b><br />
-              • Gói thành viên / học phí đã thanh toán không hoàn lại; bảo lưu tối đa 30 ngày khi có xác nhận y tế.<br />
-              • Thuê sân: hủy trước giờ chơi ≥ 2 giờ được hoàn 100%.<br />
-              • Vui lòng xuất trình mã thành viên khi check-in.
+              • Gói thành viên không hoàn tiền. Học phí hoàn 100% về ví nếu hủy trước ngày học đầu ≥ {data.settings.courseCancelDeadlineDays} ngày.<br />
+              • Đặt sân/phòng: hủy trước giờ bắt đầu ≥ {data.settings.bookingCancelDeadlineHours} giờ được hoàn 100% về ví. Khách vãng lai không hoàn.<br />
+              • Hóa đơn bất biến; hoàn tiền ghi nhận riêng từng dòng.
             </div>
             <div style={{ width: 320, fontSize: 13 }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Cộng tiền hàng</span><span className="sc-nowrap">{fmtMoney(net)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Thuế suất GTGT</span><span>{VAT * 100}%</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Tiền thuế GTGT</span><span className="sc-nowrap">{fmtMoney(vat)}</span></div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 17, fontWeight: 800, borderBottom: '2px solid #14130f' }}><span>Tổng tiền thanh toán</span><span className="sc-nowrap">{fmtMoney(total)}</span></div>
-              <div style={{ fontSize: 12, color: '#3d3b35', marginTop: 6, fontStyle: 'italic' }}>Số tiền viết bằng chữ: <b>{readMoney(total)}</b></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Tổng giá gốc</span><span className="sc-nowrap">{fmtMoney(o.subtotal)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #e2ddd2', color: '#16a34a' }}><span>Ưu đãi membership</span><span className="sc-nowrap">−{fmtMoney(o.membershipDiscount)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #e2ddd2', color: '#16a34a' }}><span>Coupon{o.couponCode ? ` ${o.couponCode}` : ''}</span><span className="sc-nowrap">−{fmtMoney(o.couponDiscount)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Cộng tiền hàng (chưa VAT)</span><span className="sc-nowrap">{fmtMoney(net)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', borderBottom: '1px dashed #e2ddd2' }}><span>Thuế GTGT {VAT * 100}%</span><span className="sc-nowrap">{fmtMoney(vat)}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', fontSize: 17, fontWeight: 800, borderBottom: '2px solid #14130f' }}><span>Tổng thanh toán</span><span className="sc-nowrap">{fmtMoney(o.total)}</span></div>
+              {o.refundedAmount > 0 && <div style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', color: '#dc2626' }}><span>Đã hoàn về ví</span><span className="sc-nowrap">−{fmtMoney(o.refundedAmount)}</span></div>}
+              <div style={{ fontSize: 12, color: '#3d3b35', marginTop: 6, fontStyle: 'italic' }}>Số tiền viết bằng chữ: <b>{readMoney(o.total)}</b></div>
             </div>
           </div>
 
-          {/* ===== Signatures ===== */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 28, textAlign: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24, textAlign: 'center' }}>
             <div>
               <b>NGƯỜI MUA HÀNG</b>
               <div style={{ fontSize: 11, color: '#9a968c' }}>(Ký, ghi rõ họ tên)</div>
-              <div style={{ height: 70 }} />
-              <div style={{ fontWeight: 600 }}>{m?.fullName}</div>
+              <div style={{ height: 60 }} />
+              <div style={{ fontWeight: 600 }}>{m?.fullName ?? o.guestName}</div>
             </div>
             <div>
               <b>NGƯỜI BÁN HÀNG</b>
@@ -202,17 +170,16 @@ export default function Invoice() {
               <div style={{ margin: '10px auto 6px', width: 250, border: '1.5px solid #16a34a', borderRadius: 6, padding: '6px 10px', textAlign: 'left', fontSize: 11, color: '#166534', background: '#f0fdf4', lineHeight: 1.5 }}>
                 <div style={{ fontWeight: 700 }}><CheckCircleFilled /> Signature Valid</div>
                 <div>Ký bởi: {COMPANY.name}</div>
-                <div>Ký ngày: {dayjs(p.paidAt).format('DD/MM/YYYY HH:mm:ss')}</div>
+                <div>Ký ngày: {dayjs(o.paidAt).format('DD/MM/YYYY HH:mm:ss')}</div>
               </div>
-              <div style={{ fontWeight: 600 }}>{online ? 'Hệ thống thanh toán online' : nameOf(p.createdBy)}</div>
+              <div style={{ fontWeight: 600 }}>{online ? 'Hệ thống thanh toán online' : nameOf(o.createdBy)}</div>
             </div>
           </div>
 
-          {/* ===== Footer: tra cứu ===== */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 24, paddingTop: 12, borderTop: '1px solid #e2ddd2', fontSize: 11.5, color: '#7a776f' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginTop: 20, paddingTop: 12, borderTop: '1px solid #e2ddd2', fontSize: 11.5, color: '#7a776f' }}>
             <div style={{ lineHeight: 1.6 }}>
               Tra cứu hóa đơn điện tử tại <b style={{ color: '#0f4d34' }}>hoadon.sportscenter.vn</b> · Mã tra cứu: <b style={{ fontFamily: 'ui-monospace, monospace', color: '#14130f' }}>{taxCode}</b><br />
-              Hóa đơn được khởi tạo từ hệ thống {COMPANY.short} Management System · Người lập: {online ? 'Tự động (cổng thanh toán)' : nameOf(p.createdBy)} · Trang 1/1
+              Hóa đơn được khởi tạo từ hệ thống {COMPANY.short} Management System · Người lập: {online ? 'Tự động (ví điện tử)' : nameOf(o.createdBy)} · Trang 1/1
             </div>
             <div style={{ textAlign: 'center', flexShrink: 0 }}>
               <QRCodeSVG value={lookupUrl} size={72} level="M" />
@@ -223,7 +190,7 @@ export default function Invoice() {
         </div>
       </div>
       <div className="sc-no-print" style={{ textAlign: 'center', fontSize: 12, color: '#9a968c', marginTop: 12 }}>
-        Bản in theo khổ A4 · Số tiền trong hệ thống đã bao gồm {VAT * 100}% VAT · <a onClick={() => navigate(`${base}/payments`)}>Danh sách hóa đơn</a>
+        Bản in theo khổ A4 · Số tiền trong hệ thống đã bao gồm {VAT * 100}% VAT · <a onClick={() => navigate(`${base}/orders`)}>Danh sách hóa đơn</a>
       </div>
     </Page>
   );

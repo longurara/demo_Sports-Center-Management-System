@@ -1,9 +1,10 @@
 import dayjs from 'dayjs';
-import type { Payment } from '../types';
+import type { Order } from '../types';
 
-export function nextInvoiceNo(payments: Payment[]) {
+/** Số hóa đơn = order_number: ORD-YYYY-NNNN */
+export function nextOrderNumber(orders: Order[]) {
   const year = dayjs().format('YYYY');
-  const nums = payments.map((p) => p.invoiceNo).filter((n) => n.startsWith(`INV-${year}-`)).map((n) => parseInt(n.split('-')[2], 10));
+  const nums = orders.map((o) => o.orderNumber).filter((n) => n.startsWith(`ORD-${year}-`)).map((n) => parseInt(n.split('-')[2], 10));
   const next = (nums.length ? Math.max(...nums) : 0) + 1;
-  return `INV-${year}-${String(next).padStart(4, '0')}`;
+  return `ORD-${year}-${String(next).padStart(4, '0')}`;
 }

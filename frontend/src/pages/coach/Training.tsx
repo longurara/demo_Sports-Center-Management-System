@@ -12,7 +12,7 @@ function useMyStudents() {
   const { data, currentUser } = useApp();
   const myClasses = data.classes.filter((c) => c.coachId === currentUser!.id && c.status === 'OPEN');
   const ids = myClasses.map((c) => c.id);
-  const memberIds = Array.from(new Set(data.enrollments.filter((e) => ids.includes(e.classId) && e.status === 'ACTIVE').map((e) => e.memberId)));
+  const memberIds = Array.from(new Set(data.enrollments.filter((e) => ids.includes(e.classId) && e.status === 'ENROLLED').map((e) => e.memberId)));
   const students = memberIds.map((id) => data.users.find((u) => u.id === id)!);
   return { myClasses, students };
 }
@@ -28,7 +28,7 @@ export function TrainingPlans() {
 
   const save = (v: { target: 'class' | 'member'; classId?: string; memberId?: string; title: string; content: string }) => {
     const p = add('trainingPlans', { coachId: currentUser!.id, classId: v.target === 'class' ? v.classId : undefined, memberId: v.target === 'member' ? v.memberId : undefined, title: v.title, content: v.content, createdAt: dayjs().format('YYYY-MM-DD HH:mm'), source: 'MANUAL' });
-    const targets = v.target === 'member' ? [v.memberId!] : data.enrollments.filter((e) => e.classId === v.classId && e.status === 'ACTIVE').map((e) => e.memberId);
+    const targets = v.target === 'member' ? [v.memberId!] : data.enrollments.filter((e) => e.classId === v.classId && e.status === 'ENROLLED').map((e) => e.memberId);
     targets.forEach((m) => notify(m, 'Kế hoạch tập luyện mới', `HLV ${currentUser!.fullName} đã tạo kế hoạch: ${v.title}`));
     log('CREATE_PLAN', 'TrainingPlan', p.id, `Tạo kế hoạch "${v.title}"`);
     message.success('Đã tạo kế hoạch và thông báo cho học viên'); setOpen(false); form.resetFields();
@@ -118,40 +118,50 @@ export function TrainingResults() {
 }
 
 export function Progress() {
-  const { data, currentUser, add, nameOf, notify } = useApp();
-  const { students } = useMyStudents();
+  const { data, currentUser, add, update, nameOf, notify } = useApp();
+  const { myClasses, students } = useMyStudents();
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
-  const rows = data.progressReviews.filter((r) => r.coachId === currentUser!.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  const memberId = Form.useWatch('memberId', form);
+  const now = dayjs().format('YYYY-MM-DD HH:mm');
+  const mySessionIds = data.sessions.filter((s) => myClasses.some((c) => c.id === s.classId)).map((s) => s.id);
+  const rows = data.progressReviews.filter((r) => r.coachId === currentUser!.id && !r.deletedAt).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+  // Buổi đã diễn ra của lớp mà học viên đang học (BR_4.5: gắn session + member hợp lệ)
+  const sessionOptions = memberId ? data.sessions.filter((s) => mySessionIds.includes(s.id) && s.status === 'SCHEDULED' && `${s.date} ${s.startTime}` <= now && data.enrollments.some((e) => e.memberId === memberId && e.classId === s.classId && e.status === 'ENROLLED')).sort((x, y) => (y.date + y.startTime).localeCompare(x.date + x.startTime)) : [];
 
-  const save = (v: { memberId: string; rating: number; comment: string }) => {
-    add('progressReviews', { ...v, coachId: currentUser!.id, createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
-    notify(v.memberId, 'Nhận xét mới từ HLV', v.comment);
-    message.success('Đã lưu đánh giá'); setOpen(false); form.resetFields();
+  const save = (v: { memberId: string; sessionId: string; rating: number; comment: string }) => {
+    const ex = data.progressReviews.find((r) => r.sessionId === v.sessionId && r.memberId === v.memberId && !r.deletedAt);
+    if (ex) update('progressReviews', ex.id, { deletedAt: now });
+    add('progressReviews', { ...v, coachId: currentUser!.id, createdAt: now });
+    const s = data.sessions.find((x) => x.id === v.sessionId)!;
+    notify(v.memberId, 'HLV gửi đánh giá', `${data.classes.find((c) => c.id === s.classId)?.name} — buổi ${dayjs(s.date).format('DD/MM')}: ${v.rating}★ · ${v.comment}`);
+    message.success(ex ? 'Đã thay đánh giá cũ (xóa mềm) bằng bản mới' : 'Đã gửi đánh giá'); setOpen(false); form.resetFields();
   };
+  const sessLabel = (id: string) => { const s = data.sessions.find((x) => x.id === id); return s ? `${data.classes.find((c) => c.id === s.classId)?.name} · ${dayjs(s.date).format('DD/MM')}` : '—'; };
 
   return (
-    <Page title="Đánh giá tiến độ học viên" extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => setOpen(true)}>Đánh giá mới</Button>} noCard>
+    <Page title="Đánh giá học viên" subtitle="Rating 1–5 + nhận xét gắn với buổi học và học viên; mỗi cặp một đánh giá đang hoạt động (BR_4.5)" extra={<Button type="primary" icon={<PlusOutlined />} onClick={() => { form.resetFields(); setOpen(true); }}>Đánh giá mới</Button>} noCard>
       <Row gutter={[16, 16]}>
         <Col xs={24} lg={10}>
           <Card title="Học viên của tôi">
             <Table size="small" rowKey="id" pagination={false} dataSource={students} columns={[
               { title: 'Học viên', dataIndex: 'fullName' }, { title: 'Mục tiêu', dataIndex: 'goal' },
-              { title: 'Đánh giá gần nhất', render: (_, r) => { const rv = rows.find((x) => x.memberId === r.id); return rv ? <Rate disabled value={rv.rating} style={{ fontSize: 12 }} /> : '—'; } },
-              { title: '', render: (_, r) => <Button size="small" onClick={() => { form.setFieldsValue({ memberId: r.id }); setOpen(true); }}>Đánh giá</Button> },
+              { title: 'Gần nhất', render: (_, r) => { const rv = rows.find((x) => x.memberId === r.id); return rv ? <Rate disabled value={rv.rating} style={{ fontSize: 12 }} /> : '—'; } },
+              { title: '', render: (_, r) => <Button size="small" onClick={() => { form.resetFields(); form.setFieldsValue({ memberId: r.id, rating: 4 }); setOpen(true); }}>Đánh giá</Button> },
             ]} />
           </Card>
         </Col>
         <Col xs={24} lg={14}>
           <Card title="Lịch sử đánh giá">
-            <List dataSource={rows} renderItem={(r) => <List.Item><List.Item.Meta title={<Space><b>{nameOf(r.memberId)}</b><Rate disabled value={r.rating} /></Space>} description={`${r.comment} · ${r.createdAt}`} /></List.Item>} />
+            <List dataSource={rows} renderItem={(r) => <List.Item><List.Item.Meta title={<Space><Tag color="blue">{sessLabel(r.sessionId)}</Tag><b>{nameOf(r.memberId)}</b><Rate disabled value={r.rating} /></Space>} description={`${r.comment} · ${r.createdAt}`} /></List.Item>} />
           </Card>
         </Col>
       </Row>
-      <Modal title="Đánh giá tiến độ" open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} okText="Lưu">
+      <Modal title="Đánh giá học viên theo buổi" open={open} onCancel={() => setOpen(false)} onOk={() => form.submit()} okText="Gửi">
         <Form form={form} layout="vertical" onFinish={save} initialValues={{ rating: 4 }}>
-          <Form.Item name="memberId" label="Học viên" rules={[{ required: true }]}><Select options={students.map((s) => ({ value: s.id, label: s.fullName }))} /></Form.Item>
-          <Form.Item name="rating" label="Mức độ tiến bộ"><Rate /></Form.Item>
+          <Form.Item name="memberId" label="Học viên" rules={[{ required: true }]}><Select options={students.map((s) => ({ value: s.id, label: s.fullName }))} onChange={() => form.setFieldsValue({ sessionId: undefined })} /></Form.Item>
+          <Form.Item name="sessionId" label="Buổi học (đã diễn ra)" rules={[{ required: true }]}><Select placeholder={memberId ? 'Chọn buổi' : 'Chọn học viên trước'} options={sessionOptions.map((s) => ({ value: s.id, label: `${data.classes.find((c) => c.id === s.classId)?.name} · ${dayjs(s.date).format('DD/MM')} ${s.startTime}` }))} /></Form.Item>
+          <Form.Item name="rating" label="Rating"><Rate /></Form.Item>
           <Form.Item name="comment" label="Nhận xét" rules={[{ required: true }]}><Input.TextArea rows={4} /></Form.Item>
         </Form>
       </Modal>
@@ -168,7 +178,7 @@ export function Announcements() {
   const hws = data.homeworks.filter((h) => h.coachId === currentUser!.id).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
 
   const save = (v: { kind: 'HOMEWORK' | 'NOTICE'; classId: string; title: string; content: string }) => {
-    const targets = data.enrollments.filter((e) => e.classId === v.classId && e.status === 'ACTIVE').map((e) => e.memberId);
+    const targets = data.enrollments.filter((e) => e.classId === v.classId && e.status === 'ENROLLED').map((e) => e.memberId);
     if (v.kind === 'HOMEWORK') add('homeworks', { classId: v.classId, coachId: currentUser!.id, title: v.title, content: v.content, createdAt: dayjs().format('YYYY-MM-DD HH:mm') });
     targets.forEach((m) => notify(m, v.kind === 'HOMEWORK' ? `Bài tập về nhà: ${v.title}` : v.title, v.content));
     message.success(`Đã gửi tới ${targets.length} học viên`); setOpen(false); form.resetFields();

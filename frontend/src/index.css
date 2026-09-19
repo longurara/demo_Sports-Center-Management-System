@@ -330,8 +330,13 @@ a { cursor: pointer; }
 .sc-cg-cell.free { background: #fff; border: 1px solid var(--sc-border); }
 .sc-cg-cell.free.clickable { cursor: pointer; }
 .sc-cg-cell.free.clickable:hover { border-color: var(--sc-ink); background: var(--sc-paper); }
-.sc-cg-cell.booked { background: #e4e0d6; border: 1px solid #e4e0d6; }
-.sc-cg-cell.booked.clickable { cursor: pointer; }
+.sc-cg-cell.full, .sc-cg-cell.booked { background: #e4e0d6; border: 1px solid #e4e0d6; }
+.sc-cg-cell.partial { background: #fff; border: 1px dashed var(--sc-primary); color: var(--sc-primary); }
+.sc-cg-cell.partial.clickable { cursor: pointer; }
+.sc-cg-cell.partial.clickable:hover { background: var(--sc-primary-soft); }
+.sc-cg-cell.maint { background: repeating-linear-gradient(45deg, #fdf2e9 0 5px, #f5c9a8 5px 6px); border: 1px solid #f0b88f; color: #b45309; }
+.sc-cg-cell.off { background: #f3f1ec; border: 1px solid transparent; color: #cbd5e1; }
+.sc-cg-cell.full.clickable, .sc-cg-cell.booked.clickable { cursor: pointer; }
 .sc-cg-cell.mine { background: var(--sc-primary-soft); border: 1px solid var(--sc-primary-soft); color: var(--sc-primary); }
 .sc-cg-cell.mine.clickable { cursor: pointer; }
 .sc-cg-cell.class { background: repeating-linear-gradient(135deg, #fff 0 5px, #ece8df 5px 6px); border: 1px solid var(--sc-border-soft); color: var(--sc-muted); }
